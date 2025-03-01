@@ -1,0 +1,53 @@
+{
+    "recipes": [
+        {
+            "id": "1",
+            "title": "Testing recipe 1",
+            "description": "Testing recipe description",
+            "image": "/images/recipe1.png",
+            "author": {
+                "name": "Sunny So",
+                "image": "/images/users/sunnyso"
+            },
+            "likes": 5,
+            "ingredients": [
+                {
+                    "name": "vegtables",
+                    "quantity": "100g"
+                },
+                {
+                    "name": "eggs",
+                    "quantity": "3pcs"
+                },
+                {
+                    "name": "rice",
+                    "quantity": "500g"
+                }
+            ],
+            "seasonings": [
+                {
+                    "name": "soy sauces",
+                    "quantity": "10g"
+                },
+                {
+                    "name": "sugar",
+                    "quantity": "5g"
+                }
+            ],
+            "instructions": [
+                {
+                    "step": "1",
+                    "description": "cut the vegetables"
+                },
+                {
+                    "step": "2",
+                    "description": "crack the egg"
+                },
+                {
+                    "step": "3",
+                    "description": "cook the rice"
+                }
+            ]
+        }
+    ]
+}
