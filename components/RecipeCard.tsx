@@ -9,7 +9,14 @@ const RecipeCard = ({ id, title, author, image, likes }: Recipes) => {
     return (
         <Card>
             <Link href={`/recipes/${id}`}>
-                <Image src={image} alt={title} width={1000} height={1000} />
+                <div className="relative w-[640px] h-[360px]">
+                    <Image
+                        className="object-cover"
+                        src={`/images/${image}`}
+                        alt={title}
+                        fill
+                    />
+                </div>
                 <CardContent>
                     <h2 className="text-lg font-bold">{title}</h2>
                 </CardContent>
@@ -18,10 +25,10 @@ const RecipeCard = ({ id, title, author, image, likes }: Recipes) => {
                         <Avatar className="h-8 w-8">
                             <AvatarImage src={author.image} alt={author.name} />
                             <AvatarFallback>
-                                <UserRound className="text-primary" />
+                                <UserRound className="text-accent" />
                             </AvatarFallback>
                         </Avatar>
-                        <span className="text-gray-600">{author.name}</span>
+                        <span className="text-secondary">{author.name}</span>
                     </div>
                     <div className="flex gap-2 items-center">
                         <span className="text-red-400 text-xl">{likes}</span>

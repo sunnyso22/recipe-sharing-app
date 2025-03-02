@@ -7,6 +7,7 @@
 @theme {
     --primary: oklch(77.2% 0.1738 64.55);
     --accent: oklch(60% 0.1738 64.55);
+    --secondary: oklch(0.446 0.03 256.802);
 }
 
 /* :root {

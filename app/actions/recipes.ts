@@ -19,3 +19,17 @@ export const getAllRecipes = async () => {
         handleError(error);
     }
 };
+
+export const getRecipeById = async (id: string) => {
+    try {
+        const { db } = await connectToDatabase();
+        const data = await db
+            .collection(collection)
+            .findOne({ id }, { projection: { _id: 0 } });
+
+        if (data) return data;
+        return false;
+    } catch (error) {
+        handleError(error);
+    }
+};

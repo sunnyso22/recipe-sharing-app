@@ -17,7 +17,7 @@ type Recipes = {
         quantity: string;
     }[];
     instructions: {
-        steps: string;
+        step: string;
         description: string;
     }[];
 };

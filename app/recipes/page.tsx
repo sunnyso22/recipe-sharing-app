@@ -1,10 +1,22 @@
-import AllRecipes from "@/components/AllRecipes";
-import React from "react";
+import { getAllRecipes } from "@/app/actions/recipes";
+import RecipeCard from "@/components/RecipeCard";
 
-const Recipes = () => {
+const Recipes = async () => {
+    const recipesData: Recipes[] = await getAllRecipes();
+
     return (
         <div className="container mx-auto">
-            <AllRecipes />
+            <div className="py-6">
+                <h2 className="text-2xl font-bold">All Recipes</h2>
+                <p className="text-secondary text-lg">
+                    You can find all recipes here.
+                </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {recipesData.map((recipe) => (
+                    <RecipeCard key={recipe.id} {...recipe} />
+                ))}
+            </div>
         </div>
     );
 };
