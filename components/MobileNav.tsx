@@ -1,4 +1,4 @@
-import React from "react";
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import {
     Sheet,
     SheetClose,
@@ -18,10 +18,6 @@ const links = [
         name: "Recipes",
         path: "/recipes",
     },
-    {
-        name: "Login",
-        path: "/login",
-    },
 ];
 
 const MobileNav = () => {
@@ -34,11 +30,13 @@ const MobileNav = () => {
                 <SheetTitle className="hidden">Menu</SheetTitle>
                 {/* Logo */}
                 <div className="mt-32 mb-40 text-center text-2xl">
-                    <Link href="/">
-                        <h1 className="text-4xl font-semibold italic text-primary">
-                            Cookery
-                        </h1>
-                    </Link>
+                    <SheetClose asChild>
+                        <Link href="/">
+                            <h1 className="text-4xl font-semibold italic text-primary">
+                                Cookery
+                            </h1>
+                        </Link>
+                    </SheetClose>
                 </div>
 
                 {/* Nav */}
@@ -50,6 +48,27 @@ const MobileNav = () => {
                             </Link>
                         </SheetClose>
                     ))}
+
+                    <SignedOut>
+                        <Link
+                            className="text-2xl hover:text-accent"
+                            href="/sign-in"
+                        >
+                            Sign In
+                        </Link>
+                    </SignedOut>
+
+                    <SignedIn>
+                        <SheetClose asChild>
+                            <Link
+                                className="text-2xl hover:text-accent"
+                                href="/profile"
+                            >
+                                Profile
+                            </Link>
+                        </SheetClose>
+                        <UserButton />
+                    </SignedIn>
                 </nav>
             </SheetContent>
         </Sheet>

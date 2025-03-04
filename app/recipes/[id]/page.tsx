@@ -1,6 +1,8 @@
 import { getRecipeById } from "@/app/actions/recipes";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Ingredient, Instruction, Recipe, Seasoning } from "@/types";
 import { Bookmark, Heart, Share, UserRound } from "lucide-react";
+import { ObjectId } from "mongodb";
 import Image from "next/image";
 
 const RecipeDetail = async ({
@@ -10,7 +12,18 @@ const RecipeDetail = async ({
 }) => {
     const { id } = await params;
 
-    const recipeDetail: Recipes = await getRecipeById(id);
+    const recipeDetail: Recipe = (await getRecipeById(id)) || {
+        _id: new ObjectId(""),
+        author: { name: "", image: "" },
+        likes: 0,
+        image: "",
+        title: "",
+        description: "",
+        ingredients: [],
+        seasonings: [],
+        instructions: [],
+    };
+
     const {
         author,
         likes,
@@ -36,7 +49,7 @@ const RecipeDetail = async ({
                 <div className="w-full flex flex-col justify-between">
                     <div className="flex flex-col gap-8">
                         <h2 className="text-3xl font-extrabold">{title}</h2>
-                        <p className="text-secondary text-xl">{description}</p>
+                        <p className="text-paragraph text-xl">{description}</p>
                     </div>
                     <div className="flex justify-between">
                         <div className="flex items-center gap-2">
@@ -49,7 +62,7 @@ const RecipeDetail = async ({
                                     <UserRound className="text-accent" />
                                 </AvatarFallback>
                             </Avatar>
-                            <span className="text-secondary">
+                            <span className="text-paragraph hover:border-b-1">
                                 {author.name}
                             </span>
                         </div>
@@ -74,12 +87,13 @@ const RecipeDetail = async ({
                 <div className="w-1/4 py-6">
                     <h3 className="text-2xl font-semibold py-6">Ingredients</h3>
                     <ul>
-                        {ingredients.map((item, index) => (
-                            <li key={index} className="flex justify-between">
-                                <span className="text-xl text-secondary">
-                                    {item.name}
-                                </span>
-                                <span className="text-xl text-secondary font-semibold">
+                        {ingredients.map((item: Ingredient) => (
+                            <li
+                                key={item.name}
+                                className="flex justify-between text-paragraph"
+                            >
+                                <span className="text-xl">{item.name}</span>
+                                <span className="text-xl font-semibold">
                                     {item.quantity}
                                 </span>
                             </li>
@@ -87,12 +101,13 @@ const RecipeDetail = async ({
                     </ul>
                     <h3 className="text-2xl font-semibold py-6">Seasonings</h3>
                     <ul>
-                        {seasonings.map((item, index) => (
-                            <li key={index} className="flex justify-between">
-                                <span className="text-xl text-secondary">
-                                    {item.name}
-                                </span>
-                                <span className="text-xl text-secondary font-semibold">
+                        {seasonings.map((item: Seasoning) => (
+                            <li
+                                key={item.name}
+                                className="flex justify-between text-paragraph"
+                            >
+                                <span className="text-xl">{item.name}</span>
+                                <span className="text-xl font-semibold">
                                     {item.quantity}
                                 </span>
                             </li>
@@ -104,12 +119,15 @@ const RecipeDetail = async ({
                         Instructions
                     </h3>
                     <ul className="flex flex-col gap-6">
-                        {instructions.map((item, index) => (
-                            <li key={index} className="flex gap-3">
-                                <span className="flex justify-center items-center text-xl text-white bg-gray-600 rounded-full h-8 w-8">
+                        {instructions.map((item: Instruction) => (
+                            <li
+                                key={item.step}
+                                className="flex gap-3 text-paragraph"
+                            >
+                                <span className="flex justify-center items-center text-xl text-white bg-paragraph rounded-full h-8 w-8">
                                     {item.step}
                                 </span>
-                                <span className="text-xl text-secondary font-semibold">
+                                <span className="text-xl font-semibold">
                                     {item.description}
                                 </span>
                             </li>

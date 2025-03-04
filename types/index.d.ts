@@ -1,23 +1,28 @@
-type Recipes = {
-    id: string;
+import { ObjectId } from "mongodb";
+type Author = {
+    name: string;
+    image?: string;
+};
+type Ingredient = {
+    name: string;
+    quantity: string;
+};
+type Seasoning = {
+    name: string;
+    quantity: string;
+};
+type Instruction = {
+    step: string;
+    description: string;
+};
+type Recipe = {
+    _id: ObjectId;
     title: string;
     description: string;
     image: string;
-    author: {
-        name: string;
-        image?: string;
-    };
+    author: Author;
     likes: number;
-    ingredients: {
-        name: string;
-        quantity: string;
-    }[];
-    seasonings: {
-        name: string;
-        quantity: string;
-    }[];
-    instructions: {
-        step: string;
-        description: string;
-    }[];
+    ingredients: Ingredient[];
+    seasonings: Seasoning[];
+    instructions: Instruction[];
 };

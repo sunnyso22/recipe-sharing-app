@@ -2,13 +2,14 @@ import React from "react";
 import Image from "next/image";
 import { Card, CardContent, CardFooter } from "./ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Heart, User, UserRound } from "lucide-react";
+import { Heart, UserRound } from "lucide-react";
 import Link from "next/link";
+import { Recipe } from "@/types";
 
-const RecipeCard = ({ id, title, author, image, likes }: Recipes) => {
+const RecipeCard = ({ _id, title, author, image, likes }: Recipe) => {
     return (
         <Card>
-            <Link href={`/recipes/${id}`}>
+            <Link href={`/recipes/${_id}`}>
                 <div className="relative w-[640px] h-[360px]">
                     <Image
                         className="object-cover"
@@ -28,7 +29,9 @@ const RecipeCard = ({ id, title, author, image, likes }: Recipes) => {
                                 <UserRound className="text-accent" />
                             </AvatarFallback>
                         </Avatar>
-                        <span className="text-secondary">{author.name}</span>
+                        <span className="text-paragraph hover:border-b-1">
+                            {author.name}
+                        </span>
                     </div>
                     <div className="flex gap-2 items-center">
                         <span className="text-red-400 text-xl">{likes}</span>

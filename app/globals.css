@@ -7,7 +7,10 @@
 @theme {
     --primary: oklch(77.2% 0.1738 64.55);
     --accent: oklch(60% 0.1738 64.55);
-    --secondary: oklch(0.446 0.03 256.802);
+    --secondary: oklch(86.52% 0.1768 90.38);
+    --color-hover: oklch(0.704 0.191 22.216);
+    --color-avatar: oklch(89.75% 0 0);
+    --color-paragraph: oklch(0.551 0.027 264.364);
 }
 
 /* :root {
@@ -125,6 +128,6 @@
         @apply border-border outline-ring/50;
     }
     body {
-        @apply bg-background text-foreground;
+        @apply bg-background bg-gradient-to-b from-white from-35% via-secondary to-primary;
     }
 }

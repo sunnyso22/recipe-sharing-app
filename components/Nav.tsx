@@ -1,5 +1,5 @@
 import Link from "next/link";
-import React from "react";
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 
 const links = [
     {
@@ -10,10 +10,6 @@ const links = [
         name: "Recipes",
         path: "/recipes",
     },
-    {
-        name: "Login",
-        path: "/login",
-    },
 ];
 
 const Nav = () => {
@@ -23,11 +19,22 @@ const Nav = () => {
                 <Link
                     key={index}
                     href={link.path}
-                    className="font-medium text-2xl"
+                    className="font-medium text-2xl hover:text-accent"
                 >
                     {link.name}
                 </Link>
             ))}
+            <SignedOut>
+                <Link className="text-2xl hover:text-accent" href="/sign-in">
+                    Sign In
+                </Link>
+            </SignedOut>
+            <SignedIn>
+                <Link className="text-2xl hover:text-accent" href="/profile">
+                    Profile
+                </Link>
+                <UserButton />
+            </SignedIn>
         </nav>
     );
 };
