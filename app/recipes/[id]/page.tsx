@@ -1,6 +1,8 @@
 import { getRecipeById } from "@/app/actions/recipes";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { Ingredient, Instruction, Recipe, Seasoning } from "@/types";
+import { currentUser } from "@clerk/nextjs/server";
 import { Bookmark, Heart, Share, UserRound } from "lucide-react";
 import { ObjectId } from "mongodb";
 import Image from "next/image";
@@ -11,6 +13,8 @@ const RecipeDetail = async ({
     params: Promise<{ id: string }>;
 }) => {
     const { id } = await params;
+
+    const user = await currentUser();
 
     const recipeDetail: Recipe = (await getRecipeById(id)) || {
         _id: new ObjectId(""),
@@ -38,7 +42,7 @@ const RecipeDetail = async ({
     return (
         <div className="container mx-auto mt-12">
             <div className="flex gap-6">
-                <div className="relative w-[960px] h-[540px]">
+                <div className="relative w-[1280px] h-[540px]">
                     <Image
                         className="object-cover rounded-2xl"
                         src={`/images/${image}`}
@@ -48,7 +52,17 @@ const RecipeDetail = async ({
                 </div>
                 <div className="w-full flex flex-col justify-between">
                     <div className="flex flex-col gap-8">
-                        <h2 className="text-3xl font-extrabold">{title}</h2>
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-3xl font-extrabold">{title}</h2>
+                            {user && user.fullName === author.name ? (
+                                <div className="flex gap-6">
+                                    <Button variant="outline">Edit</Button>
+                                    <Button>Delete</Button>
+                                </div>
+                            ) : (
+                                <></>
+                            )}
+                        </div>
                         <p className="text-paragraph text-xl">{description}</p>
                     </div>
                     <div className="flex justify-between">
@@ -77,8 +91,14 @@ const RecipeDetail = async ({
                                     size={28}
                                 />
                             </div>
-                            <Bookmark size={28} />
-                            <Share size={28} />
+                            <Bookmark
+                                size={28}
+                                className="transition-all hover:scale-125"
+                            />
+                            <Share
+                                size={28}
+                                className="transition-all hover:scale-125"
+                            />
                         </div>
                     </div>
                 </div>
@@ -127,9 +147,9 @@ const RecipeDetail = async ({
                                 <span className="flex justify-center items-center text-xl text-white bg-paragraph rounded-full h-8 w-8">
                                     {item.step}
                                 </span>
-                                <span className="text-xl font-semibold">
+                                <p className="text-xl font-semibold">
                                     {item.description}
-                                </span>
+                                </p>
                             </li>
                         ))}
                     </ul>

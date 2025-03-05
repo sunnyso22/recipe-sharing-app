@@ -16,6 +16,38 @@ export const getAllRecipes = async (search?: string) => {
         const data = await db
             .collection<Recipe>(collection)
             .find(filter)
+            .sort({ title: 1 })
+            .toArray();
+
+        if (data) return data;
+        return false;
+    } catch (error) {
+        handleError(error);
+    }
+};
+
+export const getHotRecipes = async () => {
+    try {
+        const { db } = await connectToDatabase();
+        const data = await db
+            .collection<Recipe>(collection)
+            .find({ likes: { $gte: 5 } })
+            .sort({ title: 1 })
+            .toArray();
+
+        if (data) return data;
+        return false;
+    } catch (error) {
+        handleError(error);
+    }
+};
+
+export const getUserRecipes = async (name: string) => {
+    try {
+        const { db } = await connectToDatabase();
+        const data = await db
+            .collection<Recipe>(collection)
+            .find({ "author.name": name })
             .toArray();
 
         if (data) return data;

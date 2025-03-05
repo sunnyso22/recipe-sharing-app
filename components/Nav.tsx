@@ -14,7 +14,7 @@ const links = [
 
 const Nav = () => {
     return (
-        <nav className="flex gap-8">
+        <nav className="flex gap-8  text-paragraph">
             {links.map((link, index) => (
                 <Link
                     key={index}

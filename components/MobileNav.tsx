@@ -6,7 +6,7 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "./ui/sheet";
-import { Menu } from "lucide-react";
+import { ChefHat, Menu } from "lucide-react";
 import Link from "next/link";
 
 const links = [
@@ -29,21 +29,26 @@ const MobileNav = () => {
             <SheetContent>
                 <SheetTitle className="hidden">Menu</SheetTitle>
                 {/* Logo */}
-                <div className="mt-32 mb-40 text-center text-2xl">
+                <div className="mt-32 mb-40">
                     <SheetClose asChild>
                         <Link href="/">
-                            <h1 className="text-4xl font-semibold italic text-primary">
+                            <h1 className="flex justify-center items-center gap-1 text-4xl font-semibold italic text-primary">
                                 Cookery
+                                <ChefHat size={36} />
                             </h1>
                         </Link>
                     </SheetClose>
                 </div>
 
                 {/* Nav */}
-                <nav className="flex flex-col justify-center items-center gap-8">
+                <nav className="flex flex-col justify-center items-center gap-8 text-paragraph">
                     {links.map((link, index) => (
                         <SheetClose key={index} asChild>
-                            <Link href={link.path} key={index}>
+                            <Link
+                                href={link.path}
+                                key={index}
+                                className="hover:text-accent"
+                            >
                                 <h2 className="text-2xl">{link.name}</h2>
                             </Link>
                         </SheetClose>

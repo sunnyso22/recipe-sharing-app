@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Nav from "./Nav";
 import MobileNav from "./MobileNav";
+import { ChefHat } from "lucide-react";
 
 const Header = () => {
     return (
@@ -8,11 +9,14 @@ const Header = () => {
             <div className="container mx-auto flex justify-between items-center">
                 {/* Logo */}
                 <Link href="/">
-                    <h1 className="text-4xl font-semibold italic">Cookery</h1>
+                    <h1 className="flex items-center gap-1 text-4xl font-semibold text-primary italic">
+                        Cookery
+                        <ChefHat size={36} />
+                    </h1>
                 </Link>
 
                 {/* Desktop Nav */}
-                <div className="hidden lg:flex items-center gap-8 text-paragraph">
+                <div className="hidden lg:flex items-center gap-8">
                     <Nav />
                 </div>
 

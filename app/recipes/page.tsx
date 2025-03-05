@@ -11,12 +11,6 @@ const Recipes = async ({
     const { search } = await searchParams;
     const recipesData: Recipe[] = (await getAllRecipes(search)) || [];
 
-    const sortByAlphabet = (a: Recipe, b: Recipe) => {
-        if (a.title > b.title) return 1;
-        if (a.title < b.title) return -1;
-        return 0;
-    };
-
     return (
         <div className="container mx-auto">
             <div className="flex w-full items-center justify-between">
@@ -28,11 +22,7 @@ const Recipes = async ({
                 </div>
                 <SearchBar searchString={search || ""} />
             </div>
-            <RecipesGrid
-                recipes={recipesData}
-                likesCount={0}
-                sortingMethod={sortByAlphabet}
-            />
+            <RecipesGrid recipes={recipesData} />
         </div>
     );
 };

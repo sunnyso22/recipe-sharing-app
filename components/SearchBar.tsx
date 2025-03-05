@@ -16,6 +16,7 @@ const SearchBar = ({ searchString }: { searchString?: string }) => {
                 type="text"
                 defaultValue={searchString}
                 placeholder="Anything want to cook today?"
+                className="w-72"
             />
             <Button type="submit" className="flex gap-2">
                 <Search />

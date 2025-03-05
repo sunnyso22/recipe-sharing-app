@@ -1,5 +1,5 @@
-import React from "react";
 import Link from "next/link";
+import { ChefHat } from "lucide-react";
 
 const Footer = () => {
     return (
@@ -10,8 +10,9 @@ const Footer = () => {
                 </p>
                 {/* Logo */}
                 <Link href="/">
-                    <h1 className="text-white text-4xl font-semibold italic">
+                    <h1 className="flex items-center gap-1 text-white text-4xl font-semibold italic">
                         Cookery
+                        <ChefHat size={36} />
                     </h1>
                 </Link>
             </div>
