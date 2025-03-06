@@ -13,7 +13,7 @@ const RecipeCard = ({ _id, title, author, image, likes }: Recipe) => {
                 <div className="relative w-[640px] h-[360px]">
                     <Image
                         className="object-cover"
-                        src={`/images/${image}`}
+                        src={image || ""}
                         alt={title}
                         fill
                     />
@@ -24,7 +24,10 @@ const RecipeCard = ({ _id, title, author, image, likes }: Recipe) => {
                 <CardFooter>
                     <div className="flex items-center gap-2">
                         <Avatar className="h-8 w-8">
-                            <AvatarImage src={author.image} alt={author.name} />
+                            <AvatarImage
+                                src={author.image || ""}
+                                alt={author.name || ""}
+                            />
                             <AvatarFallback>
                                 <UserRound className="text-accent" />
                             </AvatarFallback>

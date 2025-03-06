@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 type Author = {
-    name: string;
-    image?: string;
+    name: string | null;
+    image: string | null;
 };
 type Ingredient = {
     name: string;
@@ -19,7 +19,7 @@ type Recipe = {
     _id: ObjectId;
     title: string;
     description: string;
-    image: string;
+    image: string | null;
     author: Author;
     likes: number;
     ingredients: Ingredient[];

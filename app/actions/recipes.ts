@@ -70,3 +70,16 @@ export const getRecipeById = async (id: string) => {
         handleError(error);
     }
 };
+
+export const addRecipe = async (recipe: Recipe) => {
+    try {
+        const { db } = await connectToDatabase();
+        const result = await db
+            .collection<Recipe>(collection)
+            .insertOne(recipe);
+
+        console.log(result.insertedId);
+    } catch (error) {
+        handleError(error);
+    }
+};

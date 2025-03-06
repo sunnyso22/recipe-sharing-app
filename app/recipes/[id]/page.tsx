@@ -45,7 +45,7 @@ const RecipeDetail = async ({
                 <div className="relative w-[1280px] h-[540px]">
                     <Image
                         className="object-cover rounded-2xl"
-                        src={`/images/${image}`}
+                        src={image || ""}
                         alt={title}
                         fill
                     />
@@ -69,8 +69,8 @@ const RecipeDetail = async ({
                         <div className="flex items-center gap-2">
                             <Avatar className="h-8 w-8">
                                 <AvatarImage
-                                    src={author.image}
-                                    alt={author.name}
+                                    src={author.image || ""}
+                                    alt={author.name || ""}
                                 />
                                 <AvatarFallback>
                                     <UserRound className="text-accent" />

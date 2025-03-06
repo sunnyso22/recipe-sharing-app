@@ -12,17 +12,23 @@ import { useRef, useState } from "react";
 import { Input } from "./ui/input";
 import Image from "next/image";
 
-const UploadImage = () => {
+const UploadImage = ({
+    onImageChange,
+}: {
+    onImageChange: (imageData: string | null) => void;
+}) => {
     const [image, setImage] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        console.log(file);
+        // console.log(file);
         if (file && file.type.startsWith("image/")) {
             const reader = new FileReader();
             reader.onload = () => {
-                setImage(reader.result as string);
+                const imageData = reader.result as string;
+                setImage(imageData);
+                onImageChange(imageData);
             };
             reader.readAsDataURL(file);
         }
