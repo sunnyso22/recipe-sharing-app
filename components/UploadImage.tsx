@@ -14,8 +14,10 @@ import Image from "next/image";
 
 const UploadImage = ({
     onImageChange,
+    error,
 }: {
     onImageChange: (imageData: string | null) => void;
+    error?: string;
 }) => {
     const [image, setImage] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -50,7 +52,7 @@ const UploadImage = ({
             <ContextMenu>
                 <ContextMenuTrigger>
                     <div
-                        className={`w-full h-[360px] cursor-pointer flex flex-col items-center justify-center rounded-2xl border-2 ${
+                        className={`h-[360px] cursor-pointer flex flex-col items-center justify-center rounded-2xl border-2 ${
                             image
                                 ? `border border-primary`
                                 : `border-dashed border-muted`
@@ -76,7 +78,8 @@ const UploadImage = ({
                             </div>
                         )}
                         <Input
-                            className="hidden"
+                            hidden
+                            name="image"
                             type="file"
                             ref={fileInputRef}
                             onChange={handleImageUpload}
@@ -98,11 +101,18 @@ const UploadImage = ({
                     </ContextMenuItem>
                 </ContextMenuContent>
             </ContextMenu>
-            <p className="text-sm text-paragraph">
-                {image
-                    ? "Image uploaded. Right-click for options."
-                    : "No image uploaded yet."}
-            </p>
+            <div className="flex gap-3">
+                <p className="text-sm text-paragraph">
+                    {image
+                        ? "Image uploaded. Right-click for options."
+                        : "No image uploaded yet."}
+                </p>
+                {error ? (
+                    <p className="text-sm text-red-500">{error}</p>
+                ) : (
+                    <p>&nbsp;</p>
+                )}
+            </div>
         </div>
     );
 };

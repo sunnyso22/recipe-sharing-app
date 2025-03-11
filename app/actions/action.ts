@@ -2,13 +2,33 @@
 
 import { currentUser } from "@clerk/nextjs/server";
 import { addRecipe } from "./recipes";
-import { Ingredient, Instruction, Seasoning } from "@/types";
+import { Errors, FormState, Ingredient, Instruction, Seasoning } from "@/types";
 import { ObjectId } from "mongodb";
+import { redirect } from "next/navigation";
 
-export const writeRecipe = async (formData: FormData) => {
+export const writeRecipe = async (
+    image: string | null,
+    prevState: FormState,
+    formData: FormData
+) => {
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
-    const image = formData.get("image") as string;
+
+    console.log(image);
+
+    const errors: Errors = {};
+    if (!image) {
+        errors.image = "Image is required!";
+    }
+    if (!title) {
+        errors.title = "Title is required!";
+    }
+    if (!description) {
+        errors.description = "Description is required!";
+    }
+    if (Object.keys(errors).length > 0) {
+        return { errors };
+    }
 
     const user = await currentUser();
     const authorName = user?.fullName as string | null;
@@ -36,7 +56,7 @@ export const writeRecipe = async (formData: FormData) => {
         instructions.push(instruction);
     }
 
-    addRecipe({
+    await addRecipe({
         _id: new ObjectId(),
         title,
         description,
@@ -50,4 +70,5 @@ export const writeRecipe = async (formData: FormData) => {
         seasonings,
         instructions,
     });
+    redirect("/recipes");
 };

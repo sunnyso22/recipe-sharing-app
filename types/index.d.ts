@@ -26,3 +26,12 @@ type Recipe = {
     seasonings: Seasoning[];
     instructions: Instruction[];
 };
+
+type Errors = {
+    image?: string;
+    title?: string;
+    description?: string;
+};
+type FormState = {
+    errors: Errors;
+};
