@@ -8,13 +8,14 @@ import { redirect } from "next/navigation";
 
 export const writeRecipe = async (
     image: string | null,
+    ingredients: Ingredient[],
+    seasonings: Seasoning[],
+    instructions: Instruction[],
     prevState: FormState,
     formData: FormData
 ) => {
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
-
-    console.log(image);
 
     const errors: Errors = {};
     if (!image) {
@@ -34,28 +35,6 @@ export const writeRecipe = async (
     const authorName = user?.fullName as string | null;
     const authorImage = user?.imageUrl as string | null;
 
-    const ingredients: Ingredient[] = [];
-    for (let i = 0; i < 3; i++) {
-        const name = formData.get(`ingredient-${i}`) as string;
-        const quantity = formData.get(`ingredient-qty-${i}`) as string;
-        const ingredient = { name, quantity };
-        ingredients.push(ingredient);
-    }
-    const seasonings: Seasoning[] = [];
-    for (let i = 0; i < 3; i++) {
-        const name = formData.get(`seasoning-${i}`) as string;
-        const quantity = formData.get(`seasoning-qty-${i}`) as string;
-        const seasoning = { name, quantity };
-        seasonings.push(seasoning);
-    }
-    const instructions: Instruction[] = [];
-    for (let i = 0; i < 3; i++) {
-        const step = formData.get(`step-${i}`) as string;
-        const description = formData.get(`description-${i}`) as string;
-        const instruction = { step, description };
-        instructions.push(instruction);
-    }
-
     await addRecipe({
         _id: new ObjectId(),
         title,
@@ -70,5 +49,5 @@ export const writeRecipe = async (
         seasonings,
         instructions,
     });
-    redirect("/recipes");
+    redirect("/profile");
 };

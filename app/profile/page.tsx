@@ -31,7 +31,15 @@ const ProfilePage = async () => {
                 <Button>Bookmark</Button>
             </div>
 
-            <RecipesGrid recipes={recipesData} />
+            {recipesData.length > 0 ? (
+                <RecipesGrid recipes={recipesData} />
+            ) : (
+                <div className="h-[70vh] flex items-center justify-center">
+                    <h2 className="text-2xl font-bold">
+                        You have not yet published any recipes!
+                    </h2>
+                </div>
+            )}
         </div>
     );
 };

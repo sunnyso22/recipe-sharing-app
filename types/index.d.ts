@@ -4,15 +4,17 @@ type Author = {
     image: string | null;
 };
 type Ingredient = {
+    id: number;
     name: string;
     quantity: string;
 };
 type Seasoning = {
+    id: number;
     name: string;
     quantity: string;
 };
 type Instruction = {
-    step: string;
+    step: number;
     description: string;
 };
 type Recipe = {

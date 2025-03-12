@@ -139,13 +139,13 @@ const RecipeDetail = async ({
                         Instructions
                     </h3>
                     <ul className="flex flex-col gap-6">
-                        {instructions.map((item: Instruction) => (
+                        {instructions.map((item: Instruction, index) => (
                             <li
                                 key={item.step}
                                 className="flex gap-3 text-paragraph"
                             >
                                 <span className="flex justify-center items-center text-xl text-white bg-paragraph rounded-full h-8 w-8">
-                                    {item.step}
+                                    {index + 1}
                                 </span>
                                 <p className="text-xl font-semibold">
                                     {item.description}

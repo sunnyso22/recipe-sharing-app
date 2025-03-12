@@ -7,8 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { writeRecipe } from "@/app/actions/action";
 import { Button } from "./ui/button";
-import { FormState } from "@/types";
+import { FormState, Ingredient, Instruction, Seasoning } from "@/types";
 import Link from "next/link";
+import IngredientsUpload from "./IngredientsUpload";
+import SeasoningsUpload from "./SeasoningsUpload";
+import InstructionsUpload from "./InstructionsUpload";
 
 const RecipeUploadForm = () => {
     const initialState: FormState = {
@@ -19,11 +22,29 @@ const RecipeUploadForm = () => {
     const handleImageChange = (imageData: string | null) => {
         setImage(imageData);
     };
+    const [ingredients, setIngredients] = useState<Ingredient[]>([]);
+    const handleIngredientsChange = (ingredientsData: Ingredient[]) => {
+        setIngredients(ingredientsData);
+    };
+    const [seasonings, setSeasonings] = useState<Seasoning[]>([]);
+    const handleSeasoningsChange = (seasoningsData: Seasoning[]) => {
+        setSeasonings(seasoningsData);
+    };
+    const [instructions, setInstructions] = useState<Instruction[]>([]);
+    const handleInstructionsChange = (instructionsData: Instruction[]) => {
+        setInstructions(instructionsData);
+    };
 
-    const writeRecipeWithImage = writeRecipe.bind(null, image);
+    const writeRecipeWithData = writeRecipe.bind(
+        null,
+        image,
+        ingredients,
+        seasonings,
+        instructions
+    );
 
     const [state, formAction, isPending] = useActionState(
-        writeRecipeWithImage,
+        writeRecipeWithData,
         initialState
     );
 
@@ -63,62 +84,14 @@ const RecipeUploadForm = () => {
                 </div>
             </div>
             <div className="flex justify-evenly gap-6">
-                <div className="w-full">
-                    <h3 className="text-2xl font-semibold py-6">Ingredients</h3>
-                    {[...Array(3)].map((_, i) => (
-                        <div key={i} className="flex gap-3 py-3">
-                            <Input
-                                name={`ingredient-${i}`}
-                                className="w-full"
-                                type="text"
-                                placeholder={`Ingredient ${i + 1}`}
-                            />
-                            <Input
-                                name={`ingredient-qty-${i}`}
-                                className="w-full"
-                                type="text"
-                                placeholder="Quantity"
-                            />
-                        </div>
-                    ))}
-                </div>
-                <div className="w-full">
-                    <h3 className="text-2xl font-semibold py-6">Seasonings</h3>
-                    {[...Array(3)].map((_, i) => (
-                        <div key={i} className="flex gap-3 py-3">
-                            <Input
-                                name={`seasoning-${i}`}
-                                className="w-full"
-                                type="text"
-                                placeholder={`Seasoning ${i + 1}`}
-                            />
-                            <Input
-                                name={`seasoning-qty-${i}`}
-                                className="w-full"
-                                type="text"
-                                placeholder="Quantity"
-                            />
-                        </div>
-                    ))}
-                </div>
+                <IngredientsUpload
+                    onIngredientsChange={handleIngredientsChange}
+                />
+                <SeasoningsUpload onSeasoningsChange={handleSeasoningsChange} />
             </div>
-            <div className="w-full">
-                <h3 className="text-2xl font-semibold py-6">Instructions</h3>
-                {[...Array(3)].map((_, i) => (
-                    <div key={i} className="flex gap-3 py-3 items-center">
-                        <span className="flex justify-center items-center text-xl text-white bg-paragraph rounded-full h-8 w-8">
-                            {i + 1}
-                        </span>
-                        <Input name={`step-${i}`} defaultValue={i + 1} hidden />
-                        <Input
-                            name={`description-${i}`}
-                            className="w-full"
-                            type="text"
-                            placeholder={`Instruction ${i + 1}`}
-                        />
-                    </div>
-                ))}
-            </div>
+            <InstructionsUpload
+                onInstructionsChange={handleInstructionsChange}
+            />
             <div className="flex gap-3 py-6 justify-end">
                 <Button
                     type="submit"

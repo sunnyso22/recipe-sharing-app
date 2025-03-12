@@ -22,7 +22,15 @@ const Recipes = async ({
                 </div>
                 <SearchBar searchString={search || ""} />
             </div>
-            <RecipesGrid recipes={recipesData} />
+            {recipesData.length === 0 ? (
+                <div className="h-[70vh] flex items-center justify-center">
+                    <h2 className="text-2xl font-bold">
+                        No recipes could be found!
+                    </h2>
+                </div>
+            ) : (
+                <RecipesGrid recipes={recipesData} />
+            )}
         </div>
     );
 };
