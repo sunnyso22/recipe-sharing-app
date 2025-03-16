@@ -2,57 +2,60 @@
 
 import React, { useActionState, useState } from "react";
 import Form from "next/form";
-import UploadImage from "@/components/UploadImage";
+import ImageUpload from "@/components/ImageUpload";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { writeRecipe } from "@/app/actions/action";
-import { Button } from "./ui/button";
-import { FormState, Ingredient, Instruction, Seasoning } from "@/types";
+import { createRecipe, updateRecipe } from "@/actions/action";
+import { Button } from "../ui/button";
+import { FormErrors, FormState, Recipe } from "@/types";
 import Link from "next/link";
 import IngredientsUpload from "./IngredientsUpload";
 import SeasoningsUpload from "./SeasoningsUpload";
 import InstructionsUpload from "./InstructionsUpload";
 
-const RecipeUploadForm = () => {
+const RecipeUploadForm = ({
+    recipeData,
+    id,
+    mode,
+}: {
+    recipeData: Recipe;
+    id: string;
+    mode: string;
+}) => {
     const initialState: FormState = {
         errors: {},
     };
 
-    const [image, setImage] = useState<string | null>(null);
-    const handleImageChange = (imageData: string | null) => {
-        setImage(imageData);
-    };
-    const [ingredients, setIngredients] = useState<Ingredient[]>([]);
-    const handleIngredientsChange = (ingredientsData: Ingredient[]) => {
-        setIngredients(ingredientsData);
-    };
-    const [seasonings, setSeasonings] = useState<Seasoning[]>([]);
-    const handleSeasoningsChange = (seasoningsData: Seasoning[]) => {
-        setSeasonings(seasoningsData);
-    };
-    const [instructions, setInstructions] = useState<Instruction[]>([]);
-    const handleInstructionsChange = (instructionsData: Instruction[]) => {
-        setInstructions(instructionsData);
+    const [recipe, setRecipe] = useState<Recipe>(recipeData);
+    const handleRecipeChange = (data: Recipe) => {
+        setRecipe(data);
     };
 
-    const writeRecipeWithData = writeRecipe.bind(
-        null,
-        image,
-        ingredients,
-        seasonings,
-        instructions
-    );
+    const updateRecipeWithData = updateRecipe.bind(null, id, recipe);
+    const createRecipeWithData = createRecipe.bind(null, recipe);
+
+    let actionFunction: (
+        prevState: FormState,
+        formData: FormData
+    ) => Promise<{ errors: FormErrors }> = async () => ({ errors: {} });
+
+    if (mode === "create") {
+        actionFunction = createRecipeWithData;
+    } else if (mode === "update") {
+        actionFunction = updateRecipeWithData;
+    }
 
     const [state, formAction, isPending] = useActionState(
-        writeRecipeWithData,
+        actionFunction,
         initialState
     );
 
     return (
         <Form action={formAction}>
             <div className="flex justify-evenly gap-6">
-                <UploadImage
-                    onImageChange={handleImageChange}
+                <ImageUpload
+                    onImageChange={handleRecipeChange}
+                    recipe={recipe}
                     error={state.errors.image}
                 />
                 <div className="w-1/2 flex flex-col">
@@ -61,6 +64,7 @@ const RecipeUploadForm = () => {
                             name="title"
                             type="text"
                             placeholder="Recipe Title"
+                            defaultValue={recipeData.title}
                         />
                         {state.errors.title ? (
                             <p className="text-sm text-red-500">
@@ -74,6 +78,7 @@ const RecipeUploadForm = () => {
                         <Textarea
                             name="description"
                             placeholder="Describe your recipe..."
+                            defaultValue={recipeData.description}
                         />
                         {state.errors.description && (
                             <p className="text-sm text-red-500">
@@ -85,12 +90,17 @@ const RecipeUploadForm = () => {
             </div>
             <div className="flex justify-evenly gap-6">
                 <IngredientsUpload
-                    onIngredientsChange={handleIngredientsChange}
+                    onIngredientsChange={handleRecipeChange}
+                    recipe={recipe}
                 />
-                <SeasoningsUpload onSeasoningsChange={handleSeasoningsChange} />
+                <SeasoningsUpload
+                    onSeasoningsChange={handleRecipeChange}
+                    recipe={recipe}
+                />
             </div>
             <InstructionsUpload
-                onInstructionsChange={handleInstructionsChange}
+                onInstructionsChange={handleRecipeChange}
+                recipe={recipe}
             />
             <div className="flex gap-3 py-6 justify-end">
                 <Button
@@ -100,7 +110,7 @@ const RecipeUploadForm = () => {
                 >
                     {isPending ? "Saving..." : "Save"}
                 </Button>
-                <Link href="/profile">
+                <Link href={`/recipes/${id}`}>
                     <Button variant="destructive">Cancel</Button>
                 </Link>
             </div>

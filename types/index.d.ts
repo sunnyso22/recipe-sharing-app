@@ -29,11 +29,11 @@ type Recipe = {
     instructions: Instruction[];
 };
 
-type Errors = {
+type FormErrors = {
     image?: string;
     title?: string;
     description?: string;
 };
 type FormState = {
-    errors: Errors;
+    errors: FormErrors;
 };

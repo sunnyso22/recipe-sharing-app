@@ -8,29 +8,36 @@ import {
     ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { ImageIcon, Trash2, Upload } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Input } from "./ui/input";
 import Image from "next/image";
+import { Recipe } from "@/types";
 
-const UploadImage = ({
+const ImageUpload = ({
     onImageChange,
+    recipe,
     error,
 }: {
-    onImageChange: (imageData: string | null) => void;
+    onImageChange: (recipeData: Recipe) => void;
+    recipe: Recipe;
     error?: string;
 }) => {
     const [image, setImage] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    useEffect(() => {
+        setImage(recipe.image);
+    }, [recipe.image]);
+
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        // console.log(file);
+
         if (file && file.type.startsWith("image/")) {
             const reader = new FileReader();
             reader.onload = () => {
                 const imageData = reader.result as string;
                 setImage(imageData);
-                onImageChange(imageData);
+                onImageChange({ ...recipe, image: imageData });
             };
             reader.readAsDataURL(file);
         }
@@ -42,6 +49,7 @@ const UploadImage = ({
 
     const removeImage = () => {
         setImage(null);
+        onImageChange({ ...recipe, image: null });
         if (fileInputRef.current) {
             fileInputRef.current.value = "";
         }
@@ -79,7 +87,6 @@ const UploadImage = ({
                         )}
                         <Input
                             hidden
-                            name="image"
                             type="file"
                             ref={fileInputRef}
                             onChange={handleImageUpload}
@@ -117,4 +124,4 @@ const UploadImage = ({
     );
 };
 
-export default UploadImage;
+export default ImageUpload;

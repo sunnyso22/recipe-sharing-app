@@ -2,7 +2,7 @@ import RecipesGrid from "@/components/RecipesGrid";
 import { Button } from "@/components/ui/button";
 import { Recipe } from "@/types";
 import { currentUser } from "@clerk/nextjs/server";
-import { getUserRecipes } from "../actions/recipes";
+import { getUserRecipes } from "../../actions/recipes";
 import Link from "next/link";
 
 const ProfilePage = async () => {

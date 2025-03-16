@@ -1,19 +1,23 @@
 "use client";
 
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
 import { CirclePlus, X } from "lucide-react";
-import { useState } from "react";
-import { Seasoning } from "@/types";
+import { useEffect, useState } from "react";
+import { Ingredient, Recipe } from "@/types";
 
-const SeasoningsUpload = ({
-    onSeasoningsChange,
+const IngredientsUpload = ({
+    onIngredientsChange,
+    recipe,
 }: {
-    onSeasoningsChange: (seasoningsData: Seasoning[]) => void;
+    onIngredientsChange: (recipeData: Recipe) => void;
+    recipe: Recipe;
 }) => {
-    const [fields, setFields] = useState<Seasoning[]>([
-        { id: 1, name: "", quantity: "" },
-    ]);
+    const [fields, setFields] = useState<Ingredient[]>([]);
+
+    useEffect(() => {
+        setFields(recipe.ingredients);
+    }, [recipe.ingredients]);
 
     const addField = () => {
         const newId =
@@ -26,6 +30,10 @@ const SeasoningsUpload = ({
     const removeField = (id: number) => {
         if (fields.length > 1) {
             setFields(fields.filter((field) => field.id !== id));
+            onIngredientsChange({
+                ...recipe,
+                ingredients: fields.filter((field) => field.id !== id),
+            });
         }
     };
 
@@ -35,26 +43,36 @@ const SeasoningsUpload = ({
                 field.id === id ? { ...field, name: value } : field
             )
         );
-        onSeasoningsChange(fields);
+        onIngredientsChange({
+            ...recipe,
+            ingredients: fields.map((field) =>
+                field.id === id ? { ...field, name: value } : field
+            ),
+        });
     };
+
     const handleQtyChange = (id: number, value: string) => {
         setFields(
             fields.map((field) =>
                 field.id === id ? { ...field, quantity: value } : field
             )
         );
-        onSeasoningsChange(fields);
+        onIngredientsChange({
+            ...recipe,
+            ingredients: fields.map((field) =>
+                field.id === id ? { ...field, quantity: value } : field
+            ),
+        });
     };
 
     return (
         <div className="w-full">
-            <h3 className="text-2xl font-semibold py-6">Seasonings</h3>
+            <h3 className="text-2xl font-semibold py-6">Ingredients</h3>
             {fields.map((field, index) => (
                 <div key={field.id} className="flex gap-3 py-3">
                     <Input
-                        name={`seasoning-${field.id}`}
                         type="text"
-                        placeholder={`Seasoning ${index + 1}`}
+                        placeholder={`Ingredient ${index + 1}`}
                         value={field.name}
                         onChange={(e) =>
                             handleNameChange(field.id, e.target.value)
@@ -62,7 +80,6 @@ const SeasoningsUpload = ({
                         className="w-full"
                     />
                     <Input
-                        name={`seasoning-qty-${field.id}`}
                         type="text"
                         placeholder="Quantity"
                         value={field.quantity}
@@ -90,10 +107,10 @@ const SeasoningsUpload = ({
                 onClick={addField}
             >
                 <CirclePlus />
-                <span>Add Seasoning</span>
+                <span>Add Ingredient</span>
             </Button>
         </div>
     );
 };
 
-export default SeasoningsUpload;
+export default IngredientsUpload;

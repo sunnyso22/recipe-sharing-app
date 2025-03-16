@@ -1,6 +1,20 @@
-import RecipeUploadForm from "@/components/RecipeUploadForm";
+import RecipeUploadForm from "@/components/uploadRecipe/RecipeUploadForm";
+import { Recipe } from "@/types";
+import { ObjectId } from "mongodb";
 
-const WriteRecipePage = () => {
+const CreateRecipePage = () => {
+    const recipeData: Recipe = {
+        _id: new ObjectId(),
+        author: { name: "", image: "" },
+        likes: 0,
+        image: "",
+        title: "",
+        description: "",
+        ingredients: [{ id: 1, name: "", quantity: "" }],
+        seasonings: [{ id: 1, name: "", quantity: "" }],
+        instructions: [{ step: 1, description: "" }],
+    };
+
     return (
         <div className="container mx-auto">
             <div className="py-6">
@@ -9,9 +23,13 @@ const WriteRecipePage = () => {
                     You can upload your recipe here.
                 </p>
             </div>
-            <RecipeUploadForm />
+            <RecipeUploadForm
+                recipeData={JSON.parse(JSON.stringify(recipeData))}
+                id={""}
+                mode={"create"}
+            />
         </div>
     );
 };
 
-export default WriteRecipePage;
+export default CreateRecipePage;

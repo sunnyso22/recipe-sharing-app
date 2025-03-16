@@ -1,4 +1,4 @@
-import { getAllRecipes } from "@/app/actions/recipes";
+import { getAllRecipes } from "@/actions/recipes";
 import RecipesGrid from "@/components/RecipesGrid";
 import SearchBar from "@/components/SearchBar";
 import { Recipe } from "@/types";

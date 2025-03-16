@@ -71,14 +71,41 @@ export const getRecipeById = async (id: string) => {
     }
 };
 
-export const addRecipe = async (recipe: Recipe) => {
+export const postRecipe = async (recipe: Recipe) => {
     try {
         const { db } = await connectToDatabase();
         const result = await db
             .collection<Recipe>(collection)
             .insertOne(recipe);
 
-        console.log(result.insertedId);
+        return result.insertedId;
+    } catch (error) {
+        handleError(error);
+    }
+};
+
+export const putRecipe = async (
+    id: string,
+    title: string,
+    description: string,
+    recipe: Recipe
+) => {
+    try {
+        const { db } = await connectToDatabase();
+        const result = await db.collection<Recipe>(collection).updateOne(
+            { _id: new ObjectId(id) },
+            {
+                $set: {
+                    title,
+                    description,
+                    image: recipe.image,
+                    ingredients: recipe.ingredients,
+                    seasonings: recipe.seasonings,
+                    instructions: recipe.instructions,
+                },
+            }
+        );
+        return result.acknowledged;
     } catch (error) {
         handleError(error);
     }

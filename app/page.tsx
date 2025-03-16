@@ -1,6 +1,6 @@
 import Hero from "@/components/Hero";
 import RecipesGrid from "@/components/RecipesGrid";
-import { getHotRecipes } from "./actions/recipes";
+import { getHotRecipes } from "../actions/recipes";
 import { Recipe } from "@/types";
 
 export default async function Home() {

@@ -1,4 +1,4 @@
-import { getRecipeById } from "@/app/actions/recipes";
+import { getRecipeById } from "@/actions/recipes";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Ingredient, Instruction, Recipe, Seasoning } from "@/types";
@@ -6,6 +6,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { Bookmark, Heart, Share, UserRound } from "lucide-react";
 import { ObjectId } from "mongodb";
 import Image from "next/image";
+import Link from "next/link";
 
 const RecipeDetail = async ({
     params,
@@ -16,7 +17,7 @@ const RecipeDetail = async ({
 
     const user = await currentUser();
 
-    const recipeDetail: Recipe = (await getRecipeById(id)) || {
+    const recipeData: Recipe = (await getRecipeById(id)) || {
         _id: new ObjectId(""),
         author: { name: "", image: "" },
         likes: 0,
@@ -37,7 +38,7 @@ const RecipeDetail = async ({
         ingredients,
         seasonings,
         instructions,
-    } = recipeDetail;
+    } = recipeData;
 
     return (
         <div className="container mx-auto mt-12">
@@ -45,7 +46,7 @@ const RecipeDetail = async ({
                 <div className="relative w-[1280px] h-[540px]">
                     <Image
                         className="object-cover rounded-2xl"
-                        src={image || ""}
+                        src={image || "/images/placeholder.webp"}
                         alt={title}
                         fill
                     />
@@ -56,7 +57,9 @@ const RecipeDetail = async ({
                             <h2 className="text-3xl font-extrabold">{title}</h2>
                             {user && user.fullName === author.name ? (
                                 <div className="flex gap-6">
-                                    <Button variant="outline">Edit</Button>
+                                    <Link href={`/profile/write/${id}`}>
+                                        <Button variant="outline">Edit</Button>
+                                    </Link>
                                     <Button>Delete</Button>
                                 </div>
                             ) : (

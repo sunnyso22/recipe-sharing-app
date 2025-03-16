@@ -5,7 +5,7 @@ import {
     SheetContent,
     SheetTitle,
     SheetTrigger,
-} from "./ui/sheet";
+} from "../ui/sheet";
 import { ChefHat, Menu } from "lucide-react";
 import Link from "next/link";
 

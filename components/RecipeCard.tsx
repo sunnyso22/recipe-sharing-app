@@ -13,7 +13,7 @@ const RecipeCard = ({ _id, title, author, image, likes }: Recipe) => {
                 <div className="relative w-[640px] h-[360px]">
                     <Image
                         className="object-cover"
-                        src={image || ""}
+                        src={image || "/images/placeholder.webp"}
                         alt={title}
                         fill
                     />

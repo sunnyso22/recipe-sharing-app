@@ -1,19 +1,23 @@
 "use client";
 
 import { CirclePlus, X } from "lucide-react";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { useState } from "react";
-import { Instruction } from "@/types";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { useEffect, useState } from "react";
+import { Instruction, Recipe } from "@/types";
 
 const InstructionsUpload = ({
     onInstructionsChange,
+    recipe,
 }: {
-    onInstructionsChange: (instructionsData: Instruction[]) => void;
+    onInstructionsChange: (recipeData: Recipe) => void;
+    recipe: Recipe;
 }) => {
-    const [fields, setFields] = useState<Instruction[]>([
-        { step: 1, description: "" },
-    ]);
+    const [fields, setFields] = useState<Instruction[]>([]);
+
+    useEffect(() => {
+        setFields(recipe.instructions);
+    }, [recipe.instructions]);
 
     const addField = () => {
         const newId =
@@ -26,6 +30,10 @@ const InstructionsUpload = ({
     const removeField = (step: number) => {
         if (fields.length > 1) {
             setFields(fields.filter((field) => field.step !== step));
+            onInstructionsChange({
+                ...recipe,
+                instructions: fields.filter((field) => field.step !== step),
+            });
         }
     };
 
@@ -35,7 +43,12 @@ const InstructionsUpload = ({
                 field.step === step ? { ...field, description: value } : field
             )
         );
-        onInstructionsChange(fields);
+        onInstructionsChange({
+            ...recipe,
+            instructions: fields.map((field) =>
+                field.step === step ? { ...field, description: value } : field
+            ),
+        });
     };
 
     return (
@@ -46,13 +59,8 @@ const InstructionsUpload = ({
                     <span className="flex justify-center items-center text-xl text-white bg-paragraph rounded-full h-8 w-8">
                         {index + 1}
                     </span>
+                    <Input defaultValue={field.step} hidden />
                     <Input
-                        name={`step-${field.step}`}
-                        defaultValue={field.step}
-                        hidden
-                    />
-                    <Input
-                        name={`description-${field.step}`}
                         type="text"
                         placeholder={`Instruction ${index + 1}`}
                         value={field.description}
