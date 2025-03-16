@@ -105,7 +105,20 @@ export const putRecipe = async (
                 },
             }
         );
-        return result.acknowledged;
+        return result;
+    } catch (error) {
+        handleError(error);
+    }
+};
+
+export const deleteRecipe = async (id: string) => {
+    try {
+        const { db } = await connectToDatabase();
+        const result = await db
+            .collection<Recipe>(collection)
+            .deleteOne({ _id: new ObjectId(id) });
+
+        return result;
     } catch (error) {
         handleError(error);
     }

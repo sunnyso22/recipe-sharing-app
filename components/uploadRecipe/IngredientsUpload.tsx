@@ -69,7 +69,7 @@ const IngredientsUpload = ({
         <div className="w-full">
             <h3 className="text-2xl font-semibold py-6">Ingredients</h3>
             {fields.map((field, index) => (
-                <div key={field.id} className="flex gap-3 py-3">
+                <div key={field.id} className="flex gap-3 py-3 items-center">
                     <Input
                         type="text"
                         placeholder={`Ingredient ${index + 1}`}
@@ -92,7 +92,6 @@ const IngredientsUpload = ({
                         <Button
                             type="button"
                             variant="ghost"
-                            size="icon"
                             onClick={() => removeField(field.id)}
                         >
                             <X />

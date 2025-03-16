@@ -2,7 +2,6 @@
 
 import React, { useActionState, useState } from "react";
 import Form from "next/form";
-import ImageUpload from "@/components/ImageUpload";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createRecipe, updateRecipe } from "@/actions/action";
@@ -12,6 +11,7 @@ import Link from "next/link";
 import IngredientsUpload from "./IngredientsUpload";
 import SeasoningsUpload from "./SeasoningsUpload";
 import InstructionsUpload from "./InstructionsUpload";
+import ImageUpload from "./ImageUpload";
 
 const RecipeUploadForm = ({
     recipeData,

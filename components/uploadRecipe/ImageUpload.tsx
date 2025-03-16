@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/context-menu";
 import { ImageIcon, Trash2, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Input } from "./ui/input";
+import { Input } from "../ui/input";
 import Image from "next/image";
 import { Recipe } from "@/types";
 

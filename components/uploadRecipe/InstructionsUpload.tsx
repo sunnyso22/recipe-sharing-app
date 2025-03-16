@@ -73,7 +73,6 @@ const InstructionsUpload = ({
                         <Button
                             type="button"
                             variant="ghost"
-                            size="icon"
                             onClick={() => removeField(field.step)}
                         >
                             <X />

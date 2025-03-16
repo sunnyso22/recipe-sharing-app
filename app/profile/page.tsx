@@ -4,6 +4,7 @@ import { Recipe } from "@/types";
 import { currentUser } from "@clerk/nextjs/server";
 import { getUserRecipes } from "../../actions/recipes";
 import Link from "next/link";
+import { NotebookPen } from "lucide-react";
 
 const ProfilePage = async () => {
     const user = await currentUser();
@@ -23,7 +24,10 @@ const ProfilePage = async () => {
                     </p>
                 </div>
                 <Link href="/profile/write">
-                    <Button variant="secondary">Write Recipes</Button>
+                    <Button variant="secondary">
+                        <NotebookPen />
+                        Write Recipes
+                    </Button>
                 </Link>
             </div>
             <div className="flex gap-6 py-6">

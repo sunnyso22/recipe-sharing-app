@@ -1,10 +1,11 @@
 "use server";
 
 import { currentUser } from "@clerk/nextjs/server";
-import { postRecipe, putRecipe } from "./recipes";
+import { deleteRecipe, postRecipe, putRecipe } from "./recipes";
 import { FormErrors, FormState, Recipe } from "@/types";
 import { ObjectId } from "mongodb";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 export const createRecipe = async (
     recipe: Recipe,
@@ -76,6 +77,12 @@ export const updateRecipe = async (
     }
 
     const result = await putRecipe(id, title, description, recipe);
-
+    console.log(result);
     redirect(`/recipes/${id}`);
+};
+
+export const removeRecipe = async (id: string) => {
+    const result = await deleteRecipe(id);
+    console.log(result);
+    redirect("/profile");
 };

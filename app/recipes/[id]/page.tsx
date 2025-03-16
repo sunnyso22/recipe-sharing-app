@@ -1,10 +1,19 @@
+import { removeRecipe } from "@/actions/action";
 import { getRecipeById } from "@/actions/recipes";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Ingredient, Instruction, Recipe, Seasoning } from "@/types";
 import { currentUser } from "@clerk/nextjs/server";
-import { Bookmark, Heart, Share, UserRound } from "lucide-react";
+import {
+    Bookmark,
+    Pencil,
+    Heart,
+    Share,
+    Trash2,
+    UserRound,
+} from "lucide-react";
 import { ObjectId } from "mongodb";
+import Form from "next/form";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -18,7 +27,7 @@ const RecipeDetail = async ({
     const user = await currentUser();
 
     const recipeData: Recipe = (await getRecipeById(id)) || {
-        _id: new ObjectId(""),
+        _id: new ObjectId(),
         author: { name: "", image: "" },
         likes: 0,
         image: "",
@@ -58,9 +67,17 @@ const RecipeDetail = async ({
                             {user && user.fullName === author.name ? (
                                 <div className="flex gap-6">
                                     <Link href={`/profile/write/${id}`}>
-                                        <Button variant="outline">Edit</Button>
+                                        <Button variant="outline">
+                                            <Pencil />
+                                            Edit
+                                        </Button>
                                     </Link>
-                                    <Button>Delete</Button>
+                                    <Form action={removeRecipe.bind(null, id)}>
+                                        <Button>
+                                            <Trash2 />
+                                            Delete
+                                        </Button>
+                                    </Form>
                                 </div>
                             ) : (
                                 <></>
