@@ -14,58 +14,61 @@ const RecipeCard = async (recipe: Recipe) => {
 
     return (
         <Card>
-            <Link href={`/recipes/${_id}`}>
-                <div className="relative w-[640px] h-[360px]">
-                    <Image
-                        className="object-cover"
-                        src={image || "/images/placeholder.webp"}
-                        alt={title}
-                        fill
-                    />
-                </div>
-                <CardContent>
+            <div className="relative w-[640px] h-[360px]">
+                <Image
+                    className="object-cover"
+                    src={image || "/images/placeholder.webp"}
+                    alt={title}
+                    fill
+                />
+            </div>
+            <CardContent>
+                <Link
+                    href={`/recipes/${_id}`}
+                    className="after:absolute after:inset-0"
+                >
                     <h2 className="text-lg font-bold">{title}</h2>
-                </CardContent>
-                <CardFooter>
-                    <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
-                            <AvatarImage
-                                src={author.image || ""}
-                                alt={author.name || ""}
+                </Link>
+            </CardContent>
+            <CardFooter>
+                <div className="flex items-center gap-2">
+                    <Avatar className="h-8 w-8">
+                        <AvatarImage
+                            src={author.image || ""}
+                            alt={author.name || ""}
+                        />
+                        <AvatarFallback>
+                            <UserRound className="text-accent" />
+                        </AvatarFallback>
+                    </Avatar>
+                    <span className="text-paragraph hover:border-b-1">
+                        {author.name}
+                    </span>
+                </div>
+                <div className="flex items-center gap-2">
+                    {user ? (
+                        <FavouriteButton
+                            id={_id.toString()}
+                            recipe={JSON.parse(JSON.stringify(recipe))}
+                            likes={likes}
+                        />
+                    ) : (
+                        <Link
+                            href="/sign-in"
+                            className="relative flex items-center gap-2"
+                        >
+                            <span className="text-red-400 text-xl font-bold">
+                                {likes}
+                            </span>
+                            <Heart
+                                className="transition-all hover:scale-125"
+                                color="#ff6467"
+                                size={28}
                             />
-                            <AvatarFallback>
-                                <UserRound className="text-accent" />
-                            </AvatarFallback>
-                        </Avatar>
-                        <span className="text-paragraph hover:border-b-1">
-                            {author.name}
-                        </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        {user ? (
-                            <FavouriteButton
-                                id={_id.toString()}
-                                recipe={JSON.parse(JSON.stringify(recipe))}
-                                likes={likes}
-                            />
-                        ) : (
-                            <Link
-                                href="/sign-in"
-                                className="flex items-center gap-2"
-                            >
-                                <span className="text-red-400 text-xl font-bold">
-                                    {likes}
-                                </span>
-                                <Heart
-                                    className="transition-all hover:scale-125"
-                                    color="#ff6467"
-                                    size={28}
-                                />
-                            </Link>
-                        )}
-                    </div>
-                </CardFooter>
-            </Link>
+                        </Link>
+                    )}
+                </div>
+            </CardFooter>
         </Card>
     );
 };

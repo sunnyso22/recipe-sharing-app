@@ -33,7 +33,7 @@ const FavouriteButton = ({
             <span className="text-red-400 text-xl font-bold">{likes}</span>
             {favList.includes(id) ? (
                 <Heart
-                    className="transition-all hover:scale-125 cursor-pointer"
+                    className="relative transition-all hover:scale-125 cursor-pointer"
                     color="#ff6467"
                     size={28}
                     fill="#ff6467"
@@ -41,7 +41,7 @@ const FavouriteButton = ({
                 />
             ) : (
                 <Heart
-                    className="transition-all hover:scale-125 cursor-pointer"
+                    className="relative transition-all hover:scale-125 cursor-pointer"
                     color="#ff6467"
                     size={28}
                     onClick={handleAddFavourite}
