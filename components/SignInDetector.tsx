@@ -12,7 +12,11 @@ const SignInDetector = () => {
     useEffect(() => {
         if (isSignedIn) {
             console.log("User signed in");
-            setFavList(user.publicMetadata.favourites as string[]);
+            // Clear fav list everytime in case different user login and logout in the same device
+            setFavList([]);
+            if (user.publicMetadata.favourites) {
+                setFavList(user.publicMetadata.favourites as string[]);
+            }
         }
     }, [isSignedIn]);
 
