@@ -1,13 +1,14 @@
 import { removeRecipe } from "@/actions/action";
 import { getRecipeById } from "@/actions/recipes";
+import FavouriteButton from "@/components/FavouriteButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Ingredient, Instruction, Recipe, Seasoning } from "@/types";
 import { currentUser } from "@clerk/nextjs/server";
 import {
     Bookmark,
-    Pencil,
     Heart,
+    Pencil,
     Share,
     Trash2,
     UserRound,
@@ -101,16 +102,29 @@ const RecipeDetail = async ({
                             </span>
                         </div>
                         <div className="flex items-center gap-6">
-                            <div className="flex items-center gap-2">
-                                <span className="text-red-400 text-xl">
-                                    {likes}
-                                </span>
-                                <Heart
-                                    className="transition-all hover:scale-125"
-                                    color="#ff6467"
-                                    size={28}
+                            {user ? (
+                                <FavouriteButton
+                                    id={id}
+                                    recipe={JSON.parse(
+                                        JSON.stringify(recipeData)
+                                    )}
+                                    likes={likes}
                                 />
-                            </div>
+                            ) : (
+                                <Link
+                                    href="/sign-in"
+                                    className="flex items-center gap-2"
+                                >
+                                    <span className="text-red-400 text-xl font-bold">
+                                        {likes}
+                                    </span>
+                                    <Heart
+                                        className="transition-all hover:scale-125"
+                                        color="#ff6467"
+                                        size={28}
+                                    />
+                                </Link>
+                            )}
                             <Bookmark
                                 size={28}
                                 className="transition-all hover:scale-125"

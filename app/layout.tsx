@@ -4,6 +4,8 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { ClerkProvider } from "@clerk/nextjs";
+import UserContextProvider from "@/context/UserContext";
+import SignInDetector from "@/components/SignInDetector";
 
 const myFont = Lato({
     subsets: ["latin"],
@@ -24,9 +26,12 @@ export default function RootLayout({
         <ClerkProvider>
             <html lang="en">
                 <body className={`${myFont.className} antialiased`}>
-                    <Header />
-                    {children}
-                    <Footer />
+                    <UserContextProvider>
+                        <Header />
+                        {children}
+                        <Footer />
+                        <SignInDetector />
+                    </UserContextProvider>
                 </body>
             </html>
         </ClerkProvider>

@@ -1,11 +1,11 @@
 "use server";
 
-import { currentUser } from "@clerk/nextjs/server";
+import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import { deleteRecipe, postRecipe, putRecipe } from "./recipes";
 import { FormErrors, FormState, Recipe } from "@/types";
-import { ObjectId } from "mongodb";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { handleError } from "@/lib/utils";
 
 export const createRecipe = async (
     recipe: Recipe,
@@ -35,7 +35,7 @@ export const createRecipe = async (
     const authorImage = user?.imageUrl as string | null;
 
     const id = await postRecipe({
-        _id: new ObjectId(),
+        ...recipe,
         title,
         description,
         image,
@@ -60,10 +60,11 @@ export const updateRecipe = async (
 ) => {
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
+    const { image, ingredients, seasonings, instructions } = recipe;
 
     const errors: FormErrors = {};
 
-    if ("image" in recipe && !recipe.image) {
+    if (!recipe.image) {
         errors.image = "Image file is required!";
     }
     if (!title) {
@@ -76,7 +77,15 @@ export const updateRecipe = async (
         return { errors };
     }
 
-    const result = await putRecipe(id, title, description, recipe);
+    const result = await putRecipe(id, {
+        ...recipe,
+        title,
+        description,
+        image,
+        ingredients,
+        seasonings,
+        instructions,
+    });
     console.log(result);
     redirect(`/recipes/${id}`);
 };
@@ -85,4 +94,36 @@ export const removeRecipe = async (id: string) => {
     const result = await deleteRecipe(id);
     console.log(result);
     redirect("/profile");
+};
+
+export const addLike = async (id: string, recipe: Recipe, likes: number) => {
+    const result = await putRecipe(id, { ...recipe, likes: likes + 1 });
+    revalidatePath(`/recipes/${id}`);
+    console.log(result);
+};
+
+export const removeLike = async (id: string, recipe: Recipe, likes: number) => {
+    const result = await putRecipe(id, { ...recipe, likes: likes - 1 });
+    revalidatePath(`/recipes/${id}`);
+    console.log(result);
+};
+
+export const updateClerkPublicMetaData = async (favList: string[]) => {
+    try {
+        const user = await currentUser();
+        if (!user) return false;
+
+        const client = await clerkClient();
+
+        const res = await client.users.updateUserMetadata(user.id, {
+            publicMetadata: {
+                favourites: favList,
+            },
+        });
+
+        if (res) return true;
+        throw new Error("Cannot update Clerk metadata");
+    } catch (error) {
+        handleError(error);
+    }
 };

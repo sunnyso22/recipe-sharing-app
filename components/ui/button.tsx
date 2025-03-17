@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-    "flex  gap-1 items-center rounded-2xl font-semibold transition-colors cursor-pointer",
+    "flex gap-1 items-center rounded-2xl font-semibold transition-colors cursor-pointer",
     {
         variants: {
             variant: {
@@ -14,7 +14,7 @@ const buttonVariants = cva(
                     "border-2 border-primary hover:bg-accent/20 text-primary",
                 secondary: "bg-secondary text-white hover:bg-secondary/70",
                 link: "flex justify-center text-white hover:border-primary hover:border-2",
-                destructive: "bg-accent text-white hover:bg-accent/80",
+                destructive: "",
                 ghost: "flex justify-center text-primary hover:bg-accent/20",
             },
             size: {

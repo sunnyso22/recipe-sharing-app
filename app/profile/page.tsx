@@ -10,7 +10,7 @@ const ProfilePage = async () => {
     const user = await currentUser();
 
     const recipesData: Recipe[] =
-        (await getUserRecipes(user?.fullName || "")) || [];
+        (await getUserRecipes(user?.fullName ?? "")) || [];
 
     return (
         <div className="container mx-auto">

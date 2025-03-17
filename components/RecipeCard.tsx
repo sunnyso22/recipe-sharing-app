@@ -1,12 +1,17 @@
-import React from "react";
 import Image from "next/image";
 import { Card, CardContent, CardFooter } from "./ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Heart, UserRound } from "lucide-react";
 import Link from "next/link";
 import { Recipe } from "@/types";
+import { currentUser } from "@clerk/nextjs/server";
+import FavouriteButton from "./FavouriteButton";
 
-const RecipeCard = ({ _id, title, author, image, likes }: Recipe) => {
+const RecipeCard = async (recipe: Recipe) => {
+    const user = await currentUser();
+
+    const { _id, title, image, likes, author } = recipe;
+
     return (
         <Card>
             <Link href={`/recipes/${_id}`}>
@@ -36,13 +41,28 @@ const RecipeCard = ({ _id, title, author, image, likes }: Recipe) => {
                             {author.name}
                         </span>
                     </div>
-                    <div className="flex gap-2 items-center">
-                        <span className="text-red-400 text-xl">{likes}</span>
-                        <Heart
-                            className="transition-all hover:scale-125"
-                            color="#ff6467"
-                            size={28}
-                        />
+                    <div className="flex items-center gap-2">
+                        {user ? (
+                            <FavouriteButton
+                                id={_id.toString()}
+                                recipe={JSON.parse(JSON.stringify(recipe))}
+                                likes={likes}
+                            />
+                        ) : (
+                            <Link
+                                href="/sign-in"
+                                className="flex items-center gap-2"
+                            >
+                                <span className="text-red-400 text-xl font-bold">
+                                    {likes}
+                                </span>
+                                <Heart
+                                    className="transition-all hover:scale-125"
+                                    color="#ff6467"
+                                    size={28}
+                                />
+                            </Link>
+                        )}
                     </div>
                 </CardFooter>
             </Link>

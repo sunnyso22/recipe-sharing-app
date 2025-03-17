@@ -31,7 +31,7 @@ export const getHotRecipes = async () => {
         const { db } = await connectToDatabase();
         const data = await db
             .collection<Recipe>(collection)
-            .find({ likes: { $gte: 5 } })
+            .find({ likes: { $gte: 1 } })
             .sort({ title: 1 })
             .toArray();
 
@@ -84,21 +84,17 @@ export const postRecipe = async (recipe: Recipe) => {
     }
 };
 
-export const putRecipe = async (
-    id: string,
-    title: string,
-    description: string,
-    recipe: Recipe
-) => {
+export const putRecipe = async (id: string, recipe: Recipe) => {
     try {
         const { db } = await connectToDatabase();
         const result = await db.collection<Recipe>(collection).updateOne(
             { _id: new ObjectId(id) },
             {
                 $set: {
-                    title,
-                    description,
+                    title: recipe.title,
+                    description: recipe.description,
                     image: recipe.image,
+                    likes: recipe.likes,
                     ingredients: recipe.ingredients,
                     seasonings: recipe.seasonings,
                     instructions: recipe.instructions,
