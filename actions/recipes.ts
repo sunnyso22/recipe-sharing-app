@@ -20,7 +20,6 @@ export const getAllRecipes = async (search?: string) => {
             .toArray();
 
         if (data) return data;
-        return false;
     } catch (error) {
         handleError(error);
     }
@@ -36,7 +35,6 @@ export const getHotRecipes = async (likes: number) => {
             .toArray();
 
         if (data) return data;
-        return false;
     } catch (error) {
         handleError(error);
     }
@@ -51,7 +49,6 @@ export const getUserRecipes = async (name: string) => {
             .toArray();
 
         if (data) return data;
-        return false;
     } catch (error) {
         handleError(error);
     }
@@ -65,7 +62,6 @@ export const getRecipeById = async (id: string) => {
             .findOne({ _id: new ObjectId(id) });
 
         if (data) return data;
-        return false;
     } catch (error) {
         handleError(error);
     }

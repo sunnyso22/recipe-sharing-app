@@ -1,4 +1,5 @@
 import { getRecipeById } from "@/actions/recipes";
+import BookmarkButton from "@/components/BookmarkButton";
 import DeleteButton from "@/components/DeleteButton";
 import FavouriteButton from "@/components/FavouriteButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -112,10 +113,16 @@ const RecipeDetail = async ({
                                     />
                                 </Link>
                             )}
-                            <Bookmark
-                                size={28}
-                                className="transition-all hover:scale-125"
-                            />
+                            {user ? (
+                                <BookmarkButton id={id} />
+                            ) : (
+                                <Link href="/sign-in">
+                                    <Bookmark
+                                        size={28}
+                                        className="transition-all hover:scale-125 cursor-pointer"
+                                    />
+                                </Link>
+                            )}
                             <Share
                                 size={28}
                                 className="transition-all hover:scale-125"

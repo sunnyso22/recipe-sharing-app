@@ -7,16 +7,18 @@ import React, { useEffect } from "react";
 const SignInDetector = () => {
     const { isSignedIn, user } = useUser();
 
-    const { setFavList } = useUserContext();
+    const { setFavList, setBmList } = useUserContext();
 
     useEffect(() => {
         if (isSignedIn) {
             console.log("User signed in");
-            // Clear fav list everytime in case different user login and logout in the same device
+            // Clear both list everytime in case different user login and logout in the same device
             setFavList([]);
-            if (user.publicMetadata.favourites) {
+            setBmList([]);
+            if (user.publicMetadata.favourites)
                 setFavList(user.publicMetadata.favourites as string[]);
-            }
+            if (user.publicMetadata.bookmarks)
+                setBmList(user.publicMetadata.bookmarks as string[]);
         }
     }, [isSignedIn]);
 

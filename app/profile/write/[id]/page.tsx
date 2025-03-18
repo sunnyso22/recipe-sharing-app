@@ -1,5 +1,7 @@
 import { getRecipeById } from "@/actions/recipes";
 import RecipeUploadForm from "@/components/uploadRecipe/RecipeUploadForm";
+import { Recipe } from "@/types";
+import { ObjectId } from "mongodb";
 
 const EditRecipePage = async ({
     params,
@@ -7,7 +9,17 @@ const EditRecipePage = async ({
     params: Promise<{ id: string }>;
 }) => {
     const { id } = await params;
-    const recipeData = await getRecipeById(id);
+    const recipeData: Recipe = (await getRecipeById(id)) || {
+        _id: new ObjectId(),
+        author: { name: "", image: "" },
+        likes: 0,
+        image: "",
+        title: "",
+        description: "",
+        ingredients: [],
+        seasonings: [],
+        instructions: [],
+    };
 
     return (
         <div className="container mx-auto">

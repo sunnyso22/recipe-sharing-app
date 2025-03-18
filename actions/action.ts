@@ -31,8 +31,9 @@ export const createRecipe = async (
     }
 
     const user = await currentUser();
-    const authorName = user?.fullName as string | null;
-    const authorImage = user?.imageUrl as string | null;
+    if (!user) throw new Error("No user is logged in to create recipe!");
+    const authorName = user.fullName as string;
+    const authorImage = user.imageUrl as string;
 
     const id = await postRecipe({
         ...recipe,
@@ -48,7 +49,6 @@ export const createRecipe = async (
         seasonings,
         instructions,
     });
-
     redirect(`/recipes/${id}`);
 };
 
@@ -86,29 +86,28 @@ export const updateRecipe = async (
         seasonings,
         instructions,
     });
-    console.log(result);
     redirect(`/recipes/${id}`);
 };
 
 export const removeRecipe = async (id: string) => {
     const result = await deleteRecipe(id);
-    console.log(result);
     redirect("/profile");
 };
 
 export const addLike = async (id: string, recipe: Recipe, likes: number) => {
     const result = await putRecipe(id, { ...recipe, likes: likes + 1 });
     revalidatePath(`/recipes/${id}`);
-    console.log(result);
 };
 
 export const removeLike = async (id: string, recipe: Recipe, likes: number) => {
     const result = await putRecipe(id, { ...recipe, likes: likes - 1 });
     revalidatePath(`/recipes/${id}`);
-    console.log(result);
 };
 
-export const updateClerkPublicMetaData = async (favList: string[]) => {
+export const updateToClerkPublicMetaData = async (
+    favList?: string[],
+    bmList?: string[]
+) => {
     try {
         const user = await currentUser();
         if (!user) return false;
@@ -118,6 +117,7 @@ export const updateClerkPublicMetaData = async (favList: string[]) => {
         const res = await client.users.updateUserMetadata(user.id, {
             publicMetadata: {
                 favourites: favList,
+                bookmarks: bmList,
             },
         });
 

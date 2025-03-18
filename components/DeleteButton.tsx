@@ -13,11 +13,9 @@ import {
 } from "./ui/dialog";
 import Form from "next/form";
 import { removeRecipe } from "@/actions/action";
-import { useUserContext } from "@/context/UserContext";
 
 const DeleteButton = ({ id, title }: { id: string; title: string }) => {
     const [open, setOpen] = useState(false);
-    const { removeFavourite } = useUserContext();
 
     return (
         <>
@@ -33,8 +31,11 @@ const DeleteButton = ({ id, title }: { id: string; title: string }) => {
                             Are you sure you want to delete this recipe?
                         </DialogTitle>
                         <DialogDescription>
-                            You are about to delete "{title}". This action
-                            cannot be undone.
+                            You are about to delete{" "}
+                            <span className="text-accent font-bold">
+                                {title}
+                            </span>
+                            . This action cannot be undone.
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
@@ -44,12 +45,7 @@ const DeleteButton = ({ id, title }: { id: string; title: string }) => {
                         >
                             Cancel
                         </Button>
-                        <Form
-                            onSubmit={() => {
-                                removeFavourite(id);
-                            }}
-                            action={removeRecipe.bind(null, id)}
-                        >
+                        <Form action={removeRecipe.bind(null, id)}>
                             <Button>
                                 <Trash2 />
                                 Delete
