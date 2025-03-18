@@ -14,7 +14,7 @@ const buttonVariants = cva(
                     "border-2 border-primary hover:bg-accent/20 text-primary",
                 secondary: "bg-secondary text-white hover:bg-secondary/70",
                 link: "flex justify-center text-white hover:border-primary hover:border-2",
-                destructive: "",
+                destructive: "bg-accent text-white hover:bg-accent/80",
                 ghost: "flex justify-center text-primary hover:bg-accent/20",
             },
             size: {

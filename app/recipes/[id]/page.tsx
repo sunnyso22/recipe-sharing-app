@@ -1,20 +1,12 @@
-import { removeRecipe } from "@/actions/action";
 import { getRecipeById } from "@/actions/recipes";
+import DeleteButton from "@/components/DeleteButton";
 import FavouriteButton from "@/components/FavouriteButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Ingredient, Instruction, Recipe, Seasoning } from "@/types";
 import { currentUser } from "@clerk/nextjs/server";
-import {
-    Bookmark,
-    Heart,
-    Pencil,
-    Share,
-    Trash2,
-    UserRound,
-} from "lucide-react";
+import { Bookmark, Heart, Pencil, Share, UserRound } from "lucide-react";
 import { ObjectId } from "mongodb";
-import Form from "next/form";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -73,12 +65,7 @@ const RecipeDetail = async ({
                                             Edit
                                         </Button>
                                     </Link>
-                                    <Form action={removeRecipe.bind(null, id)}>
-                                        <Button>
-                                            <Trash2 />
-                                            Delete
-                                        </Button>
-                                    </Form>
+                                    <DeleteButton id={id} title={title} />
                                 </div>
                             ) : (
                                 <></>

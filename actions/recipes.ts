@@ -26,12 +26,12 @@ export const getAllRecipes = async (search?: string) => {
     }
 };
 
-export const getHotRecipes = async () => {
+export const getHotRecipes = async (likes: number) => {
     try {
         const { db } = await connectToDatabase();
         const data = await db
             .collection<Recipe>(collection)
-            .find({ likes: { $gte: 1 } })
+            .find({ likes: { $gte: likes } })
             .sort({ title: 1 })
             .toArray();
 

@@ -4,7 +4,7 @@ import { getHotRecipes } from "../actions/recipes";
 import { Recipe } from "@/types";
 
 export default async function Home() {
-    const recipesData: Recipe[] = (await getHotRecipes()) || [];
+    const recipesData: Recipe[] = (await getHotRecipes(2)) || [];
 
     return (
         <main className="container mx-auto">
