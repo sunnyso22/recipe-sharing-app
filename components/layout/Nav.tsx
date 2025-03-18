@@ -30,8 +30,8 @@ const Nav = () => {
                 </Link>
             </SignedOut>
             <SignedIn>
-                <Link className="text-2xl hover:text-accent" href="/profile">
-                    Profile
+                <Link className="text-2xl hover:text-accent" href="/cookbook">
+                    Cookbook
                 </Link>
                 <UserButton />
             </SignedIn>

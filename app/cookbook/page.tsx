@@ -8,17 +8,17 @@ import { NotebookPen } from "lucide-react";
 import { ObjectId } from "mongodb";
 import TabsNavigation from "@/components/TabsNavigation";
 
-const ProfilePage = async ({
+const CookbookPage = async ({
     searchParams,
 }: {
     searchParams: Promise<{ tab?: string }>;
 }) => {
-    const activeTab = (await searchParams).tab || "Your Recipes";
+    const activeTab = (await searchParams).tab || "My Recipes";
 
     const user = await currentUser();
-    if (!user) throw new Error("No user is logged in to view profile page!");
+    if (!user) throw new Error("No user is logged in to view cookbook page!");
 
-    const recipesData: Recipe[] =
+    const userRecipes: Recipe[] =
         (await getUserRecipes(user.fullName || "")) || [];
 
     const bookmarkedRecipes: Recipe[] = await Promise.all(
@@ -37,20 +37,19 @@ const ProfilePage = async ({
                 }
         )
     );
-    console.log(bookmarkedRecipes.length);
 
     return (
         <div className="container mx-auto">
             <div className="flex w-full items-center justify-between">
                 <div className="py-6">
                     <h2 className="text-2xl font-bold">
-                        Hi, {user.firstName}{" "}
+                        Hi, {user.firstName}. Here is your cookbook!
                     </h2>
                     <p className="text-paragraph text-lg">
                         You can find your published and bookmarked recipes here.
                     </p>
                 </div>
-                <Link href="/profile/write">
+                <Link href="/cookbook/write">
                     <Button variant="secondary">
                         <NotebookPen />
                         Write Recipes
@@ -59,9 +58,9 @@ const ProfilePage = async ({
             </div>
 
             <TabsNavigation activeTab={activeTab} />
-            {activeTab === "Your Recipes" &&
-                (recipesData.length > 0 ? (
-                    <RecipesGrid recipes={recipesData} />
+            {activeTab === "My Recipes" &&
+                (userRecipes.length > 0 ? (
+                    <RecipesGrid recipes={userRecipes} />
                 ) : (
                     <div className="h-[70vh] flex items-center justify-center">
                         <h2 className="text-2xl font-bold">
@@ -83,4 +82,4 @@ const ProfilePage = async ({
     );
 };
 
-export default ProfilePage;
+export default CookbookPage;

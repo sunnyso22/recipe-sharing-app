@@ -2,7 +2,7 @@ import { Button } from "./ui/button";
 import Link from "next/link";
 
 const tabs = [
-    { id: "Your Recipes", label: "Your Recipes" },
+    { id: "My Recipes", label: "My Recipes" },
     { id: "Bookmarks", label: "Bookmarks" },
 ];
 

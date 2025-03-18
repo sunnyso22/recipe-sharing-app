@@ -67,9 +67,9 @@ const MobileNav = () => {
                         <SheetClose asChild>
                             <Link
                                 className="text-2xl hover:text-accent"
-                                href="/profile"
+                                href="/cookbook"
                             >
-                                Profile
+                                Cookbook
                             </Link>
                         </SheetClose>
                         <UserButton />

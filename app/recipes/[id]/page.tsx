@@ -60,7 +60,7 @@ const RecipeDetail = async ({
                             <h2 className="text-3xl font-extrabold">{title}</h2>
                             {user && user.fullName === author.name ? (
                                 <div className="flex gap-6">
-                                    <Link href={`/profile/write/${id}`}>
+                                    <Link href={`/cookbook/write/${id}`}>
                                         <Button variant="outline">
                                             <Pencil />
                                             Edit

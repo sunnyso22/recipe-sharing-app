@@ -91,7 +91,7 @@ export const updateRecipe = async (
 
 export const removeRecipe = async (id: string) => {
     const result = await deleteRecipe(id);
-    redirect("/profile");
+    redirect("/cookbook");
 };
 
 export const addLike = async (id: string, recipe: Recipe, likes: number) => {
