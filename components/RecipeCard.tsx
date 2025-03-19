@@ -24,7 +24,7 @@ const RecipeCard = async (recipe: Recipe) => {
             </div>
             <CardContent>
                 <Link
-                    href={`/recipes/${_id}`}
+                    href={`/recipes/${_id.toString()}`}
                     className="after:absolute after:inset-0"
                 >
                     <h2 className="text-lg font-bold">{title}</h2>
@@ -41,7 +41,7 @@ const RecipeCard = async (recipe: Recipe) => {
                             <UserRound className="text-accent" />
                         </AvatarFallback>
                     </Avatar>
-                    <span className="text-paragraph hover:border-b-1">
+                    <span className="relative text-paragraph hover:border-b-1">
                         {author.name}
                     </span>
                 </div>

@@ -12,6 +12,8 @@ const myFont = Lato({
     weight: ["400", "700"],
 });
 
+export const dynamicParams = false;
+
 export const metadata: Metadata = {
     title: "Cookery",
     description: "The best cookbook you could find.",

@@ -1,4 +1,4 @@
-import { getRecipeById } from "@/actions/recipes";
+import { getAllRecipes, getRecipeById } from "@/actions/recipes";
 import BookmarkButton from "@/components/BookmarkButton";
 import DeleteButton from "@/components/DeleteButton";
 import FavouriteButton from "@/components/FavouriteButton";
@@ -10,6 +10,13 @@ import { Bookmark, Heart, Pencil, Share, UserRound } from "lucide-react";
 import { ObjectId } from "mongodb";
 import Image from "next/image";
 import Link from "next/link";
+
+export const generateStaticParams = async () => {
+    const recipeData: Recipe[] = (await getAllRecipes()) || [];
+    return recipeData.map((recipe) => ({
+        id: recipe._id.toString(),
+    }));
+};
 
 const RecipeDetail = async ({
     params,
@@ -60,7 +67,9 @@ const RecipeDetail = async ({
                             <h2 className="text-3xl font-extrabold">{title}</h2>
                             {user && user.fullName === author.name ? (
                                 <div className="flex gap-6">
-                                    <Link href={`/cookbook/write/${id}`}>
+                                    <Link
+                                        href={`/cookbook/write/${id.toString()}`}
+                                    >
                                         <Button variant="outline">
                                             <Pencil />
                                             Edit

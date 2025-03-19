@@ -22,7 +22,7 @@ const CookbookPage = async ({
         (await getUserRecipes(user.fullName || "")) || [];
 
     const bookmarkedRecipes: Recipe[] = await Promise.all(
-        (user.publicMetadata.bookmarks as string[]).map(
+        ((user.publicMetadata.bookmarks as string[]) || []).map(
             async (id) =>
                 (await getRecipeById(id)) || {
                     _id: new ObjectId(),
