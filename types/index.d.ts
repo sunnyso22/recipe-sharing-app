@@ -37,3 +37,8 @@ type FormErrors = {
 type FormState = {
     errors: FormErrors;
 };
+
+type Metadata = {
+    favList?: string[];
+    bmList?: string[];
+};

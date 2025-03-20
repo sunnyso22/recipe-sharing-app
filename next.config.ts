@@ -5,6 +5,22 @@ const nextConfig: NextConfig = {
         serverActions: {
             bodySizeLimit: "2mb",
         },
+        turbo: {
+            rules: {
+                "*.svg": {
+                    loaders: ["@svgr/webpack"],
+                    as: "*.js",
+                },
+            },
+        },
+    },
+    webpack(config) {
+        // Configure SVGR
+        config.module.rules.push({
+            test: /\.svg$/,
+            use: ["@svgr/webpack"],
+        });
+        return config;
     },
 };
 

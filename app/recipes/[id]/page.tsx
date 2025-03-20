@@ -2,11 +2,12 @@ import { getAllRecipes, getRecipeById } from "@/actions/recipes";
 import BookmarkButton from "@/components/BookmarkButton";
 import DeleteButton from "@/components/DeleteButton";
 import FavouriteButton from "@/components/FavouriteButton";
+import ShareButton from "@/components/ShareButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Ingredient, Instruction, Recipe, Seasoning } from "@/types";
 import { currentUser } from "@clerk/nextjs/server";
-import { Bookmark, Heart, Pencil, Share, UserRound } from "lucide-react";
+import { Bookmark, Heart, Pencil, UserRound } from "lucide-react";
 import { ObjectId } from "mongodb";
 import Image from "next/image";
 import Link from "next/link";
@@ -50,6 +51,9 @@ const RecipeDetail = async ({
         instructions,
     } = recipeData;
 
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+    const postUrl = `${baseUrl}recipes/${id}`;
+
     return (
         <div className="container mx-auto mt-12">
             <div className="flex gap-6">
@@ -67,9 +71,7 @@ const RecipeDetail = async ({
                             <h2 className="text-3xl font-extrabold">{title}</h2>
                             {user && user.fullName === author.name ? (
                                 <div className="flex gap-6">
-                                    <Link
-                                        href={`/cookbook/write/${id.toString()}`}
-                                    >
+                                    <Link href={`/cookbook/write/${id}`}>
                                         <Button variant="outline">
                                             <Pencil />
                                             Edit
@@ -132,10 +134,7 @@ const RecipeDetail = async ({
                                     />
                                 </Link>
                             )}
-                            <Share
-                                size={28}
-                                className="transition-all hover:scale-125"
-                            />
+                            <ShareButton url={postUrl} title={title} />
                         </div>
                     </div>
                 </div>

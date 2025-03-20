@@ -2,7 +2,7 @@
 
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import { deleteRecipe, postRecipe, putRecipe } from "./recipes";
-import { FormErrors, FormState, Recipe } from "@/types";
+import { FormErrors, FormState, Metadata, Recipe } from "@/types";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { handleError } from "@/lib/utils";
@@ -104,10 +104,9 @@ export const removeLike = async (id: string, recipe: Recipe, likes: number) => {
     revalidatePath(`/recipes/${id}`);
 };
 
-export const updateToClerkPublicMetaData = async (
-    favList?: string[],
-    bmList?: string[]
-) => {
+export const updateToClerkPublicMetaData = async (lists: Metadata = {}) => {
+    const { favList, bmList } = lists;
+
     try {
         const user = await currentUser();
         if (!user) return false;
@@ -121,8 +120,7 @@ export const updateToClerkPublicMetaData = async (
             },
         });
 
-        if (res) return true;
-        throw new Error("Cannot update Clerk metadata");
+        if (res) revalidatePath("/");
     } catch (error) {
         handleError(error);
     }

@@ -22,7 +22,7 @@ const UserContextProvider = ({ children }: { children: React.ReactNode }) => {
 
     const updateFavList = (newFavList: string[]) => {
         setFavList(newFavList);
-        updateToClerkPublicMetaData(newFavList, undefined);
+        updateToClerkPublicMetaData({ favList: newFavList });
     };
     const addFavourite = (id: string) => {
         updateFavList([...favList, id]);
@@ -33,7 +33,7 @@ const UserContextProvider = ({ children }: { children: React.ReactNode }) => {
 
     const updateBmList = (newBmList: string[]) => {
         setBmList(newBmList);
-        updateToClerkPublicMetaData(undefined, newBmList);
+        updateToClerkPublicMetaData({ bmList: newBmList });
     };
     const addBookmark = (id: string) => {
         updateBmList([...bmList, id]);
