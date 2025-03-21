@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useState } from "react";
 import { Button } from "./ui/button";
 import { Trash2 } from "lucide-react";
 import {
@@ -16,6 +16,11 @@ import { removeRecipe } from "@/actions/action";
 
 const DeleteButton = ({ id, title }: { id: string; title: string }) => {
     const [open, setOpen] = useState(false);
+
+    const [state, formAction, isPending] = useActionState(
+        removeRecipe.bind(null, id),
+        null
+    );
 
     return (
         <>
@@ -45,10 +50,20 @@ const DeleteButton = ({ id, title }: { id: string; title: string }) => {
                         >
                             Cancel
                         </Button>
-                        <Form action={removeRecipe.bind(null, id)}>
-                            <Button>
-                                <Trash2 />
-                                Delete
+                        <Form action={formAction}>
+                            <Button
+                                type="submit"
+                                disabled={isPending}
+                                className="disabled:bg-gray-700"
+                            >
+                                {isPending ? (
+                                    "Deleting..."
+                                ) : (
+                                    <>
+                                        <Trash2 />
+                                        Delete
+                                    </>
+                                )}
                             </Button>
                         </Form>
                     </DialogFooter>
