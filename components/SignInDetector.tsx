@@ -2,7 +2,7 @@
 
 import { useUserContext } from "@/context/UserContext";
 import { useUser } from "@clerk/nextjs";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 
 const SignInDetector = () => {
     const { isSignedIn, user } = useUser();

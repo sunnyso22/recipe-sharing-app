@@ -134,7 +134,7 @@ const RecipeDetail = async ({
                                     />
                                 </Link>
                             )}
-                            <ShareButton url={postUrl} title={title} />
+                            <ShareButton url={postUrl} />
                         </div>
                     </div>
                 </div>

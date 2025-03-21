@@ -12,7 +12,9 @@ const myFont = Lato({
     weight: ["400", "700"],
 });
 
-export const dynamicParams = false;
+export const revalidate = 60;
+
+export const dynamicParams = true;
 
 export const metadata: Metadata = {
     title: "Cookery",

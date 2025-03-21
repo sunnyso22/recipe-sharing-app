@@ -1,7 +1,7 @@
 "use client";
 
 import { updateToClerkPublicMetaData } from "@/actions/action";
-import React, { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState } from "react";
 
 type UserContextType = {
     favList: string[];

@@ -80,7 +80,7 @@ function DropdownMenuItem({
             data-inset={inset}
             data-variant={variant}
             className={cn(
-                "focus:bg-primary relative flex cursor-default items-center gap-2 px-2 py-1.5 text-lg outline-hidden rounded-2xl",
+                "focus:bg-secondary relative flex cursor-default items-center gap-2 px-2 py-1.5 text-lg outline-hidden rounded-2xl",
                 className
             )}
             {...props}

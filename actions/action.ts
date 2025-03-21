@@ -6,6 +6,7 @@ import { FormErrors, FormState, Metadata, Recipe } from "@/types";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { handleError } from "@/lib/utils";
+import { ObjectId } from "mongodb";
 
 export const createRecipe = async (
     recipe: Recipe,
@@ -36,7 +37,7 @@ export const createRecipe = async (
     const authorImage = user.imageUrl as string;
 
     const id = await postRecipe({
-        ...recipe,
+        _id: new ObjectId(),
         title,
         description,
         image,
@@ -91,17 +92,17 @@ export const updateRecipe = async (
 
 export const removeRecipe = async (id: string) => {
     const result = await deleteRecipe(id);
-    redirect("/cookbook");
+    if (result) redirect("/cookbook");
 };
 
 export const addLike = async (id: string, recipe: Recipe, likes: number) => {
     const result = await putRecipe(id, { ...recipe, likes: likes + 1 });
-    revalidatePath(`/recipes/${id}`);
+    if (result) revalidatePath(`/recipes/${id}`);
 };
 
 export const removeLike = async (id: string, recipe: Recipe, likes: number) => {
     const result = await putRecipe(id, { ...recipe, likes: likes - 1 });
-    revalidatePath(`/recipes/${id}`);
+    if (result) revalidatePath(`/recipes/${id}`);
 };
 
 export const updateToClerkPublicMetaData = async (lists: Metadata = {}) => {

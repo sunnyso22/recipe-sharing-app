@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -61,7 +61,10 @@ const ShareButton = ({ url }: { url: string }) => {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Share size={28} className="transition-all hover:scale-125" />
+                <Share
+                    size={28}
+                    className="transition-all hover:scale-125 cursor-pointer"
+                />
             </DropdownMenuTrigger>
             <DropdownMenuContent>
                 <DropdownMenuItem

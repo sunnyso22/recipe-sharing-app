@@ -2,7 +2,6 @@
 
 import { useUserContext } from "@/context/UserContext";
 import { Bookmark } from "lucide-react";
-import React from "react";
 
 const BookmarkButton = ({ id }: { id: string }) => {
     const { bmList, addBookmark, removeBookmark } = useUserContext();
