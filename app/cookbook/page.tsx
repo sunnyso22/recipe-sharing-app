@@ -7,6 +7,8 @@ import Link from "next/link";
 import { NotebookPen } from "lucide-react";
 import { ObjectId } from "mongodb";
 import TabsNavigation from "@/components/TabsNavigation";
+import { Suspense } from "react";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 const CookbookPage = async ({
     searchParams,
@@ -60,7 +62,9 @@ const CookbookPage = async ({
             <TabsNavigation activeTab={activeTab} />
             {activeTab === "My Recipes" &&
                 (userRecipes.length > 0 ? (
-                    <RecipesGrid recipes={userRecipes} />
+                    <Suspense fallback={<LoadingSpinner />}>
+                        <RecipesGrid recipes={userRecipes} />
+                    </Suspense>
                 ) : (
                     <div className="h-[70vh] flex items-center justify-center">
                         <h2 className="text-2xl font-bold">
@@ -70,7 +74,9 @@ const CookbookPage = async ({
                 ))}
             {activeTab === "Bookmarks" &&
                 (bookmarkedRecipes.length > 0 ? (
-                    <RecipesGrid recipes={bookmarkedRecipes} />
+                    <Suspense fallback={<LoadingSpinner />}>
+                        <RecipesGrid recipes={bookmarkedRecipes} />
+                    </Suspense>
                 ) : (
                     <div className="h-[70vh] flex items-center justify-center">
                         <h2 className="text-2xl font-bold">
