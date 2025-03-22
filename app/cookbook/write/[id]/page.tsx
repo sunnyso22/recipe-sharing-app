@@ -1,7 +1,7 @@
+import { ObjectId } from "mongodb";
 import { getAllRecipes, getRecipeById } from "@/actions/recipes";
 import RecipeUploadForm from "@/components/uploadRecipe/RecipeUploadForm";
 import { Recipe } from "@/types";
-import { ObjectId } from "mongodb";
 
 export const generateStaticParams = async () => {
     const recipeData: Recipe[] = (await getAllRecipes()) || [];

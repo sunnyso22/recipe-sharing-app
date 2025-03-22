@@ -1,9 +1,9 @@
 "use client";
 
+import { Heart } from "lucide-react";
 import { addLike, removeLike } from "@/actions/action";
 import { useUserContext } from "@/context/UserContext";
 import { Recipe } from "@/types";
-import { Heart } from "lucide-react";
 
 const FavouriteButton = ({
     id,

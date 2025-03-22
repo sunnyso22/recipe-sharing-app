@@ -1,5 +1,5 @@
-import { Recipe } from "@/types";
 import RecipeCard from "./RecipeCard";
+import { Recipe } from "@/types";
 
 type RecipesGridProps = {
     recipes: Recipe[];

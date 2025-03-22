@@ -1,6 +1,6 @@
+import { ObjectId } from "mongodb";
 import RecipeUploadForm from "@/components/uploadRecipe/RecipeUploadForm";
 import { Recipe } from "@/types";
-import { ObjectId } from "mongodb";
 
 const CreateRecipePage = () => {
     const recipeData: Recipe = {

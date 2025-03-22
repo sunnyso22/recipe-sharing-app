@@ -1,8 +1,8 @@
 "use client";
 
-import { useUserContext } from "@/context/UserContext";
-import { useUser } from "@clerk/nextjs";
 import { useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
+import { useUserContext } from "@/context/UserContext";
 
 const SignInDetector = () => {
     const { isSignedIn, user } = useUser();

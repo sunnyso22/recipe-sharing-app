@@ -1,10 +1,10 @@
 "use client";
 
 import Form from "next/form";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { RotateCcw, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { RotateCcw, Search } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 const SearchBar = () => {
     const pathname = usePathname();

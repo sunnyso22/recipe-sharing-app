@@ -1,4 +1,6 @@
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import Link from "next/link";
+import { ChefHat, Menu } from "lucide-react";
 import {
     Sheet,
     SheetClose,
@@ -6,8 +8,6 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "../ui/sheet";
-import { ChefHat, Menu } from "lucide-react";
-import Link from "next/link";
 
 const links = [
     {

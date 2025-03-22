@@ -1,8 +1,10 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { Button } from "./ui/button";
+import Form from "next/form";
 import { Trash2 } from "lucide-react";
+import { removeRecipe } from "@/actions/action";
+import { Button } from "./ui/button";
 import {
     Dialog,
     DialogContent,
@@ -11,8 +13,6 @@ import {
     DialogHeader,
     DialogTitle,
 } from "./ui/dialog";
-import Form from "next/form";
-import { removeRecipe } from "@/actions/action";
 
 const DeleteButton = ({ id, title }: { id: string; title: string }) => {
     const [open, setOpen] = useState(false);
@@ -62,6 +62,7 @@ const DeleteButton = ({ id, title }: { id: string; title: string }) => {
                                     <>
                                         <Trash2 />
                                         Delete
+                                        {state}
                                     </>
                                 )}
                             </Button>

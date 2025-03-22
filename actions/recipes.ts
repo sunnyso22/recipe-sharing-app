@@ -1,9 +1,9 @@
 "use server";
 
+import { ObjectId } from "mongodb";
 import connectToDatabase from "@/lib/db";
 import { handleError } from "@/lib/utils";
 import { Recipe } from "@/types";
-import { ObjectId } from "mongodb";
 
 const collection = "recipes";
 

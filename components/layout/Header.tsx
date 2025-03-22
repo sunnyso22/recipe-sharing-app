@@ -1,7 +1,7 @@
 import Link from "next/link";
+import { ChefHat } from "lucide-react";
 import Nav from "./Nav";
 import MobileNav from "./MobileNav";
-import { ChefHat } from "lucide-react";
 
 const Header = () => {
     return (

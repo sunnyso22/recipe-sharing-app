@@ -1,11 +1,11 @@
-import Image from "next/image";
-import { Card, CardContent, CardFooter } from "./ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Heart, UserRound } from "lucide-react";
-import Link from "next/link";
-import { Recipe } from "@/types";
 import { currentUser } from "@clerk/nextjs/server";
+import Link from "next/link";
+import Image from "next/image";
+import { Heart, UserRound } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Card, CardContent, CardFooter } from "./ui/card";
 import FavouriteButton from "./FavouriteButton";
+import { Recipe } from "@/types";
 
 const RecipeCard = async (recipe: Recipe) => {
     const user = await currentUser();

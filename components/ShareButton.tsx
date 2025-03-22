@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { Check, Link2, Share } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { Check, Link2, Share } from "lucide-react";
 import Facebook from "@/public/icons/facebook.svg";
 import WhatsApp from "@/public/icons/whatsapp.svg";
 

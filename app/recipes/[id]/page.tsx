@@ -1,3 +1,8 @@
+import { ObjectId } from "mongodb";
+import { currentUser } from "@clerk/nextjs/server";
+import Image from "next/image";
+import Link from "next/link";
+import { Bookmark, Heart, Pencil, UserRound } from "lucide-react";
 import { getAllRecipes, getRecipeById } from "@/actions/recipes";
 import BookmarkButton from "@/components/BookmarkButton";
 import DeleteButton from "@/components/DeleteButton";
@@ -6,11 +11,6 @@ import ShareButton from "@/components/ShareButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Ingredient, Instruction, Recipe, Seasoning } from "@/types";
-import { currentUser } from "@clerk/nextjs/server";
-import { Bookmark, Heart, Pencil, UserRound } from "lucide-react";
-import { ObjectId } from "mongodb";
-import Image from "next/image";
-import Link from "next/link";
 
 export const generateStaticParams = async () => {
     const recipeData: Recipe[] = (await getAllRecipes()) || [];
@@ -57,6 +57,7 @@ const RecipeDetail = async ({
     return (
         <div className="container mx-auto mt-12">
             <div className="flex gap-6">
+                {/* Recipe Image */}
                 <div className="relative w-[1280px] h-[540px]">
                     <Image
                         className="object-cover rounded-2xl"
@@ -66,6 +67,7 @@ const RecipeDetail = async ({
                     />
                 </div>
                 <div className="w-full flex flex-col justify-between">
+                    {/* Tilte + Edit/Delete Button + Description */}
                     <div className="flex flex-col gap-8">
                         <div className="flex justify-between items-center">
                             <h2 className="text-3xl font-extrabold">{title}</h2>
@@ -85,6 +87,7 @@ const RecipeDetail = async ({
                         </div>
                         <p className="text-paragraph text-xl">{description}</p>
                     </div>
+                    {/* Author + Like/Bookmark/Share Button */}
                     <div className="flex justify-between">
                         <div className="flex items-center gap-2">
                             <Avatar className="h-8 w-8">
@@ -141,6 +144,7 @@ const RecipeDetail = async ({
             </div>
             <div className="flex gap-36">
                 <div className="w-1/4 py-6">
+                    {/* Ingredients */}
                     <h3 className="text-2xl font-semibold py-6">Ingredients</h3>
                     <ul>
                         {ingredients.map((item: Ingredient) => (
@@ -155,6 +159,7 @@ const RecipeDetail = async ({
                             </li>
                         ))}
                     </ul>
+                    {/* Seasonings */}
                     <h3 className="text-2xl font-semibold py-6">Seasonings</h3>
                     <ul>
                         {seasonings.map((item: Seasoning) => (
@@ -171,6 +176,7 @@ const RecipeDetail = async ({
                     </ul>
                 </div>
                 <div className="w-3/4 py-6">
+                    {/* Instructions */}
                     <h3 className="text-2xl font-semibold py-6">
                         Instructions
                     </h3>
