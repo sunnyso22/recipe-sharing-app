@@ -20,7 +20,7 @@ const Recipes = async ({
                         You can find all recipes here.
                     </p>
                 </div>
-                <SearchBar searchString={search || ""} />
+                <SearchBar />
             </div>
             {recipesData.length === 0 ? (
                 <div className="h-[70vh] flex items-center justify-center">
