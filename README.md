@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Recipe Sharing App
 
-## Getting Started
+https://cookery-recipe-sharing-app.vercel.app/
+Cookery is a recipe sharing website built by Next.js + MongoDB. Deployed by Vercel.
 
-First, run the development server:
+## Main Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Search Recipes
+2. Hot recipes are classified by the number of likes
+3. Login function (Clerk)
+4. Create Recipes
+5. Update Recipes
+6. Delete Recipes
+7. Like Button and Bookmark Button
+    - The liked/bookmarked recipes are stored as metedata in Clerk
+    - Store the recipe Id only
+8. Share Button
+    - Allow users to copy the URL, or share the recipes to social media
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Technical Details
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Clerk as user + auth management
+2. MongoDB as NoSQL DB to store the recipe data
+3. Next.js for fullstack development
+    - Frontend
+        - Tailwindcss for styling
+        - Using shadcn/ui as component library for creating different interactive component, such as RecipesCard, Recipe Upload, Buttons, etc
+        - Using dynamic routes for showing each recipe datail
+        - Clerk frontend API to retrieve the auth status and metadata (like/bookmark list)
+        - Using Clerk middleware to do route protection
+    - Backend
+        - Action script for retriving and sending data from/to MongoDB (find, findOne, insertOne, updateOne, createOne)
+        - Function for update metadata to Clerk using Clerk backend API
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Major Challenges
 
-## Learn More
+1. Form validation with using the hook `useAcionState`
+2. Update metadata to Clerk
+3. Implement Incremental Static Regeneration(ISR)
+4. Fix the search bar which show the serach result instantly
 
-To learn more about Next.js, take a look at the following resources:
+## Known Issues
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. ClerkProvider component forces all the children to be rendered dynamically which affect the performance
+2. Delete recipe but the metadata (like list and bookmark list) in Clerk is not being deleted
+3. Recipes images are directly being stored in MongoDB with Base64 format
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Future Enhancements
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. S3 storage for recipes images
+2. Advanced search and filters
+3. Additional social Feature, e.g. comments
