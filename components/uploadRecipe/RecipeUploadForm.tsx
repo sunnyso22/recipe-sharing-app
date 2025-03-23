@@ -56,7 +56,7 @@ const RecipeUploadForm = ({
                 <ImageUpload
                     onImageChange={handleRecipeChange}
                     recipe={recipe}
-                    error={state.errors.image}
+                    backendError={state.errors.image}
                 />
                 <div className="w-1/2 flex flex-col">
                     <>

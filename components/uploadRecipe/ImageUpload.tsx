@@ -16,14 +16,16 @@ import { Recipe } from "@/types";
 const ImageUpload = ({
     onImageChange,
     recipe,
-    error,
+    backendError,
 }: {
     onImageChange: (recipeData: Recipe) => void;
     recipe: Recipe;
-    error?: string;
+    backendError?: string;
 }) => {
     const [image, setImage] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const [frontendError, setFrontendError] = useState("");
 
     useEffect(() => {
         setImage(recipe.image);
@@ -31,15 +33,21 @@ const ImageUpload = ({
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
+        console.log(file);
 
-        if (file && file.type.startsWith("image/")) {
-            const reader = new FileReader();
-            reader.onload = () => {
-                const imageData = reader.result as string;
-                setImage(imageData);
-                onImageChange({ ...recipe, image: imageData });
-            };
-            reader.readAsDataURL(file);
+        if (file) {
+            if (file.type.startsWith("image/")) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const imageData = reader.result as string;
+                    setImage(imageData);
+                    onImageChange({ ...recipe, image: imageData });
+                };
+                reader.readAsDataURL(file);
+                setFrontendError("");
+            } else {
+                setFrontendError("Only image files are supported!");
+            }
         }
     };
 
@@ -114,8 +122,9 @@ const ImageUpload = ({
                         ? "Image uploaded. Right-click for options."
                         : "No image uploaded yet."}
                 </p>
-                {error ? (
-                    <p className="text-sm text-red-500">{error}</p>
+                <p className="text-sm text-red-500">{frontendError}</p>
+                {backendError ? (
+                    <p className="text-sm text-red-500">{backendError}</p>
                 ) : (
                     <p>&nbsp;</p>
                 )}
