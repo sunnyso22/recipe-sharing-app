@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import { getAllRecipes } from "@/actions/recipes";
 import RecipesGrid from "@/components/RecipesGrid";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import SearchBar from "@/components/SearchBar";
 import { Recipe } from "@/types";
 
@@ -22,14 +24,22 @@ const Recipes = async ({
                 </div>
                 <SearchBar />
             </div>
-            {recipesData.length === 0 ? (
+            {recipesData.length > 0 ? (
+                <Suspense
+                    fallback={
+                        <div className="h-[70vh] flex items-center justify-center">
+                            <LoadingSpinner />
+                        </div>
+                    }
+                >
+                    <RecipesGrid recipes={recipesData} />
+                </Suspense>
+            ) : (
                 <div className="h-[70vh] flex items-center justify-center">
                     <h2 className="text-2xl font-bold">
                         No recipes could be found!
                     </h2>
                 </div>
-            ) : (
-                <RecipesGrid recipes={recipesData} />
             )}
         </div>
     );

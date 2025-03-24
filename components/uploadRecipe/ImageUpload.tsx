@@ -14,40 +14,29 @@ import Image from "next/image";
 import { Recipe } from "@/types";
 
 const ImageUpload = ({
-    onImageChange,
     recipe,
     backendError,
 }: {
-    onImageChange: (recipeData: Recipe) => void;
     recipe: Recipe;
     backendError?: string;
 }) => {
-    const [image, setImage] = useState<string | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const [frontendError, setFrontendError] = useState("");
-
     useEffect(() => {
-        setImage(recipe.image);
+        setImagePreview(recipe.image);
     }, [recipe.image]);
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        console.log(file);
 
-        if (file) {
-            if (file.type.startsWith("image/")) {
-                const reader = new FileReader();
-                reader.onload = () => {
-                    const imageData = reader.result as string;
-                    setImage(imageData);
-                    onImageChange({ ...recipe, image: imageData });
-                };
-                reader.readAsDataURL(file);
-                setFrontendError("");
-            } else {
-                setFrontendError("Only image files are supported!");
-            }
+        if (file && file.type.startsWith("image/")) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const imageData = reader.result as string;
+                setImagePreview(imageData);
+            };
+            reader.readAsDataURL(file);
         }
     };
 
@@ -56,8 +45,8 @@ const ImageUpload = ({
     };
 
     const removeImage = () => {
-        setImage(null);
-        onImageChange({ ...recipe, image: null });
+        setImagePreview(null);
+
         if (fileInputRef.current) {
             fileInputRef.current.value = "";
         }
@@ -69,16 +58,16 @@ const ImageUpload = ({
                 <ContextMenuTrigger>
                     <div
                         className={`h-[360px] cursor-pointer flex flex-col items-center justify-center rounded-2xl border-2 ${
-                            image
+                            imagePreview
                                 ? `border border-primary`
                                 : `border-dashed border-muted`
                         } hover:bg-muted/20`}
                         onClick={triggerUpload}
                     >
-                        {image ? (
+                        {imagePreview ? (
                             <div className="relative w-full h-full">
                                 <Image
-                                    src={image}
+                                    src={imagePreview}
                                     alt="Uploaded preview"
                                     className="object-contain"
                                     fill
@@ -95,8 +84,10 @@ const ImageUpload = ({
                         )}
                         <Input
                             hidden
+                            name="imageFile"
                             type="file"
                             ref={fileInputRef}
+                            accept="image/png, image/jpeg"
                             onChange={handleImageUpload}
                         />
                     </div>
@@ -108,7 +99,10 @@ const ImageUpload = ({
                             <Upload className="h-4 w-4" />
                         </ContextMenuShortcut>
                     </ContextMenuItem>
-                    <ContextMenuItem onClick={removeImage} disabled={!image}>
+                    <ContextMenuItem
+                        onClick={removeImage}
+                        disabled={!imagePreview}
+                    >
                         Remove Image
                         <ContextMenuShortcut>
                             <Trash2 className="h-4 w-4" />
@@ -118,11 +112,10 @@ const ImageUpload = ({
             </ContextMenu>
             <div className="flex gap-3">
                 <p className="text-sm text-paragraph">
-                    {image
+                    {imagePreview
                         ? "Image uploaded. Right-click for options."
                         : "No image uploaded yet."}
                 </p>
-                <p className="text-sm text-red-500">{frontendError}</p>
                 {backendError ? (
                     <p className="text-sm text-red-500">{backendError}</p>
                 ) : (

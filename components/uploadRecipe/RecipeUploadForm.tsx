@@ -42,7 +42,6 @@ const RecipeUploadForm = ({
         <Form action={formAction} className="flex flex-col gap-6">
             <div className="flex flex-col lg:flex-row justify-evenly gap-6">
                 <ImageUpload
-                    onImageChange={handleRecipeChange}
                     recipe={recipe}
                     backendError={state.errors.image}
                 />

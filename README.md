@@ -50,3 +50,4 @@ Cookery is a recipe sharing website built by Next.js + MongoDB. Deployed by Verc
 1. S3 storage for recipes images
 2. Advanced search and filters
 3. Additional social Feature, e.g. comments
+4. Add a personal page

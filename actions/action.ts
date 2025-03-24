@@ -7,6 +7,7 @@ import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import { deleteRecipe, postRecipe, putRecipe } from "./recipes";
 import { handleError } from "@/lib/utils";
 import { FormErrors, FormState, Metadata, Recipe } from "@/types";
+import { uploadImageToGridFS } from "./image";
 
 export const createRecipe = async (
     recipe: Recipe,
@@ -15,10 +16,17 @@ export const createRecipe = async (
 ) => {
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
-    const { image, ingredients, seasonings, instructions } = recipe;
+    const imageFile = formData.get("imageFile") as File | null;
+
+    let imageId = null;
+    if (imageFile && imageFile.size > 0) {
+        imageId = await uploadImageToGridFS(imageFile);
+    }
+
+    const { ingredients, seasonings, instructions } = recipe;
 
     const errors: FormErrors = {};
-    if (!image) {
+    if (imageFile && imageFile.size === 0) {
         errors.image = "Image is required!";
     }
     if (!title) {
@@ -40,7 +48,7 @@ export const createRecipe = async (
         _id: new ObjectId(),
         title,
         description,
-        image,
+        image: imageId,
         author: {
             name: authorName,
             image: authorImage,
@@ -60,11 +68,11 @@ export const updateRecipe = async (
 ) => {
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
-    const { _id, image } = recipe;
+    const imageFile = formData.get("imageFile") as File | null;
 
     const errors: FormErrors = {};
 
-    if (!image) {
+    if (imageFile && imageFile.size === 0) {
         errors.image = "Image file is required!";
     }
     if (!title) {
@@ -78,7 +86,7 @@ export const updateRecipe = async (
     }
 
     const result = await putRecipe({ ...recipe, title, description });
-    redirect(`/recipes/${_id.toString()}`);
+    redirect(`/recipes/${recipe._id.toString()}`);
 };
 
 export const removeRecipe = async (id: string) => {
