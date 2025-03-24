@@ -24,7 +24,10 @@ const MobileNav = () => {
     return (
         <Sheet>
             <SheetTrigger>
-                <Menu size={48} />
+                <Menu
+                    size={48}
+                    className="cursor-pointer hover:scale-125 transition-all"
+                />
             </SheetTrigger>
             <SheetContent>
                 <SheetTitle className="hidden">Menu</SheetTitle>
@@ -55,12 +58,14 @@ const MobileNav = () => {
                     ))}
 
                     <SignedOut>
-                        <Link
-                            className="text-2xl hover:text-accent"
-                            href="/sign-in"
-                        >
-                            Sign In
-                        </Link>
+                        <SheetClose asChild>
+                            <Link
+                                className="text-2xl hover:text-accent"
+                                href="/sign-in"
+                            >
+                                Sign In
+                            </Link>
+                        </SheetClose>
                     </SignedOut>
 
                     <SignedIn>

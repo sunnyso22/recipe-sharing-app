@@ -42,8 +42,8 @@ const CookbookPage = async ({
 
     return (
         <div className="container mx-auto">
-            <div className="flex w-full items-center justify-between">
-                <div className="py-6">
+            <div className="py-6 flex flex-col md:flex-row w-full items-center justify-between gap-6">
+                <div className="flex flex-col items-center md:items-start">
                     <h2 className="text-2xl font-bold">
                         Hi, {user.firstName}. Here is your cookbook!
                     </h2>
@@ -62,7 +62,13 @@ const CookbookPage = async ({
             <TabsNavigation activeTab={activeTab} />
             {activeTab === "My Recipes" &&
                 (userRecipes.length > 0 ? (
-                    <Suspense fallback={<LoadingSpinner />}>
+                    <Suspense
+                        fallback={
+                            <div className="h-[50vh] flex items-center justify-center">
+                                <LoadingSpinner />
+                            </div>
+                        }
+                    >
                         <RecipesGrid recipes={userRecipes} />
                     </Suspense>
                 ) : (
@@ -74,7 +80,13 @@ const CookbookPage = async ({
                 ))}
             {activeTab === "Bookmarks" &&
                 (bookmarkedRecipes.length > 0 ? (
-                    <Suspense fallback={<LoadingSpinner />}>
+                    <Suspense
+                        fallback={
+                            <div className="h-[50vh] flex items-center justify-center">
+                                <LoadingSpinner />
+                            </div>
+                        }
+                    >
                         <RecipesGrid recipes={bookmarkedRecipes} />
                     </Suspense>
                 ) : (

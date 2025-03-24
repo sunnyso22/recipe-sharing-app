@@ -13,8 +13,8 @@ const Recipes = async ({
 
     return (
         <div className="container mx-auto">
-            <div className="flex w-full items-center justify-between">
-                <div className="py-6">
+            <div className="py-6 flex flex-col md:flex-row w-full items-center justify-between gap-6">
+                <div className="flex flex-col items-center md:items-start">
                     <h2 className="text-2xl font-bold">All Recipes</h2>
                     <p className="text-paragraph text-lg">
                         You can find all recipes here.

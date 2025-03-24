@@ -64,7 +64,7 @@ const ImageUpload = ({
     };
 
     return (
-        <div className="w-1/2 flex flex-col gap-2">
+        <div className="w-full lg:w-1/2 flex flex-col gap-2">
             <ContextMenu>
                 <ContextMenuTrigger>
                     <div

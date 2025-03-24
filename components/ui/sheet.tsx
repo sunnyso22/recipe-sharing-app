@@ -73,7 +73,10 @@ function SheetContent({
             >
                 {children}
                 <SheetPrimitive.Close className="ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none">
-                    <XIcon size={48} />
+                    <XIcon
+                        size={48}
+                        className="cursor-pointer hover:scale-125 transition-all"
+                    />
                     <span className="sr-only">Close</span>
                 </SheetPrimitive.Close>
             </SheetPrimitive.Content>

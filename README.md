@@ -1,6 +1,6 @@
 # Recipe Sharing App
 
-https://cookery-recipe-sharing-app.vercel.app/
+https://cookery.sunnyso22.dev/
 Cookery is a recipe sharing website built by Next.js + MongoDB. Deployed by Vercel.
 
 ## Main Features

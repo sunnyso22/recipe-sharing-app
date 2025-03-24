@@ -56,9 +56,9 @@ const RecipeDetail = async ({
 
     return (
         <div className="container mx-auto mt-12">
-            <div className="flex gap-6">
+            <div className="flex flex-col lg:flex-row gap-6">
                 {/* Recipe Image */}
-                <div className="relative w-[1280px] h-[540px]">
+                <div className="relative w-full h-[540px]">
                     <Image
                         className="object-cover rounded-2xl"
                         src={image || "/images/placeholder.webp"}
@@ -66,7 +66,7 @@ const RecipeDetail = async ({
                         fill
                     />
                 </div>
-                <div className="w-full flex flex-col justify-between">
+                <div className="w-full flex flex-col justify-between gap-6">
                     {/* Tilte + Edit/Delete Button + Description */}
                     <div className="flex flex-col gap-8">
                         <div className="flex justify-between items-center">
@@ -142,8 +142,8 @@ const RecipeDetail = async ({
                     </div>
                 </div>
             </div>
-            <div className="flex gap-36">
-                <div className="w-1/4 py-6">
+            <div className="flex gap-12 lg:gap-36">
+                <div className="w-2/5 lg:w-1/4 py-6">
                     {/* Ingredients */}
                     <h3 className="text-2xl font-semibold py-6">Ingredients</h3>
                     <ul>
@@ -175,7 +175,7 @@ const RecipeDetail = async ({
                         ))}
                     </ul>
                 </div>
-                <div className="w-3/4 py-6">
+                <div className="w-3/5 lg:w-3/4 py-6">
                     {/* Instructions */}
                     <h3 className="text-2xl font-semibold py-6">
                         Instructions

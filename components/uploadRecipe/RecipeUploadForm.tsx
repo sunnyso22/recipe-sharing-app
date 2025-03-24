@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { createRecipe, updateRecipe } from "@/actions/action";
 import { Button } from "../ui/button";
 import { FormErrors, FormState, Recipe } from "@/types";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import IngredientsUpload from "./IngredientsUpload";
 import SeasoningsUpload from "./SeasoningsUpload";
 import InstructionsUpload from "./InstructionsUpload";
@@ -25,6 +25,8 @@ const RecipeUploadForm = ({
     const initialState: FormState = {
         errors: {},
     };
+
+    const router = useRouter();
 
     const [recipe, setRecipe] = useState<Recipe>(recipeData);
     const handleRecipeChange = (data: Recipe) => {
@@ -51,14 +53,14 @@ const RecipeUploadForm = ({
     );
 
     return (
-        <Form action={formAction}>
-            <div className="flex justify-evenly gap-6">
+        <Form action={formAction} className="flex flex-col gap-6">
+            <div className="flex flex-col lg:flex-row justify-evenly gap-6">
                 <ImageUpload
                     onImageChange={handleRecipeChange}
                     recipe={recipe}
                     backendError={state.errors.image}
                 />
-                <div className="w-1/2 flex flex-col">
+                <div className="w-full lg:w-1/2 flex flex-col">
                     <>
                         <Input
                             name="title"
@@ -88,7 +90,7 @@ const RecipeUploadForm = ({
                     </>
                 </div>
             </div>
-            <div className="flex justify-evenly gap-6">
+            <div className="flex flex-col lg:flex-row justify-evenly gap-6">
                 <IngredientsUpload
                     onIngredientsChange={handleRecipeChange}
                     recipe={recipe}
@@ -102,7 +104,7 @@ const RecipeUploadForm = ({
                 onInstructionsChange={handleRecipeChange}
                 recipe={recipe}
             />
-            <div className="flex gap-3 py-6 justify-end">
+            <div className="flex gap-3 justify-center lg:justify-end">
                 <Button
                     type="submit"
                     disabled={isPending}
@@ -110,9 +112,9 @@ const RecipeUploadForm = ({
                 >
                     {isPending ? "Saving..." : "Save"}
                 </Button>
-                <Link href={`/recipes/${id}`}>
-                    <Button variant="destructive">Cancel</Button>
-                </Link>
+                <Button variant="destructive" onClick={() => router.back()}>
+                    Cancel
+                </Button>
             </div>
         </Form>
     );

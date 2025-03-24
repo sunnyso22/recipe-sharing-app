@@ -8,7 +8,7 @@ const tabs = [
 
 const TabsNavigation = ({ activeTab }: { activeTab: string }) => {
     return (
-        <div className="flex gap-6 py-6">
+        <div className="flex justify-center md:justify-start gap-6 py-6">
             {tabs.map((tab) => (
                 <Link key={tab.id} href={`?tab=${tab.id}`}>
                     <Button
