@@ -80,11 +80,11 @@ export const postRecipe = async (recipe: Recipe) => {
     }
 };
 
-export const putRecipe = async (id: string, recipe: Recipe) => {
+export const putRecipe = async (recipe: Recipe) => {
     try {
         const { db } = await connectToDatabase();
         const result = await db.collection<Recipe>(collection).updateOne(
-            { _id: new ObjectId(id) },
+            { _id: new ObjectId(recipe._id.toString()) },
             {
                 $set: {
                     title: recipe.title,

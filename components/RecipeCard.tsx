@@ -48,9 +48,7 @@ const RecipeCard = async (recipe: Recipe) => {
                 <div className="flex items-center gap-2">
                     {user ? (
                         <FavouriteButton
-                            id={_id.toString()}
                             recipe={JSON.parse(JSON.stringify(recipe))}
-                            likes={likes}
                         />
                     ) : (
                         <Link

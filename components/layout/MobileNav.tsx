@@ -77,7 +77,15 @@ const MobileNav = () => {
                                 Cookbook
                             </Link>
                         </SheetClose>
-                        <UserButton />
+                        <UserButton
+                            appearance={{
+                                elements: {
+                                    userButtonPopoverCard: {
+                                        pointerEvents: "initial",
+                                    },
+                                },
+                            }}
+                        />
                     </SignedIn>
                 </nav>
             </SheetContent>

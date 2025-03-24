@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createRecipe, updateRecipe } from "@/actions/action";
 import { Button } from "../ui/button";
-import { FormErrors, FormState, Recipe } from "@/types";
+import { FormState, Recipe } from "@/types";
 import { useRouter } from "next/navigation";
 import IngredientsUpload from "./IngredientsUpload";
 import SeasoningsUpload from "./SeasoningsUpload";
@@ -15,11 +15,9 @@ import ImageUpload from "./ImageUpload";
 
 const RecipeUploadForm = ({
     recipeData,
-    id,
     mode,
 }: {
     recipeData: Recipe;
-    id: string;
     mode: string;
 }) => {
     const initialState: FormState = {
@@ -33,22 +31,10 @@ const RecipeUploadForm = ({
         setRecipe(data);
     };
 
-    const updateRecipeWithData = updateRecipe.bind(null, id, recipe);
-    const createRecipeWithData = createRecipe.bind(null, recipe);
-
-    let actionFunction: (
-        prevState: FormState,
-        formData: FormData
-    ) => Promise<{ errors: FormErrors }> = async () => ({ errors: {} });
-
-    if (mode === "create") {
-        actionFunction = createRecipeWithData;
-    } else if (mode === "update") {
-        actionFunction = updateRecipeWithData;
-    }
-
     const [state, formAction, isPending] = useActionState(
-        actionFunction,
+        mode === "create"
+            ? createRecipe.bind(null, recipe)
+            : updateRecipe.bind(null, recipe),
         initialState
     );
 

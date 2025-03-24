@@ -38,7 +38,6 @@ const EditRecipePage = async ({
             </div>
             <RecipeUploadForm
                 recipeData={JSON.parse(JSON.stringify(recipeData))}
-                id={id}
                 mode={"update"}
             />
         </div>

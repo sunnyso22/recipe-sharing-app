@@ -25,7 +25,6 @@ const CreateRecipePage = () => {
             </div>
             <RecipeUploadForm
                 recipeData={JSON.parse(JSON.stringify(recipeData))}
-                id={""}
                 mode={"create"}
             />
         </div>

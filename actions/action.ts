@@ -54,18 +54,17 @@ export const createRecipe = async (
 };
 
 export const updateRecipe = async (
-    id: string,
     recipe: Recipe,
     prevState: FormState,
     formData: FormData
 ) => {
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
-    const { image, ingredients, seasonings, instructions } = recipe;
+    const { _id, image } = recipe;
 
     const errors: FormErrors = {};
 
-    if (!recipe.image) {
+    if (!image) {
         errors.image = "Image file is required!";
     }
     if (!title) {
@@ -78,16 +77,8 @@ export const updateRecipe = async (
         return { errors };
     }
 
-    const result = await putRecipe(id, {
-        ...recipe,
-        title,
-        description,
-        image,
-        ingredients,
-        seasonings,
-        instructions,
-    });
-    redirect(`/recipes/${id}`);
+    const result = await putRecipe({ ...recipe, title, description });
+    redirect(`/recipes/${_id.toString()}`);
 };
 
 export const removeRecipe = async (id: string) => {
@@ -95,14 +86,14 @@ export const removeRecipe = async (id: string) => {
     if (result) redirect("/cookbook");
 };
 
-export const addLike = async (id: string, recipe: Recipe, likes: number) => {
-    const result = await putRecipe(id, { ...recipe, likes: likes + 1 });
-    if (result) revalidatePath(`/recipes/${id}`);
+export const addLike = async (recipe: Recipe) => {
+    const result = await putRecipe({ ...recipe, likes: recipe.likes + 1 });
+    if (result) revalidatePath(`/recipes/${recipe._id.toString()}`);
 };
 
-export const removeLike = async (id: string, recipe: Recipe, likes: number) => {
-    const result = await putRecipe(id, { ...recipe, likes: likes - 1 });
-    if (result) revalidatePath(`/recipes/${id}`);
+export const removeLike = async (recipe: Recipe) => {
+    const result = await putRecipe({ ...recipe, likes: recipe.likes - 1 });
+    if (result) revalidatePath(`/recipes/${recipe._id.toString()}`);
 };
 
 export const updateToClerkPublicMetaData = async (lists: Metadata = {}) => {

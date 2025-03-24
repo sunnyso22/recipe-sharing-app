@@ -106,11 +106,9 @@ const RecipeDetail = async ({
                         <div className="flex items-center gap-6">
                             {user ? (
                                 <FavouriteButton
-                                    id={id}
                                     recipe={JSON.parse(
                                         JSON.stringify(recipeData)
                                     )}
-                                    likes={likes}
                                 />
                             ) : (
                                 <Link
