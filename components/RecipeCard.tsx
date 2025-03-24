@@ -11,13 +11,14 @@ const RecipeCard = async (recipe: Recipe) => {
     const user = await currentUser();
 
     const { _id, title, image, likes, author } = recipe;
+    const imageUrl = image ? `/api/images/${image}` : null;
 
     return (
         <Card>
             <div className="relative w-[640px] h-[360px]">
                 <Image
                     className="object-cover"
-                    src={image || "/images/placeholder.webp"}
+                    src={imageUrl || "/images/placeholder.webp"}
                     alt={title}
                     fill
                 />

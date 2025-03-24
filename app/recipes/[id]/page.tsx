@@ -54,6 +54,8 @@ const RecipeDetail = async ({
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
     const postUrl = `${baseUrl}recipes/${id}`;
 
+    const imageUrl = image ? `/api/images/${image}` : null;
+
     return (
         <div className="container mx-auto mt-12">
             <div className="flex flex-col lg:flex-row gap-6">
@@ -61,7 +63,7 @@ const RecipeDetail = async ({
                 <div className="relative w-full h-[540px]">
                     <Image
                         className="object-cover rounded-2xl"
-                        src={image || "/images/placeholder.webp"}
+                        src={imageUrl || "/images/placeholder.webp"}
                         alt={title}
                         fill
                     />

@@ -23,8 +23,10 @@ const ImageUpload = ({
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const imageUrl = recipe.image ? `/api/images/${recipe.image}` : null;
+
     useEffect(() => {
-        setImagePreview(recipe.image);
+        setImagePreview(imageUrl);
     }, [recipe.image]);
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {

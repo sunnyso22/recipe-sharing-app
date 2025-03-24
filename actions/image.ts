@@ -39,7 +39,7 @@ export const uploadImageToGridFS = async (imageFile: File): Promise<string> => {
     }
 };
 
-export const downloadImageFromGridFS = async (
+/* export const downloadImageFromGridFS = async (
     imageId: string
 ): Promise<string | null> => {
     try {
@@ -83,4 +83,4 @@ export const downloadImageFromGridFS = async (
         console.error("Error downloading from GridFS:", error);
         throw new Error("Error downloading from GridFS");
     }
-};
+}; */

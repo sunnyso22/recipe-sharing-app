@@ -1,7 +1,6 @@
 "use server";
 
 import { ObjectId } from "mongodb";
-import { downloadImageFromGridFS } from "./image";
 import connectToDatabase from "@/lib/db";
 import { handleError } from "@/lib/utils";
 import { Recipe } from "@/types";
@@ -20,18 +19,7 @@ export const getAllRecipes = async (search?: string) => {
             .sort({ title: 1 })
             .toArray();
 
-        const plainRecipes: Recipe[] = JSON.parse(JSON.stringify(data));
-
-        const recipesWithImage = await Promise.all(
-            plainRecipes.map(async (recipe) => {
-                if (recipe.image) {
-                    recipe.image = await downloadImageFromGridFS(recipe.image);
-                }
-                return recipe;
-            })
-        );
-
-        return recipesWithImage;
+        if (data) return data;
     } catch (error) {
         handleError(error);
     }
@@ -46,18 +34,7 @@ export const getHotRecipes = async (likes: number) => {
             .sort({ title: 1 })
             .toArray();
 
-        const plainRecipes: Recipe[] = JSON.parse(JSON.stringify(data));
-
-        const recipesWithImage = await Promise.all(
-            plainRecipes.map(async (recipe) => {
-                if (recipe.image) {
-                    recipe.image = await downloadImageFromGridFS(recipe.image);
-                }
-                return recipe;
-            })
-        );
-
-        return recipesWithImage;
+        if (data) return data;
     } catch (error) {
         handleError(error);
     }
@@ -71,18 +48,7 @@ export const getUserRecipes = async (name: string) => {
             .find({ "author.name": name })
             .toArray();
 
-        const plainRecipes: Recipe[] = JSON.parse(JSON.stringify(data));
-
-        const recipesWithImage = await Promise.all(
-            plainRecipes.map(async (recipe) => {
-                if (recipe.image) {
-                    recipe.image = await downloadImageFromGridFS(recipe.image);
-                }
-                return recipe;
-            })
-        );
-
-        return recipesWithImage;
+        if (data) return data;
     } catch (error) {
         handleError(error);
     }
@@ -95,14 +61,7 @@ export const getRecipeById = async (id: string) => {
             .collection<Recipe>(collection)
             .findOne({ _id: new ObjectId(id) });
 
-        const plainRecipe: Recipe = JSON.parse(JSON.stringify(data));
-
-        return {
-            ...plainRecipe,
-            image: plainRecipe.image
-                ? await downloadImageFromGridFS(plainRecipe.image)
-                : null,
-        };
+        if (data) return data;
     } catch (error) {
         handleError(error);
     }
