@@ -1,11 +1,14 @@
 "use server";
 
-import { ObjectId } from "mongodb";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
-import { uploadImageToGridFS } from "./image";
-import { deleteRecipe, postRecipe, putRecipe } from "./recipes";
+import {
+    checkNeedToUpload,
+    removeImageFromGridFS,
+    uploadImageToGridFS,
+} from "./image";
+import { deleteRecipe, getRecipeById, postRecipe, putRecipe } from "./recipes";
 import { handleError } from "@/lib/utils";
 import { FormErrors, FormState, Metadata, Recipe } from "@/types";
 
@@ -16,17 +19,10 @@ export const createRecipe = async (
 ) => {
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
-    const imageFile = formData.get("imageFile") as File | null;
-
-    let imageId = null;
-    if (imageFile && imageFile.size > 0) {
-        imageId = await uploadImageToGridFS(imageFile);
-    }
-
-    const { ingredients, seasonings, instructions } = recipe;
+    const imageFile = formData.get("imageFile") as File;
 
     const errors: FormErrors = {};
-    if (imageFile && imageFile.size === 0) {
+    if (!imageFile || imageFile.size === 0) {
         errors.image = "Image is required!";
     }
     if (!title) {
@@ -39,20 +35,20 @@ export const createRecipe = async (
         return { errors };
     }
 
+    const imageId = await uploadImageToGridFS(imageFile);
+
     const user = await currentUser();
     if (!user) throw new Error("No user is logged in to create recipe!");
-    const authorName = user.fullName as string;
-    const authorImage = user.imageUrl as string;
+    const aName = user.fullName as string;
+    const aImage = user.imageUrl as string;
+
+    const { ingredients, seasonings, instructions } = recipe;
 
     const id = await postRecipe({
-        _id: new ObjectId(),
         title,
         description,
-        image: imageId,
-        author: {
-            name: authorName,
-            image: authorImage,
-        },
+        imageId,
+        author: { aName, aImage },
         likes: 0,
         ingredients,
         seasonings,
@@ -66,40 +62,90 @@ export const updateRecipe = async (
     prevState: FormState,
     formData: FormData
 ) => {
+    if (!recipe._id) {
+        throw new Error("Recipe ID is undefined!");
+    }
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
-    const imageFile = formData.get("imageFile") as File | null;
+    const imageFile = formData.get("imageFile") as File;
+    console.log(imageFile);
+    const imageAction = formData.get("imageAction") as string;
+    console.log(imageAction);
 
     const errors: FormErrors = {};
-
-    if (imageFile && imageFile.size === 0) {
-        errors.image = "Image file is required!";
-    }
     if (!title) {
         errors.title = "Title is required!";
     }
     if (!description) {
         errors.description = "Description is required!";
     }
+
+    let imageId = "";
+    let needToUpload = false;
+
+    switch (imageAction) {
+        case "keep":
+            // Case 1: User only edits other fields, keep existing image
+            imageId = recipe.imageId;
+            break;
+
+        case "replace":
+            // Case 2: User uploads new image
+            if (imageFile && imageFile.size > 0) {
+                // New image is uploaded
+                needToUpload = await checkNeedToUpload(
+                    recipe.imageId,
+                    imageFile
+                );
+                if (needToUpload) {
+                    await removeImageFromGridFS(recipe.imageId);
+                    imageId = await uploadImageToGridFS(imageFile);
+                }
+            }
+            break;
+
+        case "remove":
+            // Case 3: User removes image
+            if (!imageFile || imageFile.size === 0) {
+                errors.image = "Image file is required!";
+            }
+            break;
+    }
     if (Object.keys(errors).length > 0) {
         return { errors };
     }
 
-    const result = await putRecipe({ ...recipe, title, description });
+    const result = await putRecipe({
+        ...recipe,
+        title,
+        description,
+        imageId,
+    });
+
     redirect(`/recipes/${recipe._id.toString()}`);
 };
 
 export const removeRecipe = async (id: string) => {
+    const recipe = await getRecipeById(id);
+    if (recipe && recipe.imageId) {
+        await removeImageFromGridFS(recipe.imageId);
+    }
     const result = await deleteRecipe(id);
     if (result) redirect("/cookbook");
 };
 
 export const addLike = async (recipe: Recipe) => {
+    if (!recipe._id) {
+        throw new Error("Recipe ID is undefined!");
+    }
     const result = await putRecipe({ ...recipe, likes: recipe.likes + 1 });
     if (result) revalidatePath(`/recipes/${recipe._id.toString()}`);
 };
 
 export const removeLike = async (recipe: Recipe) => {
+    if (!recipe._id) {
+        throw new Error("Recipe ID is undefined!");
+    }
     const result = await putRecipe({ ...recipe, likes: recipe.likes - 1 });
     if (result) revalidatePath(`/recipes/${recipe._id.toString()}`);
 };

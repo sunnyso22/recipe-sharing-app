@@ -19,9 +19,9 @@ export const getAllRecipes = async (search?: string) => {
             .sort({ title: 1 })
             .toArray();
 
-        if (data) return data;
+        return data;
     } catch (error) {
-        handleError(error);
+        return handleError(error);
     }
 };
 
@@ -34,9 +34,9 @@ export const getHotRecipes = async (likes: number) => {
             .sort({ title: 1 })
             .toArray();
 
-        if (data) return data;
+        return data;
     } catch (error) {
-        handleError(error);
+        return handleError(error);
     }
 };
 
@@ -45,12 +45,12 @@ export const getUserRecipes = async (name: string) => {
         const { db } = await connectToDatabase();
         const data = await db
             .collection<Recipe>(collection)
-            .find({ "author.name": name })
+            .find({ "author.aName": name })
             .toArray();
 
-        if (data) return data;
+        return data;
     } catch (error) {
-        handleError(error);
+        return handleError(error);
     }
 };
 
@@ -61,9 +61,9 @@ export const getRecipeById = async (id: string) => {
             .collection<Recipe>(collection)
             .findOne({ _id: new ObjectId(id) });
 
-        if (data) return data;
+        return data;
     } catch (error) {
-        handleError(error);
+        return handleError(error);
     }
 };
 
@@ -76,30 +76,40 @@ export const postRecipe = async (recipe: Recipe) => {
 
         return result.insertedId;
     } catch (error) {
-        handleError(error);
+        return handleError(error);
     }
 };
 
 export const putRecipe = async (recipe: Recipe) => {
     try {
         const { db } = await connectToDatabase();
+        const {
+            _id,
+            title,
+            description,
+            imageId,
+            likes,
+            ingredients,
+            seasonings,
+            instructions,
+        } = recipe;
         const result = await db.collection<Recipe>(collection).updateOne(
-            { _id: new ObjectId(recipe._id.toString()) },
+            { _id: new ObjectId(_id?.toString()) },
             {
                 $set: {
-                    title: recipe.title,
-                    description: recipe.description,
-                    image: recipe.image,
-                    likes: recipe.likes,
-                    ingredients: recipe.ingredients,
-                    seasonings: recipe.seasonings,
-                    instructions: recipe.instructions,
+                    title,
+                    description,
+                    imageId,
+                    likes,
+                    ingredients,
+                    seasonings,
+                    instructions,
                 },
             }
         );
         return result;
     } catch (error) {
-        handleError(error);
+        return handleError(error);
     }
 };
 
@@ -112,6 +122,6 @@ export const deleteRecipe = async (id: string) => {
 
         return result;
     } catch (error) {
-        handleError(error);
+        return handleError(error);
     }
 };

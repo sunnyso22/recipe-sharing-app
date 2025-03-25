@@ -1,3 +1,4 @@
+import { getRecipeImageFileById } from "@/actions/image";
 import connectToGridFS from "@/lib/gridfs";
 import { ObjectId } from "mongodb";
 
@@ -7,19 +8,16 @@ export const GET = async (
 ) => {
     try {
         const { id } = await params;
-
         if (!id) {
             return new Response("Invalid image ID", { status: 400 });
         }
 
-        const { db, bucket } = await connectToGridFS();
-        const file = await db
-            .collection("images.files")
-            .findOne({ _id: new ObjectId(id) });
-
+        const file = await getRecipeImageFileById(id);
         if (!file) {
-            return new Response("Image not found", { status: 404 });
+            return new Response("Image file not found", { status: 404 });
         }
+
+        const { bucket } = await connectToGridFS();
 
         // Create a download stream
         const downloadStream = bucket.openDownloadStream(new ObjectId(id));

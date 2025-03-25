@@ -6,7 +6,7 @@ import { Recipe } from "@/types";
 export const generateStaticParams = async () => {
     const recipeData: Recipe[] = (await getAllRecipes()) || [];
     return recipeData.map((recipe) => ({
-        id: recipe._id.toString(),
+        id: (recipe._id as ObjectId).toString(),
     }));
 };
 
@@ -16,17 +16,11 @@ const EditRecipePage = async ({
     params: Promise<{ id: string }>;
 }) => {
     const { id } = await params;
-    const recipeData: Recipe = (await getRecipeById(id)) || {
-        _id: new ObjectId(),
-        author: { name: "", image: "" },
-        likes: 0,
-        image: "",
-        title: "",
-        description: "",
-        ingredients: [],
-        seasonings: [],
-        instructions: [],
-    };
+
+    const recipeData = await getRecipeById(id);
+    if (!recipeData) {
+        throw new Error("Recipe not found");
+    }
 
     return (
         <div className="container mx-auto">
@@ -38,7 +32,6 @@ const EditRecipePage = async ({
             </div>
             <RecipeUploadForm
                 recipeData={JSON.parse(JSON.stringify(recipeData))}
-                mode={"update"}
             />
         </div>
     );

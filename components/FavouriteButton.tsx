@@ -1,5 +1,6 @@
 "use client";
 
+import { ObjectId } from "mongodb";
 import { Heart } from "lucide-react";
 import { addLike, removeLike } from "@/actions/action";
 import { useUserContext } from "@/context/UserContext";
@@ -11,13 +12,13 @@ const FavouriteButton = ({ recipe }: { recipe: Recipe }) => {
     const handleAddFavourite = (e: React.MouseEvent) => {
         e.preventDefault();
         addLike(recipe);
-        addFavourite(recipe._id.toString());
+        addFavourite((recipe._id as ObjectId).toString());
     };
 
     const handleRemoveFavourite = (e: React.MouseEvent) => {
         e.preventDefault();
         removeLike(recipe);
-        removeFavourite(recipe._id.toString());
+        removeFavourite((recipe._id as ObjectId).toString());
     };
 
     return (
@@ -25,7 +26,7 @@ const FavouriteButton = ({ recipe }: { recipe: Recipe }) => {
             <span className="text-red-400 text-xl font-bold">
                 {recipe.likes}
             </span>
-            {favList.includes(recipe._id.toString()) ? (
+            {favList.includes((recipe._id as ObjectId).toString()) ? (
                 <Heart
                     className="relative transition-all hover:scale-125 cursor-pointer"
                     color="#ff6467"

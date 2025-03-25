@@ -13,13 +13,7 @@ import InstructionsUpload from "./InstructionsUpload";
 import ImageUpload from "./ImageUpload";
 import { FormState, Recipe } from "@/types";
 
-const RecipeUploadForm = ({
-    recipeData,
-    mode,
-}: {
-    recipeData: Recipe;
-    mode: string;
-}) => {
+const RecipeUploadForm = ({ recipeData }: { recipeData: Recipe }) => {
     const initialState: FormState = {
         errors: {},
     };
@@ -32,9 +26,9 @@ const RecipeUploadForm = ({
     };
 
     const [state, formAction, isPending] = useActionState(
-        mode === "create"
-            ? createRecipe.bind(null, recipe)
-            : updateRecipe.bind(null, recipe),
+        recipe._id
+            ? updateRecipe.bind(null, recipe)
+            : createRecipe.bind(null, recipe),
         initialState
     );
 

@@ -1,13 +1,11 @@
-import { ObjectId } from "mongodb";
 import RecipeUploadForm from "@/components/uploadRecipe/RecipeUploadForm";
 import { Recipe } from "@/types";
 
 const CreateRecipePage = () => {
     const recipeData: Recipe = {
-        _id: new ObjectId(),
-        author: { name: "", image: "" },
+        author: { aName: null, aImage: null },
         likes: 0,
-        image: "",
+        imageId: "",
         title: "",
         description: "",
         ingredients: [{ id: 1, name: "", quantity: "" }],
@@ -23,10 +21,7 @@ const CreateRecipePage = () => {
                     You can upload your recipe here.
                 </p>
             </div>
-            <RecipeUploadForm
-                recipeData={JSON.parse(JSON.stringify(recipeData))}
-                mode={"create"}
-            />
+            <RecipeUploadForm recipeData={recipeData} />
         </div>
     );
 };

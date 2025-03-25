@@ -2,6 +2,7 @@
 
 import { Readable } from "stream";
 import { ObjectId } from "mongodb";
+import { createHash } from "crypto";
 import connectToGridFS from "@/lib/gridfs";
 
 export const uploadImageToGridFS = async (imageFile: File): Promise<string> => {
@@ -17,12 +18,15 @@ export const uploadImageToGridFS = async (imageFile: File): Promise<string> => {
         // Create a unique filename
         const filename = `${Date.now()}-${imageFile.name}`;
 
+        // Generate a hash of the image to check for duplicates
+        const imageHash = createHash("md5").update(buffer).digest("hex");
+
         // Upload to GridFS
         const uploadStream = bucket.openUploadStream(filename, {
             contentType: imageFile.type,
             metadata: {
                 originalName: imageFile.name,
-                uploadDate: new Date(),
+                md5: imageHash,
             },
         });
 
@@ -39,48 +43,37 @@ export const uploadImageToGridFS = async (imageFile: File): Promise<string> => {
     }
 };
 
-/* export const downloadImageFromGridFS = async (
-    imageId: string
-): Promise<string | null> => {
-    try {
-        if (!imageId) {
-            return null;
-        }
+export const removeImageFromGridFS = async (imageId: string) => {
+    const { bucket } = await connectToGridFS();
+    await bucket
+        .delete(new ObjectId(imageId))
+        .catch((err) => console.error("Error deleting image:", err));
+};
 
-        const { db, bucket } = await connectToGridFS();
-        const file = await db
-            .collection("images.files")
-            .findOne({ _id: new ObjectId(imageId) });
-        if (!file) {
-            return null;
-        }
+export const getRecipeImageFileById = async (imageId: string) => {
+    const { db } = await connectToGridFS();
+    const data = await db
+        .collection("images.files")
+        .findOne({ _id: new ObjectId(imageId) });
 
-        // Create a download stream
-        const downloadStream = bucket.openDownloadStream(new ObjectId(imageId));
+    return JSON.parse(JSON.stringify(data));
+};
 
-        // Collect the file data
-        const chunks: Buffer[] = [];
+export const checkNeedToUpload = async (
+    currentImageId: string,
+    newImageFile: File
+) => {
+    const currentImageFile = await getRecipeImageFileById(currentImageId);
 
-        return new Promise<string>((resolve, reject) => {
-            downloadStream.on("data", (chunk) => {
-                chunks.push(Buffer.from(chunk));
-            });
+    // Convert file to buffer
+    const buffer = Buffer.from(await newImageFile.arrayBuffer());
 
-            downloadStream.on("error", (err) => {
-                console.error("Error downloading from GridFS:", err);
-                reject(new Error("Error downloading from GridFS"));
-            });
+    // Generate a hash of the image to check for duplicates
+    const newImageHash = createHash("md5").update(buffer).digest("hex");
 
-            downloadStream.on("end", () => {
-                const buffer = Buffer.concat(chunks);
-                const base64 = buffer.toString("base64");
-                const contentType = file.contentType || "image/jpeg";
-
-                resolve(`data:${contentType};base64,${base64}`);
-            });
-        });
-    } catch (error) {
-        console.error("Error downloading from GridFS:", error);
-        throw new Error("Error downloading from GridFS");
+    if (currentImageFile && currentImageFile.metadata.md5 === newImageHash) {
+        return false;
     }
-}; */
+
+    return true;
+};

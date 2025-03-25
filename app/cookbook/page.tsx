@@ -1,4 +1,3 @@
-import { ObjectId } from "mongodb";
 import Link from "next/link";
 import { currentUser } from "@clerk/nextjs/server";
 import { Suspense } from "react";
@@ -23,22 +22,13 @@ const CookbookPage = async ({
     const userRecipes: Recipe[] =
         (await getUserRecipes(user.fullName || "")) || [];
 
-    const bookmarkedRecipes: Recipe[] = await Promise.all(
-        ((user.publicMetadata.bookmarks as string[]) || []).map(
-            async (id) =>
-                (await getRecipeById(id)) || {
-                    _id: new ObjectId(),
-                    author: { name: "", image: "" },
-                    likes: 0,
-                    image: "",
-                    title: "",
-                    description: "",
-                    ingredients: [],
-                    seasonings: [],
-                    instructions: [],
-                }
+    const bookmarkedRecipes: Recipe[] = (
+        await Promise.all(
+            ((user.publicMetadata.bookmarks as string[]) || []).map(
+                async (id) => await getRecipeById(id)
+            )
         )
-    );
+    ).filter((recipe) => recipe !== null);
 
     return (
         <div className="container mx-auto">

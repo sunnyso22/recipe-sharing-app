@@ -39,6 +39,7 @@ Cookery is a recipe sharing website built by Next.js + MongoDB. Deployed by Verc
 3. Nested Link in Card component
 4. Implement Incremental Static Regeneration(ISR)
 5. Fix the search bar which show the serach result instantly
+6. GridFS implementation
 
 ## Known Issues
 

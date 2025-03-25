@@ -15,7 +15,7 @@ import { Ingredient, Instruction, Recipe, Seasoning } from "@/types";
 export const generateStaticParams = async () => {
     const recipeData: Recipe[] = (await getAllRecipes()) || [];
     return recipeData.map((recipe) => ({
-        id: recipe._id.toString(),
+        id: (recipe._id as ObjectId).toString(),
     }));
 };
 
@@ -28,22 +28,15 @@ const RecipeDetail = async ({
 
     const user = await currentUser();
 
-    const recipeData: Recipe = (await getRecipeById(id)) || {
-        _id: new ObjectId(),
-        author: { name: "", image: "" },
-        likes: 0,
-        image: "",
-        title: "",
-        description: "",
-        ingredients: [],
-        seasonings: [],
-        instructions: [],
-    };
+    const recipeData = await getRecipeById(id);
+    if (!recipeData) {
+        throw new Error("Recipe not found");
+    }
 
     const {
         author,
         likes,
-        image,
+        imageId,
         title,
         description,
         ingredients,
@@ -54,7 +47,7 @@ const RecipeDetail = async ({
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
     const postUrl = `${baseUrl}recipes/${id}`;
 
-    const imageUrl = image ? `/api/images/${image}` : null;
+    const imageUrl = imageId ? `/api/images/${imageId}` : null;
 
     return (
         <div className="container mx-auto mt-12">
@@ -73,7 +66,7 @@ const RecipeDetail = async ({
                     <div className="flex flex-col gap-8">
                         <div className="flex justify-between items-center">
                             <h2 className="text-3xl font-extrabold">{title}</h2>
-                            {user && user.fullName === author.name ? (
+                            {user && user.fullName === author.aName ? (
                                 <div className="flex gap-6">
                                     <Link href={`/cookbook/write/${id}`}>
                                         <Button variant="outline">
@@ -94,15 +87,15 @@ const RecipeDetail = async ({
                         <div className="flex items-center gap-2">
                             <Avatar className="h-8 w-8">
                                 <AvatarImage
-                                    src={author.image || ""}
-                                    alt={author.name || ""}
+                                    src={author.aImage || ""}
+                                    alt={author.aName || ""}
                                 />
                                 <AvatarFallback>
                                     <UserRound className="text-accent" />
                                 </AvatarFallback>
                             </Avatar>
                             <span className="text-paragraph hover:border-b-1">
-                                {author.name}
+                                {author.aName}
                             </span>
                         </div>
                         <div className="flex items-center gap-6">

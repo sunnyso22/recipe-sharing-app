@@ -21,18 +21,20 @@ const ImageUpload = ({
     backendError?: string;
 }) => {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [imageAction, setImageAction] = useState("keep");
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const imageUrl = recipe.image ? `/api/images/${recipe.image}` : null;
+    const imageUrl = recipe.imageId ? `/api/images/${recipe.imageId}` : null;
 
     useEffect(() => {
         setImagePreview(imageUrl);
-    }, [recipe.image]);
+    }, [imageUrl]);
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
 
-        if (file && file.type.startsWith("image/")) {
+        if (file) {
+            setImageAction("replace");
             const reader = new FileReader();
             reader.onload = () => {
                 const imageData = reader.result as string;
@@ -47,8 +49,8 @@ const ImageUpload = ({
     };
 
     const removeImage = () => {
+        setImageAction("remove");
         setImagePreview(null);
-
         if (fileInputRef.current) {
             fileInputRef.current.value = "";
         }
@@ -91,6 +93,12 @@ const ImageUpload = ({
                             ref={fileInputRef}
                             accept="image/png, image/jpeg"
                             onChange={handleImageUpload}
+                        />
+                        <Input
+                            hidden
+                            name="imageAction"
+                            value={imageAction}
+                            onChange={() => {}}
                         />
                     </div>
                 </ContextMenuTrigger>

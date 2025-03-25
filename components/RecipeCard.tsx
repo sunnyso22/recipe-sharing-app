@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb";
 import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
 import Image from "next/image";
@@ -10,8 +11,10 @@ import { Recipe } from "@/types";
 const RecipeCard = async (recipe: Recipe) => {
     const user = await currentUser();
 
-    const { _id, title, image, likes, author } = recipe;
-    const imageUrl = image ? `/api/images/${image}` : null;
+    const { _id, title, imageId, likes, author } = recipe;
+
+    // const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+    const imageUrl = imageId ? `/api/images/${imageId}` : null;
 
     return (
         <Card>
@@ -25,7 +28,7 @@ const RecipeCard = async (recipe: Recipe) => {
             </div>
             <CardContent>
                 <Link
-                    href={`/recipes/${_id.toString()}`}
+                    href={`/recipes/${(_id as ObjectId).toString()}`}
                     className="after:absolute after:inset-0"
                 >
                     <h2 className="text-lg font-bold">{title}</h2>
@@ -35,15 +38,15 @@ const RecipeCard = async (recipe: Recipe) => {
                 <div className="flex items-center gap-2">
                     <Avatar className="h-8 w-8">
                         <AvatarImage
-                            src={author.image || ""}
-                            alt={author.name || ""}
+                            src={author.aImage || ""}
+                            alt={author.aName || ""}
                         />
                         <AvatarFallback>
                             <UserRound className="text-accent" />
                         </AvatarFallback>
                     </Avatar>
                     <span className="relative text-paragraph hover:border-b-1">
-                        {author.name}
+                        {author.aName}
                     </span>
                 </div>
                 <div className="flex items-center gap-2">
