@@ -1,7 +1,21 @@
 import { ObjectId } from "mongodb";
+import { Metadata } from "next";
 import { getAllRecipes, getRecipeById } from "@/actions/recipes";
 import RecipeUploadForm from "@/components/uploadRecipe/RecipeUploadForm";
 import { Recipe } from "@/types";
+
+export const generateMetadata = async ({
+    params,
+}: {
+    params: Promise<{ id: string }>;
+}): Promise<Metadata> => {
+    const { id } = await params;
+    const recipeData = await getRecipeById(id);
+    if (!recipeData) {
+        throw new Error("Recipe not found");
+    }
+    return { title: `Edit: ${recipeData.title}` };
+};
 
 export const generateStaticParams = async () => {
     const recipeData: Recipe[] = (await getAllRecipes()) || [];

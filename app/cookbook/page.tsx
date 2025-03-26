@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import Link from "next/link";
 import { currentUser } from "@clerk/nextjs/server";
 import { Suspense } from "react";
@@ -8,6 +9,10 @@ import { Button } from "@/components/ui/button";
 import TabsNavigation from "@/components/TabsNavigation";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Recipe } from "@/types";
+
+export const metadata: Metadata = {
+    title: "Cookbook",
+};
 
 const CookbookPage = async ({
     searchParams,
@@ -41,7 +46,7 @@ const CookbookPage = async ({
                         You can find your published and bookmarked recipes here.
                     </p>
                 </div>
-                <Link href="/cookbook/write">
+                <Link href="/cookbook/create">
                     <Button variant="secondary">
                         <NotebookPen />
                         Write Recipes

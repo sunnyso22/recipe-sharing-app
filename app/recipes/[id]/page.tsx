@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb";
 import { currentUser } from "@clerk/nextjs/server";
+import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Bookmark, Heart, Pencil, UserRound } from "lucide-react";
@@ -11,6 +12,19 @@ import ShareButton from "@/components/ShareButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Ingredient, Instruction, Recipe, Seasoning } from "@/types";
+
+export const generateMetadata = async ({
+    params,
+}: {
+    params: Promise<{ id: string }>;
+}): Promise<Metadata> => {
+    const { id } = await params;
+    const recipeData = await getRecipeById(id);
+    if (!recipeData) {
+        throw new Error("Recipe not found");
+    }
+    return { title: recipeData.title };
+};
 
 export const generateStaticParams = async () => {
     const recipeData: Recipe[] = (await getAllRecipes()) || [];
@@ -68,7 +82,7 @@ const RecipeDetail = async ({
                             <h2 className="text-3xl font-extrabold">{title}</h2>
                             {user && user.fullName === author.aName ? (
                                 <div className="flex gap-6">
-                                    <Link href={`/cookbook/write/${id}`}>
+                                    <Link href={`/cookbook/edit/${id}`}>
                                         <Button variant="outline">
                                             <Pencil />
                                             Edit

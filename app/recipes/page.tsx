@@ -1,9 +1,14 @@
 import { Suspense } from "react";
+import { Metadata } from "next";
 import { getAllRecipes } from "@/actions/recipes";
 import RecipesGrid from "@/components/RecipesGrid";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import SearchBar from "@/components/SearchBar";
 import { Recipe } from "@/types";
+
+export const metadata: Metadata = {
+    title: "Recipes",
+};
 
 const Recipes = async ({
     searchParams,

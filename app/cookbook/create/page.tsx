@@ -1,5 +1,10 @@
+import { Metadata } from "next";
 import RecipeUploadForm from "@/components/uploadRecipe/RecipeUploadForm";
 import { Recipe } from "@/types";
+
+export const metadata: Metadata = {
+    title: "Create Recipe",
+};
 
 const CreateRecipePage = () => {
     const recipeData: Recipe = {

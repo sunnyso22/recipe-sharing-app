@@ -18,8 +18,11 @@ export const revalidate = 60;
 export const dynamicParams = true;
 
 export const metadata: Metadata = {
-    title: "Cookery",
-    description: "The best cookbook you could find.",
+    title: {
+        default: "Cookery",
+        template: "%s | Cookery",
+    },
+    description: "Discover, Share, and Savor the World's Best Recipes",
 };
 
 export default function RootLayout({
