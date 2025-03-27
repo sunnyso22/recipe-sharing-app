@@ -22,7 +22,7 @@ const ImageUpload = ({
 }) => {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [imageAction, setImageAction] = useState("keep");
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     const imageUrl = recipe.imageId ? `/api/images/${recipe.imageId}` : null;
 

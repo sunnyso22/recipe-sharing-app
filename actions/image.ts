@@ -4,6 +4,7 @@ import { Readable } from "stream";
 import { ObjectId } from "mongodb";
 import { createHash } from "crypto";
 import connectToGridFS from "@/lib/gridfs";
+import { handleError } from "@/lib/utils";
 
 export const uploadImageToGridFS = async (imageFile: File): Promise<string> => {
     try {
@@ -38,25 +39,32 @@ export const uploadImageToGridFS = async (imageFile: File): Promise<string> => {
                 .on("finish", () => resolve(uploadStream.id.toString()));
         });
     } catch (error) {
-        console.error("Error uploading to GridFS:", error);
-        throw new Error("Error uploading to GridFS");
+        throw handleError(error);
     }
 };
 
 export const removeImageFromGridFS = async (imageId: string) => {
-    const { bucket } = await connectToGridFS();
-    await bucket
-        .delete(new ObjectId(imageId))
-        .catch((err) => console.error("Error deleting image:", err));
+    try {
+        const { bucket } = await connectToGridFS();
+        await bucket
+            .delete(new ObjectId(imageId))
+            .catch((err) => console.error("Error deleting image:", err));
+    } catch (error) {
+        throw handleError(error);
+    }
 };
 
 export const getRecipeImageFileById = async (imageId: string) => {
-    const { db } = await connectToGridFS();
-    const data = await db
-        .collection("images.files")
-        .findOne({ _id: new ObjectId(imageId) });
+    try {
+        const { db } = await connectToGridFS();
+        const data = await db
+            .collection("images.files")
+            .findOne({ _id: new ObjectId(imageId) });
 
-    return JSON.parse(JSON.stringify(data));
+        return JSON.parse(JSON.stringify(data));
+    } catch (error) {
+        throw handleError(error);
+    }
 };
 
 export const checkNeedToUpload = async (

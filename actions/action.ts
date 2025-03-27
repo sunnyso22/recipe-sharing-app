@@ -68,9 +68,7 @@ export const updateRecipe = async (
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
     const imageFile = formData.get("imageFile") as File;
-    console.log(imageFile);
     const imageAction = formData.get("imageAction") as string;
-    console.log(imageAction);
 
     const errors: FormErrors = {};
     if (!title) {
@@ -92,7 +90,6 @@ export const updateRecipe = async (
         case "replace":
             // Case 2: User uploads new image
             if (imageFile && imageFile.size > 0) {
-                // New image is uploaded
                 needToUpload = await checkNeedToUpload(
                     recipe.imageId,
                     imageFile
@@ -100,6 +97,8 @@ export const updateRecipe = async (
                 if (needToUpload) {
                     await removeImageFromGridFS(recipe.imageId);
                     imageId = await uploadImageToGridFS(imageFile);
+                } else {
+                    imageId = recipe.imageId;
                 }
             }
             break;
@@ -153,10 +152,10 @@ export const removeLike = async (recipe: Recipe) => {
 export const updateToClerkPublicMetaData = async (lists: Metadata = {}) => {
     const { favList, bmList } = lists;
 
-    try {
-        const user = await currentUser();
-        if (!user) return false;
+    const user = await currentUser();
+    if (!user) throw new Error("User could not be found!");
 
+    try {
         const client = await clerkClient();
 
         const res = await client.users.updateUserMetadata(user.id, {
@@ -165,9 +164,8 @@ export const updateToClerkPublicMetaData = async (lists: Metadata = {}) => {
                 bookmarks: bmList,
             },
         });
-
         if (res) revalidatePath("/");
     } catch (error) {
-        handleError(error);
+        throw handleError(error);
     }
 };

@@ -21,7 +21,7 @@ export const getAllRecipes = async (search?: string) => {
 
         return data;
     } catch (error) {
-        return handleError(error);
+        throw handleError(error);
     }
 };
 
@@ -36,7 +36,7 @@ export const getHotRecipes = async (likes: number) => {
 
         return data;
     } catch (error) {
-        return handleError(error);
+        throw handleError(error);
     }
 };
 
@@ -50,7 +50,7 @@ export const getUserRecipes = async (name: string) => {
 
         return data;
     } catch (error) {
-        return handleError(error);
+        throw handleError(error);
     }
 };
 
@@ -63,7 +63,7 @@ export const getRecipeById = async (id: string) => {
 
         return data;
     } catch (error) {
-        return handleError(error);
+        throw handleError(error);
     }
 };
 
@@ -76,7 +76,7 @@ export const postRecipe = async (recipe: Recipe) => {
 
         return result.insertedId;
     } catch (error) {
-        return handleError(error);
+        throw handleError(error);
     }
 };
 
@@ -109,7 +109,7 @@ export const putRecipe = async (recipe: Recipe) => {
         );
         return result;
     } catch (error) {
-        return handleError(error);
+        throw handleError(error);
     }
 };
 
@@ -122,6 +122,6 @@ export const deleteRecipe = async (id: string) => {
 
         return result;
     } catch (error) {
-        return handleError(error);
+        throw handleError(error);
     }
 };
