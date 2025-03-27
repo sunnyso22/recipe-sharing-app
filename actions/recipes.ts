@@ -31,7 +31,7 @@ export const getHotRecipes = async (likes: number) => {
         const data = await db
             .collection<Recipe>(collection)
             .find({ likes: { $gte: likes } })
-            .sort({ title: 1 })
+            .sort({ likes: -1 })
             .toArray();
 
         return data;
