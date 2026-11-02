@@ -1,5 +1,6 @@
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { themeInitScript } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Noto_Serif, Roboto_Slab } from "next/font/google";
@@ -37,6 +38,7 @@ const RootLayout = ({ children }: LayoutProps<"/">) => {
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={cn(
         "h-full",
         "antialiased",
@@ -48,6 +50,7 @@ const RootLayout = ({ children }: LayoutProps<"/">) => {
       )}
     >
       <body className="flex min-h-full flex-col">
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <SiteHeader />
         {children}
         <SiteFooter />

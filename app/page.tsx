@@ -30,11 +30,7 @@ const highlights = [
 const Home = () => {
   return (
     <main className="flex flex-1 flex-col">
-      <section className="relative overflow-hidden">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-32 left-1/2 -z-10 size-[40rem] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
-        />
+      <section>
         <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-6 py-16 md:py-24 lg:grid-cols-[1.15fr_0.85fr] lg:py-28">
           <div className="flex flex-col items-start gap-6">
             <h1 className="font-heading text-4xl leading-[1.1] tracking-tight text-balance sm:text-5xl lg:text-6xl">
@@ -44,10 +40,7 @@ const Home = () => {
               Your Culinary Adventure Starts Here!
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link
-                href="/recipes"
-                className={buttonVariants({ size: "lg" })}
-              >
+              <Link href="/recipes" className={buttonVariants({ size: "lg" })}>
                 Explore recipes
               </Link>
               <Link
