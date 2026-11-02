@@ -1,48 +1,59 @@
-import { SpeedInsights } from "@vercel/speed-insights/next";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
+import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
-import { Lato } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Serif, Roboto_Slab } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-import { ClerkProvider } from "@clerk/nextjs";
-import UserContextProvider from "@/context/UserContext";
-import SignInDetector from "@/components/SignInDetector";
 
-const myFont = Lato({
-    subsets: ["latin"],
-    weight: ["400", "700"],
+const notoSerifHeading = Noto_Serif({
+  subsets: ["latin"],
+  variable: "--font-heading",
 });
 
-export const revalidate = 60;
+const robotoSlab = Roboto_Slab({
+  subsets: ["latin"],
+  variable: "--font-serif",
+});
 
-export const dynamicParams = true;
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
-    title: {
-        default: "Cookery",
-        template: "%s | Cookery",
-    },
-    description: "Discover, Share, and Savor the World's Best Recipes",
+  title: {
+    default: "Cookery",
+    template: "%s | Cookery",
+  },
+  description: "Discover, Share, and Savor the World's Best Recipes",
 };
 
-export default function RootLayout({
-    children,
-}: Readonly<{
-    children: React.ReactNode;
-}>) {
-    return (
-        <ClerkProvider>
-            <html lang="en">
-                <body className={`${myFont.className} antialiased`}>
-                    <UserContextProvider>
-                        <Header />
-                        {children}
-                        <Footer />
-                        <SignInDetector />
-                        <SpeedInsights />
-                    </UserContextProvider>
-                </body>
-            </html>
-        </ClerkProvider>
-    );
-}
+const RootLayout = ({ children }: LayoutProps<"/">) => {
+  return (
+    <html
+      lang="en"
+      className={cn(
+        "h-full",
+        "antialiased",
+        geistSans.variable,
+        geistMono.variable,
+        "font-serif",
+        robotoSlab.variable,
+        notoSerifHeading.variable,
+      )}
+    >
+      <body className="flex min-h-full flex-col">
+        <SiteHeader />
+        {children}
+        <SiteFooter />
+      </body>
+    </html>
+  );
+};
+
+export default RootLayout;

@@ -1,0 +1,33 @@
+---
+description: Use arrow functions in TypeScript and TSX
+globs: "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# Arrow functions
+
+Write functions as arrow functions, including components, helpers, and callbacks.
+
+```tsx
+// Bad
+export default function RecipesPage() {
+  return <h1>Recipes</h1>;
+}
+
+async function loadRecipes() {
+  return db.select().from(recipesTable);
+}
+
+// Good
+const RecipesPage = () => {
+  return <h1>Recipes</h1>;
+};
+
+export default RecipesPage;
+
+const loadRecipes = async () => {
+  return db.select().from(recipesTable);
+};
+```
+
+Use a `function` declaration only when an arrow function cannot express it, such as a generator (`function*`).
