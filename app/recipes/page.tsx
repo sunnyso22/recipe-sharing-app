@@ -44,7 +44,7 @@ const RecipeGrid = async () => {
           <Card>
             <Image
               src={recipePlaceholder}
-              alt=""
+              alt={`${recipe.title}`}
               width={1600}
               height={1066}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
