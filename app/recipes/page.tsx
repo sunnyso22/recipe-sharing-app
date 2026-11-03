@@ -1,5 +1,6 @@
 import { asc } from "drizzle-orm";
 import Image from "next/image";
+import Link from "next/link";
 import { Suspense } from "react";
 
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,22 +43,27 @@ const RecipeGrid = async () => {
     <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {recipes.map((recipe, index) => (
         <li key={recipe.id}>
-          <Card>
-            <Image
-              src={recipePlaceholder}
-              alt={`${recipe.title}`}
-              width={1600}
-              height={1066}
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              className="h-auto w-full"
-              loading={index === 0 ? "eager" : "lazy"}
-            />
-            <CardHeader>
-              <CardTitle className="text-xl">
-                <h2>{recipe.title}</h2>
-              </CardTitle>
-            </CardHeader>
-          </Card>
+          <Link
+            href={`/recipes/${recipe.id}`}
+            className="block rounded-4xl outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+          >
+            <Card className="h-full transition-shadow hover:shadow-lg">
+              <Image
+                src={recipePlaceholder}
+                alt=""
+                width={1600}
+                height={1066}
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                className="h-auto w-full"
+                loading={index === 0 ? "eager" : "lazy"}
+              />
+              <CardHeader>
+                <CardTitle className="text-xl">
+                  <h2>{recipe.title}</h2>
+                </CardTitle>
+              </CardHeader>
+            </Card>
+          </Link>
         </li>
       ))}
     </ul>
