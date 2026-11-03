@@ -1,10 +1,12 @@
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
-import { themeInitScript } from "@/lib/theme";
-import { cn } from "@/lib/utils";
+import "./globals.css";
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Noto_Serif, Roboto_Slab } from "next/font/google";
-import "./globals.css";
+
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
+import { ThemeProvider } from "@/components/theme-provider";
+import { cn } from "@/lib/utils";
 
 const notoSerifHeading = Noto_Serif({
   subsets: ["latin"],
@@ -50,10 +52,16 @@ const RootLayout = ({ children }: LayoutProps<"/">) => {
       )}
     >
       <body className="flex min-h-full flex-col">
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-        <SiteHeader />
-        {children}
-        <SiteFooter />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <SiteHeader />
+          {children}
+          <SiteFooter />
+        </ThemeProvider>
       </body>
     </html>
   );

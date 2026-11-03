@@ -1,9 +1,10 @@
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { db } from "@/db";
-import { recipesTable } from "@/db/schema";
 import { asc } from "drizzle-orm";
 import Image from "next/image";
 import { Suspense } from "react";
+
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { db } from "@/db";
+import { recipesTable } from "@/db/schema";
 
 export const metadata = {
   title: "Recipes",

@@ -1,3 +1,7 @@
+import { Compass, Share2, UtensilsCrossed } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+
 import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
@@ -5,9 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Compass, Share2, UtensilsCrossed } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
 
 const highlights = [
   {

@@ -1,6 +1,7 @@
-import { Button, buttonVariants } from "@/components/ui/button";
 import { ChefHat } from "lucide-react";
 import Link from "next/link";
+
+import { Button, buttonVariants } from "@/components/ui/button";
 
 const navItems = [
   { href: "/", label: "Home" },

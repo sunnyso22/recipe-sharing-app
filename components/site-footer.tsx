@@ -1,5 +1,6 @@
-import { ThemeToggle } from "@/components/theme-toggle";
 import { ChefHat } from "lucide-react";
+
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const SiteFooter = () => {
   return (

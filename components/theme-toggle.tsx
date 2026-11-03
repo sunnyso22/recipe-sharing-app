@@ -1,27 +1,24 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { THEME_STORAGE_KEY } from "@/lib/theme";
 import { Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
 
-const applyTheme = (theme: "dark" | "light") => {
-  document.documentElement.classList.toggle("dark", theme === "dark");
-
-  try {
-    localStorage.setItem(THEME_STORAGE_KEY, theme);
-  } catch {
-    // Keep the visual theme for this visit when storage is blocked.
-  }
-};
+import { Button } from "@/components/ui/button";
 
 const ThemeToggle = () => {
+  const { resolvedTheme, setTheme } = useTheme();
+
   const toggleTheme = () => {
-    const isDark = document.documentElement.classList.contains("dark");
-    applyTheme(isDark ? "light" : "dark");
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
   };
 
   return (
-    <Button type="button" variant="outline" size="icon-sm" onClick={toggleTheme}>
+    <Button
+      type="button"
+      variant="outline"
+      size="icon-sm"
+      onClick={toggleTheme}
+    >
       <Sun className="hidden dark:block" aria-hidden />
       <Moon className="dark:hidden" aria-hidden />
       <span className="sr-only dark:hidden">Switch to dark mode</span>
