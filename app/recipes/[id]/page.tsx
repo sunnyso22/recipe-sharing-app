@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { PageMain } from "@/components/page-main";
+import { DeleteRecipeButton } from "@/components/recipes/delete-recipe-button";
 import {
   RecipeDetail,
   RecipeDetailSkeleton,
@@ -35,16 +36,36 @@ export const generateMetadata = async ({
   };
 };
 
+const RecipeDeleteAction = async ({
+  params,
+}: {
+  params: PageProps<"/recipes/[id]">["params"];
+}) => {
+  const { id } = await params;
+  const recipeId = parseRecipeId(id);
+
+  if (recipeId === null) {
+    return null;
+  }
+
+  return <DeleteRecipeButton recipeId={recipeId} />;
+};
+
 const RecipePage = ({ params }: PageProps<"/recipes/[id]">) => {
   return (
     <PageMain>
-      <Link
-        href="/recipes"
-        className={cn(buttonVariants({ variant: "ghost" }), "-ml-3 w-fit")}
-      >
-        <ArrowLeft />
-        Back
-      </Link>
+      <div className="flex items-start justify-between gap-4">
+        <Link
+          href="/recipes"
+          className={cn(buttonVariants({ variant: "ghost" }), "-ml-3 w-fit")}
+        >
+          <ArrowLeft />
+          Back
+        </Link>
+        <Suspense fallback={null}>
+          <RecipeDeleteAction params={params} />
+        </Suspense>
+      </div>
       <Suspense fallback={<RecipeDetailSkeleton />}>
         <RecipeDetail params={params} />
       </Suspense>

@@ -1,4 +1,4 @@
-import { asc } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { cache } from "react";
 
 import { db } from "@/db";
@@ -93,5 +93,14 @@ const createRecipe = (recipe: NewRecipe) => {
   });
 };
 
-export { createRecipe, getRecipe, listRecipes };
+const deleteRecipe = async (recipeId: number) => {
+  const [deleted] = await db
+    .delete(recipesTable)
+    .where(eq(recipesTable.id, recipeId))
+    .returning({ id: recipesTable.id });
+
+  return deleted ?? null;
+};
+
+export { createRecipe, deleteRecipe, getRecipe, listRecipes };
 export type { RecipeDetails };
