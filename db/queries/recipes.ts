@@ -2,7 +2,12 @@ import { asc } from "drizzle-orm";
 import { cache } from "react";
 
 import { db } from "@/db";
-import { recipesTable } from "@/db/schema";
+import {
+  ingredientsTable,
+  instructionsTable,
+  recipesTable,
+  seasoningsTable,
+} from "@/db/schema";
 
 const listRecipes = () => {
   return db
@@ -33,5 +38,60 @@ const getRecipe = cache((recipeId: number) => {
 
 type RecipeDetails = NonNullable<Awaited<ReturnType<typeof getRecipe>>>;
 
-export { getRecipe, listRecipes };
+type QuantityInput = {
+  name: string;
+  quantity: string;
+};
+
+type NewRecipe = {
+  title: string;
+  description: string;
+  ingredients: QuantityInput[];
+  seasonings: QuantityInput[];
+  instructions: { description: string }[];
+};
+
+const createRecipe = (recipe: NewRecipe) => {
+  return db.transaction(async (tx) => {
+    const [created] = await tx
+      .insert(recipesTable)
+      .values({
+        title: recipe.title,
+        description: recipe.description,
+      })
+      .returning({ id: recipesTable.id });
+
+    if (!created) {
+      throw new Error("Recipe was not created");
+    }
+
+    await tx.insert(ingredientsTable).values(
+      recipe.ingredients.map((ingredient) => ({
+        recipeId: created.id,
+        name: ingredient.name,
+        quantity: ingredient.quantity,
+      })),
+    );
+
+    await tx.insert(seasoningsTable).values(
+      recipe.seasonings.map((seasoning) => ({
+        recipeId: created.id,
+        name: seasoning.name,
+        quantity: seasoning.quantity,
+      })),
+    );
+
+    await tx.insert(instructionsTable).values(
+      recipe.instructions.map((instruction, index) => ({
+        recipeId: created.id,
+        stepNumber: index + 1,
+        description: instruction.description,
+      })),
+    );
+
+    return created.id;
+  });
+};
+
+export { createRecipe, getRecipe, listRecipes };
 export type { RecipeDetails };
