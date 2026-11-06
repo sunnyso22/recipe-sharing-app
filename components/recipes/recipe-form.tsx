@@ -25,7 +25,11 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { recipeFormSchema, type RecipeFormValues } from "@/lib/recipe-form";
+import {
+  recipeFormSchema,
+  type RecipeFormState,
+  type RecipeFormValues,
+} from "@/lib/recipe-form";
 
 const createQuantity = () => {
   return { name: "", quantity: "" };
@@ -40,19 +44,44 @@ type RecipeTextPath = {
     : never;
 }[FieldPath<RecipeFormValues>];
 
-const RecipeForm = () => {
-  const [state, submitRecipe, pending] = useActionState(createRecipeAction, {
+const emptyRecipe: RecipeFormValues = {
+  title: "",
+  description: "",
+  ingredients: [createQuantity()],
+  seasonings: [createQuantity()],
+  instructions: [{ description: "" }],
+};
+
+const cloneRecipeValues = (values: RecipeFormValues): RecipeFormValues => {
+  return {
+    title: values.title,
+    description: values.description,
+    ingredients: values.ingredients.map((item) => ({ ...item })),
+    seasonings: values.seasonings.map((item) => ({ ...item })),
+    instructions: values.instructions.map((item) => ({ ...item })),
+  };
+};
+
+const RecipeForm = ({
+  action = createRecipeAction,
+  defaultValues = emptyRecipe,
+  submitLabel = "Save recipe",
+  pendingLabel = "Saving...",
+}: {
+  action?: (
+    state: RecipeFormState,
+    values: RecipeFormValues,
+  ) => Promise<RecipeFormState>;
+  defaultValues?: RecipeFormValues;
+  submitLabel?: string;
+  pendingLabel?: string;
+}) => {
+  const [state, submitRecipe, pending] = useActionState(action, {
     message: "",
   });
   const form = useForm<RecipeFormValues>({
     resolver: zodResolver(recipeFormSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      ingredients: [createQuantity()],
-      seasonings: [createQuantity()],
-      instructions: [{ description: "" }],
-    },
+    defaultValues: cloneRecipeValues(defaultValues),
   });
   const ingredients = useFieldArray({
     control: form.control,
@@ -232,7 +261,7 @@ const RecipeForm = () => {
 
       <div className="flex justify-end">
         <Button type="submit" size="lg" disabled={pending}>
-          {pending ? "Saving..." : "Save recipe"}
+          {pending ? pendingLabel : submitLabel}
         </Button>
       </div>
     </form>
@@ -366,4 +395,23 @@ const QuantityFields = ({
   );
 };
 
-export { RecipeForm };
+const RecipeFormSkeleton = () => {
+  return (
+    <div className="flex flex-col gap-8">
+      <div className="grid items-start gap-8 lg:grid-cols-[1.15fr_0.85fr]">
+        <div className="aspect-3/2 animate-pulse rounded-4xl bg-muted" />
+        <div className="flex flex-col gap-4 lg:py-4">
+          <div className="h-16 animate-pulse rounded-3xl bg-muted" />
+          <div className="h-28 animate-pulse rounded-2xl bg-muted" />
+        </div>
+      </div>
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="h-56 animate-pulse rounded-4xl bg-muted" />
+        <div className="h-56 animate-pulse rounded-4xl bg-muted" />
+      </div>
+      <div className="h-56 animate-pulse rounded-4xl bg-muted" />
+    </div>
+  );
+};
+
+export { RecipeForm, RecipeFormSkeleton };

@@ -93,6 +93,60 @@ const createRecipe = (recipe: NewRecipe) => {
   });
 };
 
+const updateRecipe = (recipeId: number, recipe: NewRecipe) => {
+  return db.transaction(async (tx) => {
+    const [updated] = await tx
+      .update(recipesTable)
+      .set({
+        title: recipe.title,
+        description: recipe.description,
+        updatedAt: new Date(),
+      })
+      .where(eq(recipesTable.id, recipeId))
+      .returning({ id: recipesTable.id });
+
+    if (!updated) {
+      return null;
+    }
+
+    await tx
+      .delete(ingredientsTable)
+      .where(eq(ingredientsTable.recipeId, recipeId));
+    await tx
+      .delete(seasoningsTable)
+      .where(eq(seasoningsTable.recipeId, recipeId));
+    await tx
+      .delete(instructionsTable)
+      .where(eq(instructionsTable.recipeId, recipeId));
+
+    await tx.insert(ingredientsTable).values(
+      recipe.ingredients.map((ingredient) => ({
+        recipeId,
+        name: ingredient.name,
+        quantity: ingredient.quantity,
+      })),
+    );
+
+    await tx.insert(seasoningsTable).values(
+      recipe.seasonings.map((seasoning) => ({
+        recipeId,
+        name: seasoning.name,
+        quantity: seasoning.quantity,
+      })),
+    );
+
+    await tx.insert(instructionsTable).values(
+      recipe.instructions.map((instruction, index) => ({
+        recipeId,
+        stepNumber: index + 1,
+        description: instruction.description,
+      })),
+    );
+
+    return updated.id;
+  });
+};
+
 const deleteRecipe = async (recipeId: number) => {
   const [deleted] = await db
     .delete(recipesTable)
@@ -102,5 +156,5 @@ const deleteRecipe = async (recipeId: number) => {
   return deleted ?? null;
 };
 
-export { createRecipe, deleteRecipe, getRecipe, listRecipes };
+export { createRecipe, deleteRecipe, getRecipe, listRecipes, updateRecipe };
 export type { RecipeDetails };

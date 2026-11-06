@@ -1,4 +1,4 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Pencil } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -36,7 +36,7 @@ export const generateMetadata = async ({
   };
 };
 
-const RecipeDeleteAction = async ({
+const RecipeActions = async ({
   params,
 }: {
   params: PageProps<"/recipes/[id]">["params"];
@@ -48,7 +48,18 @@ const RecipeDeleteAction = async ({
     return null;
   }
 
-  return <DeleteRecipeButton recipeId={recipeId} />;
+  return (
+    <div className="flex shrink-0 items-center gap-2">
+      <Link
+        href={`/recipes/${recipeId}/edit`}
+        className={buttonVariants({ variant: "outline" })}
+      >
+        <Pencil />
+        Update
+      </Link>
+      <DeleteRecipeButton recipeId={recipeId} />
+    </div>
+  );
 };
 
 const RecipePage = ({ params }: PageProps<"/recipes/[id]">) => {
@@ -63,7 +74,7 @@ const RecipePage = ({ params }: PageProps<"/recipes/[id]">) => {
           Back
         </Link>
         <Suspense fallback={null}>
-          <RecipeDeleteAction params={params} />
+          <RecipeActions params={params} />
         </Suspense>
       </div>
       <Suspense fallback={<RecipeDetailSkeleton />}>

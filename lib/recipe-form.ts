@@ -37,5 +37,9 @@ const recipeFormSchema = z.object({
 
 type RecipeFormValues = z.infer<typeof recipeFormSchema>;
 
+type RecipeFormState = {
+  message: string;
+};
+
 export { recipeFormSchema };
-export type { RecipeFormValues };
+export type { RecipeFormState, RecipeFormValues };

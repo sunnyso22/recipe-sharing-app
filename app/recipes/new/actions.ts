@@ -4,11 +4,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { createRecipe } from "@/db/queries/recipes";
-import { recipeFormSchema, type RecipeFormValues } from "@/lib/recipe-form";
-
-type RecipeFormState = {
-  message: string;
-};
+import {
+  recipeFormSchema,
+  type RecipeFormState,
+  type RecipeFormValues,
+} from "@/lib/recipe-form";
 
 const createRecipeAction = async (
   _state: RecipeFormState,
@@ -38,4 +38,3 @@ const createRecipeAction = async (
 };
 
 export { createRecipeAction };
-export type { RecipeFormState };
