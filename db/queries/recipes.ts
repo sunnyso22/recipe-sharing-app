@@ -1,4 +1,4 @@
-import { asc, eq } from "drizzle-orm";
+import { asc, eq, ilike, or } from "drizzle-orm";
 import { cache } from "react";
 
 import { db } from "@/db";
@@ -17,6 +17,28 @@ const listRecipes = () => {
     })
     .from(recipesTable)
     .orderBy(asc(recipesTable.createdAt));
+};
+
+const escapeIlike = (value: string) => {
+  return value.replace(/[%_\\]/g, "\\$&");
+};
+
+const searchRecipes = (query: string) => {
+  const pattern = `%${escapeIlike(query)}%`;
+
+  return db
+    .select({
+      id: recipesTable.id,
+      title: recipesTable.title,
+    })
+    .from(recipesTable)
+    .where(
+      or(
+        ilike(recipesTable.title, pattern),
+        ilike(recipesTable.description, pattern),
+      ),
+    )
+    .orderBy(asc(recipesTable.title));
 };
 
 const getRecipe = cache((recipeId: number) => {
@@ -156,5 +178,12 @@ const deleteRecipe = async (recipeId: number) => {
   return deleted ?? null;
 };
 
-export { createRecipe, deleteRecipe, getRecipe, listRecipes, updateRecipe };
+export {
+  createRecipe,
+  deleteRecipe,
+  getRecipe,
+  listRecipes,
+  searchRecipes,
+  updateRecipe,
+};
 export type { RecipeDetails };

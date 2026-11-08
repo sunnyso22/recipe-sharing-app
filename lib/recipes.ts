@@ -1,5 +1,11 @@
 const recipePlaceholder = "/recipe-placeholder.jpg";
 
+const readSearchQuery = (value: string | string[] | undefined) => {
+  const raw = Array.isArray(value) ? value[0] : value;
+
+  return raw?.trim().slice(0, 100) ?? "";
+};
+
 const parseRecipeId = (id: string) => {
   if (!/^[1-9]\d*$/.test(id)) {
     return null;
@@ -14,4 +20,4 @@ const parseRecipeId = (id: string) => {
   return recipeId;
 };
 
-export { parseRecipeId, recipePlaceholder };
+export { parseRecipeId, readSearchQuery, recipePlaceholder };
