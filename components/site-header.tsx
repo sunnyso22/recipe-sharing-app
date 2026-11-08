@@ -1,7 +1,9 @@
 import { ChefHat } from "lucide-react";
 import Link from "next/link";
+import { Suspense } from "react";
 
-import { Button, buttonVariants } from "@/components/ui/button";
+import { AuthNav, SignInLink } from "@/components/auth/auth-nav";
+import { buttonVariants } from "@/components/ui/button";
 
 const navItems = [
   { href: "/", label: "Home" },
@@ -31,9 +33,9 @@ const SiteHeader = () => {
               {item.label}
             </Link>
           ))}
-          <Button type="button" className="ml-1">
-            Sign in
-          </Button>
+          <Suspense fallback={<SignInLink />}>
+            <AuthNav />
+          </Suspense>
         </nav>
       </div>
     </header>
