@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { siteName } from "@/lib/site";
 
 const highlights = [
   {
@@ -32,7 +33,7 @@ const HomeHighlights = () => {
       className="mx-auto w-full max-w-6xl scroll-mt-24 px-6 pb-20"
     >
       <h2 className="font-heading text-3xl tracking-tight">
-        Three ways to cook with Cookery
+        Three ways to cook with {siteName}
       </h2>
       <ul className="mt-8 grid gap-6 sm:grid-cols-3">
         {highlights.map((highlight) => {

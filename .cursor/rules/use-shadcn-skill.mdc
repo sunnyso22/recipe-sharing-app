@@ -1,0 +1,15 @@
+---
+description: Use the shadcn MCP when creating frontend components
+alwaysApply: true
+---
+
+# Use the shadcn MCP
+
+Before creating or editing a frontend component — a page, layout, or file under `components/` or `app/` — use the shadcn MCP from the Cursor marketplace (namespace `plugin-shadcn-shadcn`). That server replaces the shadcn skill.
+
+1. Search with `search_items_in_registries` before writing a control that may already exist.
+2. Read the match with `view_items_in_registries`, then load a demo with `get_item_examples_from_registries` (queries like `button-demo` or `card example`).
+3. Install a missing item with the command from `get_add_command_for_items`. This project uses bun: `bunx --bun shadcn@latest add <item>`.
+4. After the component is written, run `get_audit_checklist` and fix what it flags.
+
+`components.json` is already set (`base-luma`, taupe, CSS variables). Leave that setup in place.

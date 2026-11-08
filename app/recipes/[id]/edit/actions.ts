@@ -1,15 +1,17 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { updateRecipe } from "@/db/queries/recipes";
+import { getAuthUser } from "@/lib/auth/session";
+import { parseRecipeId } from "@/lib/recipes";
 import {
+  recipeFormError,
   recipeFormSchema,
   type RecipeFormState,
   type RecipeFormValues,
-} from "@/lib/recipe-form";
-import { parseRecipeId } from "@/lib/recipes";
+} from "@/lib/recipes/form";
+import { revalidateRecipe } from "@/lib/recipes/revalidate";
 
 const updateRecipeAction = async (
   recipeId: number,
@@ -23,16 +25,14 @@ const updateRecipeAction = async (
   const parsed = recipeFormSchema.safeParse(input);
 
   if (!parsed.success) {
-    return {
-      message:
-        parsed.error.issues[0]?.message ?? "Check the form and try again.",
-    };
+    return recipeFormError(parsed.error);
   }
 
+  const user = await getAuthUser();
   let updatedId: number | null;
 
   try {
-    updatedId = await updateRecipe(recipeId, parsed.data);
+    updatedId = await updateRecipe(recipeId, user?.id, parsed.data);
   } catch {
     return { message: "Could not update this recipe. Try again." };
   }
@@ -41,9 +41,7 @@ const updateRecipeAction = async (
     return { message: "This recipe could not be updated." };
   }
 
-  revalidatePath("/recipes");
-  revalidatePath(`/recipes/${updatedId}`);
-  revalidatePath(`/recipes/${updatedId}/edit`);
+  revalidateRecipe(updatedId);
   redirect(`/recipes/${updatedId}`);
 };
 

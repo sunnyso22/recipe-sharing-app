@@ -1,14 +1,13 @@
-import Image from "next/image";
 import { notFound } from "next/navigation";
 
+import { RecipeCover } from "@/components/recipes/recipe-cover";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getRecipe, type RecipeDetails } from "@/db/queries/recipes";
-import { parseRecipeId, recipePlaceholder } from "@/lib/recipes";
+import { getRecipeByParam, type RecipeDetails } from "@/db/queries/recipes";
 
 const RecipeDetail = async ({
   params,
@@ -16,13 +15,7 @@ const RecipeDetail = async ({
   params: PageProps<"/recipes/[id]">["params"];
 }) => {
   const { id } = await params;
-  const recipeId = parseRecipeId(id);
-
-  if (recipeId === null) {
-    notFound();
-  }
-
-  const recipe = await getRecipe(recipeId);
+  const recipe = await getRecipeByParam(id);
 
   if (!recipe) {
     notFound();
@@ -32,14 +25,10 @@ const RecipeDetail = async ({
     <article className="flex flex-col gap-10">
       <div className="grid items-start gap-8 lg:grid-cols-[1.15fr_0.85fr]">
         <Card className="p-0">
-          <Image
-            src={recipePlaceholder}
-            alt=""
-            width={1600}
-            height={1066}
+          <RecipeCover
             priority
             sizes="(max-width: 1024px) 100vw, 60vw"
-            className="block h-auto w-full"
+            className="block"
           />
         </Card>
         <header className="flex flex-col gap-4 lg:py-4">

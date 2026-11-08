@@ -4,52 +4,35 @@ import { redirect } from "next/navigation";
 
 import {
   authErrorMessage,
+  authFormError,
   type AuthFormState,
-  readAuthFieldErrors,
+  initialAuthFormState,
+  invalidAuthFields,
+  readAuthFormValues,
   signInFormSchema,
   signUpFormSchema,
-} from "@/lib/auth-form";
+} from "@/lib/auth/form";
 import { createClient } from "@/lib/supabase/server";
-
-const invalidFields = (
-  error: ReturnType<typeof readAuthFieldErrors>,
-): AuthFormState => {
-  const message =
-    error.name ??
-    error.email ??
-    error.password ??
-    error.confirmPassword ??
-    "Check the form and try again.";
-
-  return {
-    status: "error",
-    message,
-    fieldErrors: error,
-  };
-};
 
 const signInAction = async (
   _state: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> => {
+  const values = readAuthFormValues(formData);
   const parsed = signInFormSchema.safeParse({
-    email: formData.get("email"),
-    password: formData.get("password"),
+    email: values.email,
+    password: values.password,
   });
 
   if (!parsed.success) {
-    return invalidFields(readAuthFieldErrors(parsed.error));
+    return invalidAuthFields(parsed.error, values);
   }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) {
-    return {
-      status: "error",
-      message: authErrorMessage(error.message),
-      fieldErrors: {},
-    };
+    return authFormError(authErrorMessage(error.message), {}, values);
   }
 
   redirect("/");
@@ -59,15 +42,16 @@ const signUpAction = async (
   _state: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> => {
+  const values = readAuthFormValues(formData);
   const parsed = signUpFormSchema.safeParse({
-    name: formData.get("name"),
-    email: formData.get("email"),
-    password: formData.get("password"),
-    confirmPassword: formData.get("confirmPassword"),
+    name: values.name,
+    email: values.email,
+    password: values.password,
+    confirmPassword: values.confirmPassword,
   });
 
   if (!parsed.success) {
-    return invalidFields(readAuthFieldErrors(parsed.error));
+    return invalidAuthFields(parsed.error, values);
   }
 
   const supabase = await createClient();
@@ -82,11 +66,7 @@ const signUpAction = async (
   });
 
   if (error) {
-    return {
-      status: "error",
-      message: authErrorMessage(error.message),
-      fieldErrors: {},
-    };
+    return authFormError(authErrorMessage(error.message), {}, values);
   }
 
   if (data.session) {
@@ -94,17 +74,17 @@ const signUpAction = async (
   }
 
   if (data.user && data.user.identities?.length === 0) {
-    return {
-      status: "error",
-      message: "An account with this email already exists. Sign in instead.",
-      fieldErrors: {},
-    };
+    return authFormError(
+      "An account with this email already exists. Sign in instead.",
+      {},
+      values,
+    );
   }
 
   return {
+    ...initialAuthFormState,
     status: "success",
     message: "Check your email for a confirmation link, then sign in.",
-    fieldErrors: {},
   };
 };
 

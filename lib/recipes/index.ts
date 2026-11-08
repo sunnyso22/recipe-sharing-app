@@ -6,6 +6,12 @@ const readSearchQuery = (value: string | string[] | undefined) => {
   return raw?.trim().slice(0, 100) ?? "";
 };
 
+type ActorId = string | null | undefined;
+
+const canManageRecipe = (ownerId: string | null, actorId: ActorId) => {
+  return ownerId === null || ownerId === actorId;
+};
+
 const parseRecipeId = (id: string) => {
   if (!/^[1-9]\d*$/.test(id)) {
     return null;
@@ -20,4 +26,5 @@ const parseRecipeId = (id: string) => {
   return recipeId;
 };
 
-export { parseRecipeId, readSearchQuery, recipePlaceholder };
+export { canManageRecipe, parseRecipeId, readSearchQuery, recipePlaceholder };
+export type { ActorId };

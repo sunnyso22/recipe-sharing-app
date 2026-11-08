@@ -1,8 +1,8 @@
 import Link from "next/link";
 
-import { signOutAction } from "@/app/login/actions";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { getAuthEmail } from "@/lib/auth";
+import { UserMenu } from "@/components/auth/user-menu";
+import { buttonVariants } from "@/components/ui/button";
+import { getAuthUser } from "@/lib/auth/session";
 import { cn } from "@/lib/utils";
 
 const SignInLink = () => {
@@ -14,27 +14,13 @@ const SignInLink = () => {
 };
 
 const AuthNav = async () => {
-  const email = await getAuthEmail();
+  const user = await getAuthUser();
 
-  if (!email) {
+  if (!user) {
     return <SignInLink />;
   }
 
-  return (
-    <div className="ml-1 flex items-center gap-2">
-      <span
-        className="hidden max-w-44 truncate text-sm text-muted-foreground md:inline"
-        title={email}
-      >
-        {email}
-      </span>
-      <form action={signOutAction}>
-        <Button type="submit" variant="outline">
-          Sign out
-        </Button>
-      </form>
-    </div>
-  );
+  return <UserMenu name={user.name} />;
 };
 
 export { AuthNav, SignInLink };

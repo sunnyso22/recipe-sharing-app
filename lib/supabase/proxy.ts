@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
+import { confirmErrorPath } from "@/lib/auth/paths";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 
 const redirectAuthCallback = (request: NextRequest) => {
@@ -15,9 +16,9 @@ const redirectAuthCallback = (request: NextRequest) => {
 
   if (searchParams.get("error_code") && pathname !== "/login") {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.search = "";
-    url.searchParams.set("error", "confirm");
+    const target = new URL(confirmErrorPath, url);
+    url.pathname = target.pathname;
+    url.search = target.search;
     return NextResponse.redirect(url);
   }
 
@@ -57,7 +58,27 @@ const updateSession = async (request: NextRequest) => {
 
   // Refresh the session before any other auth work. Extra work in between
   // can rotate the refresh token twice and sign the user out.
-  await supabase.auth.getClaims();
+  const { data } = await supabase.auth.getClaims();
+  const pathname = request.nextUrl.pathname;
+  const needsAuth =
+    pathname === "/cookbook" ||
+    pathname.startsWith("/cookbook/") ||
+    pathname === "/settings" ||
+    pathname.startsWith("/settings/") ||
+    pathname === "/recipes/new";
+
+  if (needsAuth && !data?.claims) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.search = "";
+    const redirectResponse = NextResponse.redirect(url);
+
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie);
+    });
+
+    return redirectResponse;
+  }
 
   return supabaseResponse;
 };

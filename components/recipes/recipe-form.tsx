@@ -26,14 +26,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  emptyInstruction,
+  emptyQuantity,
   recipeFormSchema,
   type RecipeFormState,
   type RecipeFormValues,
-} from "@/lib/recipe-form";
-
-const createQuantity = () => {
-  return { name: "", quantity: "" };
-};
+} from "@/lib/recipes/form";
 
 type RecipeTextPath = {
   [Path in FieldPath<RecipeFormValues>]: FieldPathValue<
@@ -47,9 +45,9 @@ type RecipeTextPath = {
 const emptyRecipe: RecipeFormValues = {
   title: "",
   description: "",
-  ingredients: [createQuantity()],
-  seasonings: [createQuantity()],
-  instructions: [{ description: "" }],
+  ingredients: [emptyQuantity()],
+  seasonings: [emptyQuantity()],
+  instructions: [emptyInstruction()],
 };
 
 const cloneRecipeValues = (values: RecipeFormValues): RecipeFormValues => {
@@ -142,7 +140,7 @@ const RecipeForm = ({
           rows={ingredients.fields}
           removeLabel="Remove ingredient"
           onAdd={() => {
-            ingredients.append(createQuantity());
+            ingredients.append(emptyQuantity());
           }}
           onRemove={ingredients.remove}
           renderName={(index) => (
@@ -171,7 +169,7 @@ const RecipeForm = ({
           rows={seasonings.fields}
           removeLabel="Remove seasoning"
           onAdd={() => {
-            seasonings.append(createQuantity());
+            seasonings.append(emptyQuantity());
           }}
           onRemove={seasonings.remove}
           renderName={(index) => (
@@ -247,7 +245,7 @@ const RecipeForm = ({
               variant="outline"
               className="w-fit"
               onClick={() => {
-                instructions.append({ description: "" });
+                instructions.append(emptyInstruction());
               }}
             >
               <Plus />

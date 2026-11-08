@@ -1,5 +1,7 @@
 import * as z from "zod";
 
+import { firstIssueMessage } from "@/lib/forms";
+
 const TEXT_LIMIT = 255;
 
 const limitedText = (emptyMessage: string) => {
@@ -10,14 +12,23 @@ const limitedText = (emptyMessage: string) => {
     .max(TEXT_LIMIT, "Use 255 characters or fewer.");
 };
 
-const ingredientsSchema = z.object({
-  name: limitedText("Enter a ingredient."),
-  quantity: limitedText("Enter a quantity."),
-});
-const seasoningsSchema = z.object({
-  name: limitedText("Enter a seasoning."),
-  quantity: limitedText("Enter a quantity."),
-});
+const quantitySchema = (emptyName: string) => {
+  return z.object({
+    name: limitedText(emptyName),
+    quantity: limitedText("Enter a quantity."),
+  });
+};
+
+const emptyQuantity = () => {
+  return { name: "", quantity: "" };
+};
+
+const emptyInstruction = () => {
+  return { description: "" };
+};
+
+const ingredientsSchema = quantitySchema("Enter a ingredient.");
+const seasoningsSchema = quantitySchema("Enter a seasoning.");
 
 const recipeFormSchema = z.object({
   title: limitedText("Enter a title."),
@@ -41,5 +52,11 @@ type RecipeFormState = {
   message: string;
 };
 
-export { recipeFormSchema };
+const recipeFormError = (error: z.ZodError): RecipeFormState => {
+  return {
+    message: firstIssueMessage(error),
+  };
+};
+
+export { emptyInstruction, emptyQuantity, recipeFormError, recipeFormSchema };
 export type { RecipeFormState, RecipeFormValues };

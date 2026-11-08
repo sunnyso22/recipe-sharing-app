@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 
 import { signInAction, signUpAction } from "@/app/login/actions";
+import { FormMessage } from "@/components/form-message";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,7 +22,11 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { type AuthFormState, initialAuthFormState } from "@/lib/auth-form";
+import {
+  type AuthFormState,
+  initialAuthFormState,
+  passwordHint,
+} from "@/lib/auth/form";
 
 const AuthForm = ({
   mode,
@@ -85,7 +90,7 @@ const AuthForm = ({
           <FieldGroup className="gap-4">
             {signingIn ? null : (
               <Field data-invalid={Boolean(state.fieldErrors.name) || undefined}>
-                <FieldLabel htmlFor="name">Name</FieldLabel>
+                <FieldLabel htmlFor="name">Display name</FieldLabel>
                 <Input
                   id="name"
                   name="name"
@@ -94,6 +99,7 @@ const AuthForm = ({
                   placeholder="Ada Lovelace"
                   required
                   maxLength={80}
+                  defaultValue={state.values.name}
                   aria-invalid={Boolean(state.fieldErrors.name) || undefined}
                 />
                 <FieldError>{state.fieldErrors.name}</FieldError>
@@ -109,6 +115,7 @@ const AuthForm = ({
                 placeholder="you@example.com"
                 spellCheck={false}
                 required
+                defaultValue={state.values.email}
                 aria-invalid={Boolean(state.fieldErrors.email) || undefined}
               />
               <FieldError>{state.fieldErrors.email}</FieldError>
@@ -124,13 +131,11 @@ const AuthForm = ({
                 autoComplete={signingIn ? "current-password" : "new-password"}
                 required
                 minLength={signingIn ? undefined : 8}
+                defaultValue={state.values.password}
                 aria-invalid={Boolean(state.fieldErrors.password) || undefined}
               />
               {signingIn ? null : (
-                <FieldDescription>
-                  At least 8 characters, with uppercase, lowercase, and a
-                  number.
-                </FieldDescription>
+                <FieldDescription>{passwordHint}</FieldDescription>
               )}
               <FieldError>{state.fieldErrors.password}</FieldError>
             </Field>
@@ -150,6 +155,7 @@ const AuthForm = ({
                   autoComplete="new-password"
                   required
                   minLength={8}
+                  defaultValue={state.values.confirmPassword}
                   aria-invalid={
                     Boolean(state.fieldErrors.confirmPassword) || undefined
                   }
@@ -158,18 +164,7 @@ const AuthForm = ({
               </Field>
             )}
           </FieldGroup>
-          {message ? (
-            <p
-              role={status === "error" ? "alert" : "status"}
-              className={
-                status === "error"
-                  ? "text-sm text-destructive"
-                  : "text-sm text-muted-foreground"
-              }
-            >
-              {message}
-            </p>
-          ) : null}
+          <FormMessage message={message} status={status} />
           <Button type="submit" className="w-full" disabled={pending}>
             {pending
               ? signingIn

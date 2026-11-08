@@ -1,19 +1,21 @@
-import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+import { BackLink } from "@/components/back-link";
 import { PageMain } from "@/components/page-main";
 import {
   RecipeForm,
   RecipeFormSkeleton,
 } from "@/components/recipes/recipe-form";
-import { buttonVariants } from "@/components/ui/button";
-import { getRecipe, type RecipeDetails } from "@/db/queries/recipes";
-import { type RecipeFormValues } from "@/lib/recipe-form";
+import { getRecipeByParam, type RecipeDetails } from "@/db/queries/recipes";
 import { parseRecipeId } from "@/lib/recipes";
-import { cn } from "@/lib/utils";
+import { getManageableRecipe } from "@/lib/recipes/access";
+import {
+  emptyInstruction,
+  emptyQuantity,
+  type RecipeFormValues,
+} from "@/lib/recipes/form";
 
 import { updateRecipeAction } from "./actions";
 
@@ -21,13 +23,7 @@ export const generateMetadata = async ({
   params,
 }: PageProps<"/recipes/[id]/edit">): Promise<Metadata> => {
   const { id } = await params;
-  const recipeId = parseRecipeId(id);
-
-  if (recipeId === null) {
-    return { title: "Update recipe" };
-  }
-
-  const recipe = await getRecipe(recipeId);
+  const recipe = await getRecipeByParam(id);
 
   if (!recipe) {
     return { title: "Update recipe" };
@@ -36,22 +32,24 @@ export const generateMetadata = async ({
   return { title: `Update ${recipe.title}` };
 };
 
+const quantityValues = (rows: { name: string; quantity: string }[]) => {
+  if (rows.length === 0) {
+    return [emptyQuantity()];
+  }
+
+  return rows.map(({ name, quantity }) => ({ name, quantity }));
+};
+
 const toFormValues = (recipe: RecipeDetails): RecipeFormValues => {
   return {
     title: recipe.title,
     description: recipe.description,
-    ingredients:
-      recipe.ingredients.length > 0
-        ? recipe.ingredients.map(({ name, quantity }) => ({ name, quantity }))
-        : [{ name: "", quantity: "" }],
-    seasonings:
-      recipe.seasonings.length > 0
-        ? recipe.seasonings.map(({ name, quantity }) => ({ name, quantity }))
-        : [{ name: "", quantity: "" }],
+    ingredients: quantityValues(recipe.ingredients),
+    seasonings: quantityValues(recipe.seasonings),
     instructions:
       recipe.instructions.length > 0
         ? recipe.instructions.map(({ description }) => ({ description }))
-        : [{ description: "" }],
+        : [emptyInstruction()],
   };
 };
 
@@ -63,13 +61,7 @@ const EditRecipeBackLink = async ({
   const { id } = await params;
 
   return (
-    <Link
-      href={parseRecipeId(id) === null ? "/recipes" : `/recipes/${id}`}
-      className={cn(buttonVariants({ variant: "ghost" }), "-ml-3 w-fit")}
-    >
-      <ArrowLeft />
-      Back
-    </Link>
+    <BackLink href={parseRecipeId(id) === null ? "/recipes" : `/recipes/${id}`} />
   );
 };
 
@@ -79,13 +71,7 @@ const EditRecipeForm = async ({
   params: PageProps<"/recipes/[id]/edit">["params"];
 }) => {
   const { id } = await params;
-  const recipeId = parseRecipeId(id);
-
-  if (recipeId === null) {
-    notFound();
-  }
-
-  const recipe = await getRecipe(recipeId);
+  const recipe = await getManageableRecipe(id);
 
   if (!recipe) {
     notFound();

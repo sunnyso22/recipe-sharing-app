@@ -2,7 +2,7 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { type NextRequest } from "next/server";
 
-import { safeNextPath } from "@/lib/auth";
+import { confirmErrorPath, safeNextPath } from "@/lib/auth/paths";
 import { createClient } from "@/lib/supabase/server";
 
 const emailOtpTypes = new Set<EmailOtpType>([
@@ -32,7 +32,7 @@ const GET = async (request: NextRequest) => {
     }
   }
 
-  redirect("/login?error=confirm");
+  redirect(confirmErrorPath);
 };
 
 export { GET };

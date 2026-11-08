@@ -1,6 +1,6 @@
 import { ChefHat } from "lucide-react";
 
-import { ThemeToggle } from "@/components/theme-toggle";
+import { siteDescription, siteName } from "@/lib/site";
 
 const SiteFooter = () => {
   return (
@@ -9,16 +9,13 @@ const SiteFooter = () => {
         <div className="flex flex-col gap-2">
           <p className="flex items-center gap-2 font-heading text-lg tracking-tight">
             <ChefHat className="size-5 text-primary" aria-hidden />
-            Cookery
+            {siteName}
           </p>
           <p className="max-w-sm text-sm text-muted-foreground">
-            Discover, Share, and Savor the World&apos;s Best Recipes
+            {siteDescription}
           </p>
         </div>
-        <div className="flex items-center gap-4">
-          <ThemeToggle />
-          <p className="text-sm text-muted-foreground">© 2026 Cookery</p>
-        </div>
+        <p className="text-sm text-muted-foreground">© 2026 {siteName}</p>
       </div>
     </footer>
   );

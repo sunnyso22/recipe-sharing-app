@@ -1,0 +1,42 @@
+---
+description: Use shadcn/ui components for interface elements
+alwaysApply: true
+---
+
+# shadcn components
+
+Build UI with the shadcn components in `@/components/ui`. Do not hand-roll buttons, inputs, dialogs, menus, cards, or other controls that already exist there.
+
+```tsx
+// Bad
+<button className="rounded-full bg-primary px-3 py-2">Save</button>
+<input className="w-full rounded-md border px-2" />
+
+// Good
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+<Button type="submit">Save</Button>
+<Input />
+```
+
+Style a link as a button with `buttonVariants`, the same way the header and recipe pages do:
+
+```tsx
+import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
+
+<Link href="/recipes/new" className={buttonVariants()}>
+  New recipe
+</Link>
+```
+
+If the component is missing from `components/ui`, add it with the project CLI. Do not copy a component in by hand.
+
+```bash
+bunx --bun shadcn@latest add dialog
+```
+
+- Import primitives from `@/components/ui/<name>`. Compose them in feature components; leave files in `components/ui` as generated.
+- Use `lucide-react` for icons.
+- Match `components.json`: `base-luma` style, taupe base color, CSS variables.

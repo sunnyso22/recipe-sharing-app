@@ -5,19 +5,25 @@ import {
   pgTable,
   text,
   timestamp,
+  uuid,
   varchar,
 } from "drizzle-orm/pg-core";
 
-export const recipesTable = pgTable("recipes", {
-  id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  title: varchar({ length: 255 }).notNull(),
-  description: text().notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at")
-    .notNull()
-    .defaultNow()
-    .$onUpdate(() => new Date()),
-});
+export const recipesTable = pgTable(
+  "recipes",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    userId: uuid("user_id"),
+    title: varchar({ length: 255 }).notNull(),
+    description: text().notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [index("recipes_user_id_idx").on(table.userId)],
+);
 
 export const ingredientsTable = pgTable(
   "ingredients",

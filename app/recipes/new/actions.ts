@@ -1,14 +1,16 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { createRecipe } from "@/db/queries/recipes";
+import { requireAuthUser } from "@/lib/auth/session";
 import {
+  recipeFormError,
   recipeFormSchema,
   type RecipeFormState,
   type RecipeFormValues,
-} from "@/lib/recipe-form";
+} from "@/lib/recipes/form";
+import { revalidateRecipeLists } from "@/lib/recipes/revalidate";
 
 const createRecipeAction = async (
   _state: RecipeFormState,
@@ -17,23 +19,22 @@ const createRecipeAction = async (
   const parsed = recipeFormSchema.safeParse(input);
 
   if (!parsed.success) {
-    return {
-      message:
-        parsed.error.issues[0]?.message ?? "Check the form and try again.",
-    };
+    return recipeFormError(parsed.error);
   }
+
+  const user = await requireAuthUser();
 
   let recipeId: number;
 
   try {
-    recipeId = await createRecipe(parsed.data);
+    recipeId = await createRecipe(user.id, parsed.data);
   } catch {
     return {
       message: "Could not save this recipe. Try again.",
     };
   }
 
-  revalidatePath("/recipes");
+  revalidateRecipeLists();
   redirect(`/recipes/${recipeId}`);
 };
 

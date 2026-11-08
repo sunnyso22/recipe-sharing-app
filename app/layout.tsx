@@ -6,6 +6,7 @@ import { Geist, Geist_Mono, Noto_Serif, Roboto_Slab } from "next/font/google";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
+import { siteDescription, siteName } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 const notoSerifHeading = Noto_Serif({
@@ -30,10 +31,10 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Cookery",
-    template: "%s | Cookery",
+    default: siteName,
+    template: `%s | ${siteName}`,
   },
-  description: "Discover, Share, and Savor the World's Best Recipes",
+  description: siteDescription,
 };
 
 const RootLayout = ({ children }: LayoutProps<"/">) => {

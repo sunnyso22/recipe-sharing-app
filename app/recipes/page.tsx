@@ -1,5 +1,3 @@
-import { Plus } from "lucide-react";
-import Link from "next/link";
 import { Suspense } from "react";
 
 import { PageMain } from "@/components/page-main";
@@ -11,7 +9,6 @@ import {
   RecipeSearchForm,
   RecipeSearchFormFallback,
 } from "@/components/recipes/recipe-search";
-import { buttonVariants } from "@/components/ui/button";
 
 export const metadata = {
   title: "Recipes",
@@ -26,10 +23,6 @@ const RecipesPage = ({ searchParams }: PageProps<"/recipes">) => {
           <Suspense fallback={<RecipeSearchFormFallback />}>
             <RecipeSearchForm />
           </Suspense>
-          <Link href="/recipes/new" className={buttonVariants()}>
-            <Plus />
-            Add recipe
-          </Link>
         </div>
       </div>
       <Suspense fallback={<RecipeGridSkeleton />}>

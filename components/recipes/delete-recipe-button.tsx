@@ -24,7 +24,15 @@ import { Button } from "@/components/ui/button";
 
 const initialState: DeleteRecipeState = { message: "" };
 
-const DeleteRecipeButton = ({ recipeId }: { recipeId: number }) => {
+const DeleteRecipeButton = ({
+  recipeId,
+  redirectTo,
+  size = "default",
+}: {
+  recipeId: number;
+  redirectTo?: string;
+  size?: "default" | "sm";
+}) => {
   const [state, formAction, pending] = useActionState(
     deleteRecipeAction,
     initialState,
@@ -34,7 +42,14 @@ const DeleteRecipeButton = ({ recipeId }: { recipeId: number }) => {
   return (
     <AlertDialog actionsRef={dialogActionsRef}>
       <AlertDialogTrigger
-        render={<Button type="button" variant="destructive" disabled={pending} />}
+        render={
+          <Button
+            type="button"
+            variant="destructive"
+            size={size}
+            disabled={pending}
+          />
+        }
       >
         <Trash2 />
         Delete
@@ -65,6 +80,9 @@ const DeleteRecipeButton = ({ recipeId }: { recipeId: number }) => {
           <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
           <form action={formAction} className="contents">
             <input type="hidden" name="recipeId" value={recipeId} />
+            {redirectTo ? (
+              <input type="hidden" name="next" value={redirectTo} />
+            ) : null}
             <AlertDialogAction
               type="submit"
               variant="destructive"
