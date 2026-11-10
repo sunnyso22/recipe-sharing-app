@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 const revalidateRecipeLists = () => {
   revalidatePath("/recipes");
   revalidatePath("/cookbook");
+  revalidatePath("/bookmarks");
 };
 
 const revalidateRecipe = (recipeId: number) => {

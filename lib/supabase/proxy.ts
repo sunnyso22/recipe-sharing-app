@@ -63,6 +63,8 @@ const updateSession = async (request: NextRequest) => {
   const needsAuth =
     pathname === "/cookbook" ||
     pathname.startsWith("/cookbook/") ||
+    pathname === "/bookmarks" ||
+    pathname.startsWith("/bookmarks/") ||
     pathname === "/settings" ||
     pathname.startsWith("/settings/") ||
     pathname === "/recipes/new";

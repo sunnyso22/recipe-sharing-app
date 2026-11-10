@@ -5,6 +5,7 @@ import { db } from "@/db";
 import {
   ingredientsTable,
   instructionsTable,
+  recipeBookmarksTable,
   recipesTable,
   seasoningsTable,
 } from "@/db/schema";
@@ -41,17 +42,46 @@ const listRecipesByUser = (userId: string) => {
     .orderBy(desc(recipesTable.updatedAt));
 };
 
-const searchRecipes = (query: string, userId?: string) => {
+const recipeMatchesQuery = (query: string) => {
   const pattern = `%${escapeIlike(query)}%`;
-  const matchesQuery = or(
+
+  return or(
     ilike(recipesTable.title, pattern),
     ilike(recipesTable.description, pattern),
   );
+};
+
+const searchRecipes = (query: string, userId?: string) => {
+  const matchesQuery = recipeMatchesQuery(query);
 
   return db
     .select(recipeSummaryColumns)
     .from(recipesTable)
     .where(userId ? and(eq(recipesTable.userId, userId), matchesQuery) : matchesQuery)
+    .orderBy(asc(recipesTable.title));
+};
+
+const bookmarkedRecipes = () => {
+  return db
+    .select(recipeSummaryColumns)
+    .from(recipeBookmarksTable)
+    .innerJoin(
+      recipesTable,
+      eq(recipeBookmarksTable.recipeId, recipesTable.id),
+    );
+};
+
+const listBookmarkedRecipes = (userId: string) => {
+  return bookmarkedRecipes()
+    .where(eq(recipeBookmarksTable.userId, userId))
+    .orderBy(desc(recipeBookmarksTable.createdAt));
+};
+
+const searchBookmarkedRecipes = (query: string, userId: string) => {
+  return bookmarkedRecipes()
+    .where(
+      and(eq(recipeBookmarksTable.userId, userId), recipeMatchesQuery(query)),
+    )
     .orderBy(asc(recipesTable.title));
 };
 
@@ -232,8 +262,10 @@ export {
   deleteRecipe,
   getRecipe,
   getRecipeByParam,
+  listBookmarkedRecipes,
   listRecipes,
   listRecipesByUser,
+  searchBookmarkedRecipes,
   searchRecipes,
   updateRecipe,
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, ChevronDown, LogOut, Settings } from "lucide-react";
+import { Bookmark, BookOpen, ChevronDown, LogOut, Settings } from "lucide-react";
 import Link from "next/link";
 
 import { signOutAction } from "@/app/login/actions";
@@ -49,6 +49,10 @@ const UserMenu = ({ name }: { name: string }) => {
         <DropdownMenuItem render={<Link href="/cookbook" />}>
           <BookOpen />
           Cookbook
+        </DropdownMenuItem>
+        <DropdownMenuItem render={<Link href="/bookmarks" />}>
+          <Bookmark />
+          Bookmarks
         </DropdownMenuItem>
         <DropdownMenuItem render={<Link href="/settings" />}>
           <Settings />

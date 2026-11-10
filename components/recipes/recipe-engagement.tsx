@@ -8,20 +8,25 @@ import {
   setRecipeLikeAction,
 } from "@/app/recipes/[id]/actions";
 import { Toggle } from "@/components/ui/toggle";
+import { cn } from "@/lib/utils";
 
-const iconToggleClass =
-  "size-12 px-0 hover:bg-transparent hover:text-current aria-pressed:bg-transparent aria-pressed:*:[svg]:fill-primary aria-pressed:*:[svg]:text-primary";
+const pressedIconClass =
+  "px-0 hover:bg-transparent hover:text-current aria-pressed:bg-transparent aria-pressed:*:[svg]:fill-primary aria-pressed:*:[svg]:text-primary";
+
+const iconToggleClass = `size-12 ${pressedIconClass}`;
 
 const RecipeEngagement = ({
   recipeId,
   likeCount,
   liked,
   bookmarked,
+  compact = false,
 }: {
   recipeId: number;
   likeCount: number;
   liked: boolean;
   bookmarked: boolean;
+  compact?: boolean;
 }) => {
   const [message, setMessage] = useState("");
   const [, startLike] = useTransition();
@@ -46,7 +51,12 @@ const RecipeEngagement = ({
     useOptimistic(bookmarked);
 
   return (
-    <div className="flex flex-col items-start gap-2">
+    <div
+      className={cn(
+        "flex flex-col gap-2",
+        compact ? "items-end" : "items-start",
+      )}
+    >
       <div className="flex flex-wrap items-center gap-2">
         <Toggle
           pressed={optimisticLike.liked}

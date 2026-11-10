@@ -1,4 +1,4 @@
-import { and, count, eq } from "drizzle-orm";
+import { and, count, eq, inArray } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -7,57 +7,105 @@ import {
   recipesTable,
 } from "@/db/schema";
 
-const likeCountFor = (recipeId: number) => {
-  return db
-    .select({ value: count() })
+type RecipeEngagementState = {
+  likeCount: number;
+  liked: boolean;
+  bookmarked: boolean;
+};
+
+const emptyEngagement = (): RecipeEngagementState => {
+  return {
+    likeCount: 0,
+    liked: false,
+    bookmarked: false,
+  };
+};
+
+const getEngagementByRecipeIds = async (
+  recipeIds: number[],
+  userId?: string,
+) => {
+  const engagement = new Map<number, RecipeEngagementState>(
+    recipeIds.map((recipeId) => [recipeId, emptyEngagement()]),
+  );
+
+  if (recipeIds.length === 0) {
+    return engagement;
+  }
+
+  const likeCountsQuery = db
+    .select({
+      recipeId: recipeLikesTable.recipeId,
+      value: count(),
+    })
     .from(recipeLikesTable)
-    .where(eq(recipeLikesTable.recipeId, recipeId));
+    .where(inArray(recipeLikesTable.recipeId, recipeIds))
+    .groupBy(recipeLikesTable.recipeId);
+
+  const userLikesQuery = userId
+    ? db
+        .select({ recipeId: recipeLikesTable.recipeId })
+        .from(recipeLikesTable)
+        .where(
+          and(
+            eq(recipeLikesTable.userId, userId),
+            inArray(recipeLikesTable.recipeId, recipeIds),
+          ),
+        )
+    : Promise.resolve([]);
+
+  const userBookmarksQuery = userId
+    ? db
+        .select({ recipeId: recipeBookmarksTable.recipeId })
+        .from(recipeBookmarksTable)
+        .where(
+          and(
+            eq(recipeBookmarksTable.userId, userId),
+            inArray(recipeBookmarksTable.recipeId, recipeIds),
+          ),
+        )
+    : Promise.resolve([]);
+
+  const [likeCounts, userLikes, userBookmarks] = await Promise.all([
+    likeCountsQuery,
+    userLikesQuery,
+    userBookmarksQuery,
+  ]);
+
+  for (const row of likeCounts) {
+    const current = engagement.get(row.recipeId);
+
+    if (current) {
+      engagement.set(row.recipeId, {
+        ...current,
+        likeCount: Number(row.value),
+      });
+    }
+  }
+
+  for (const row of userLikes) {
+    const current = engagement.get(row.recipeId);
+
+    if (current) {
+      engagement.set(row.recipeId, { ...current, liked: true });
+    }
+  }
+
+  for (const row of userBookmarks) {
+    const current = engagement.get(row.recipeId);
+
+    if (current) {
+      engagement.set(row.recipeId, { ...current, bookmarked: true });
+    }
+  }
+
+  return engagement;
 };
 
 const getRecipeEngagement = async (recipeId: number, userId?: string) => {
-  const likesQuery = likeCountFor(recipeId);
+  const engagement = await getEngagementByRecipeIds([recipeId], userId);
 
-  if (!userId) {
-    const [likes] = await likesQuery;
-
-    return {
-      likeCount: Number(likes?.value ?? 0),
-      liked: false,
-      bookmarked: false,
-    };
-  }
-
-  const [likes, likeRows, bookmarkRows] = await Promise.all([
-    likesQuery,
-    db
-      .select({ userId: recipeLikesTable.userId })
-      .from(recipeLikesTable)
-      .where(
-        and(
-          eq(recipeLikesTable.recipeId, recipeId),
-          eq(recipeLikesTable.userId, userId),
-        ),
-      )
-      .limit(1),
-    db
-      .select({ userId: recipeBookmarksTable.userId })
-      .from(recipeBookmarksTable)
-      .where(
-        and(
-          eq(recipeBookmarksTable.recipeId, recipeId),
-          eq(recipeBookmarksTable.userId, userId),
-        ),
-      )
-      .limit(1),
-  ]);
-
-  const [likesRow] = likes;
-
-  return {
-    likeCount: Number(likesRow?.value ?? 0),
-    liked: likeRows.length > 0,
-    bookmarked: bookmarkRows.length > 0,
-  };
+  return engagement.get(recipeId) ?? emptyEngagement();
 };
 
 const recipeExists = async (recipeId: number) => {
@@ -128,4 +176,10 @@ const setRecipeBookmark = async (
   return true;
 };
 
-export { getRecipeEngagement, setRecipeBookmark, setRecipeLike };
+export {
+  getEngagementByRecipeIds,
+  getRecipeEngagement,
+  setRecipeBookmark,
+  setRecipeLike,
+};
+export type { RecipeEngagementState };

@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { setRecipeBookmark, setRecipeLike } from "@/db/queries/engagement";
@@ -82,7 +81,7 @@ const setEngagement = async (
     return { message: failureMessage };
   }
 
-  revalidatePath(`/recipes/${id}`);
+  revalidateRecipe(id);
   return { message: "" };
 };
 
