@@ -1,4 +1,4 @@
-import { asc, desc, eq, ilike, or } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, or } from "drizzle-orm";
 import { cache } from "react";
 
 import { db } from "@/db";
@@ -41,18 +41,17 @@ const listRecipesByUser = (userId: string) => {
     .orderBy(desc(recipesTable.updatedAt));
 };
 
-const searchRecipes = (query: string) => {
+const searchRecipes = (query: string, userId?: string) => {
   const pattern = `%${escapeIlike(query)}%`;
+  const matchesQuery = or(
+    ilike(recipesTable.title, pattern),
+    ilike(recipesTable.description, pattern),
+  );
 
   return db
     .select(recipeSummaryColumns)
     .from(recipesTable)
-    .where(
-      or(
-        ilike(recipesTable.title, pattern),
-        ilike(recipesTable.description, pattern),
-      ),
-    )
+    .where(userId ? and(eq(recipesTable.userId, userId), matchesQuery) : matchesQuery)
     .orderBy(asc(recipesTable.title));
 };
 

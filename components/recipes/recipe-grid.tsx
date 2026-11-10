@@ -2,48 +2,67 @@ import {
   RecipeCard,
   RecipeCardSkeleton,
 } from "@/components/recipes/recipe-card";
-import { listRecipes, searchRecipes } from "@/db/queries/recipes";
+import {
+  listRecipes,
+  listRecipesByUser,
+  searchRecipes,
+} from "@/db/queries/recipes";
 import { readSearchQuery } from "@/lib/recipes";
 
 const RecipeGrid = async ({
   searchParams,
+  userId,
+  emptyMessage = "No recipes yet.",
 }: {
   searchParams: PageProps<"/recipes">["searchParams"];
+  userId?: string;
+  emptyMessage?: string;
 }) => {
   const query = readSearchQuery((await searchParams).q);
-  const recipes = query ? await searchRecipes(query) : await listRecipes();
+  const items = userId
+    ? query
+      ? await searchRecipes(query, userId)
+      : await listRecipesByUser(userId)
+    : query
+      ? await searchRecipes(query)
+      : await listRecipes();
 
-  if (recipes.length === 0) {
+  if (items.length === 0) {
     return (
       <p className="text-muted-foreground">
         {query
           ? `No recipes match “${query}”. Try a different name or a word from the description.`
-          : "No recipes yet."}
+          : emptyMessage}
       </p>
     );
   }
 
-  const countLabel =
-    recipes.length === 1 ? "1 recipe" : `${recipes.length} recipes`;
+  const countLabel = items.length === 1 ? "1 recipe" : `${items.length} recipes`;
+
+  const list = (
+    <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {items.map((recipe, index) => (
+        <li key={recipe.id}>
+          <RecipeCard
+            id={recipe.id}
+            title={recipe.title}
+            eager={index === 0}
+          />
+        </li>
+      ))}
+    </ul>
+  );
+
+  if (!query) {
+    return list;
+  }
 
   return (
     <div className="flex flex-col gap-8">
-      {query ? (
-        <p className="text-muted-foreground">
-          {countLabel} for “{query}”
-        </p>
-      ) : null}
-      <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {recipes.map((recipe, index) => (
-          <li key={recipe.id}>
-            <RecipeCard
-              id={recipe.id}
-              title={recipe.title}
-              eager={index === 0}
-            />
-          </li>
-        ))}
-      </ul>
+      <p className="text-muted-foreground">
+        {countLabel} for “{query}”
+      </p>
+      {list}
     </div>
   );
 };
