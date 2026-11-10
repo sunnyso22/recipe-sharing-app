@@ -28,7 +28,7 @@ const RecipeCard = ({
         loading={eager ? "eager" : "lazy"}
       />
       <CardHeader className="items-center">
-        <CardTitle className="text-xl">
+        <CardTitle className="pe-6 text-xl">
           <h2>
             <Link
               href={`/recipes/${id}`}
@@ -41,6 +41,7 @@ const RecipeCard = ({
         <CardAction className="relative z-10 row-span-1 self-center">
           <RecipeEngagement
             compact
+            showBookmark={false}
             recipeId={id}
             likeCount={likeCount}
             liked={liked}
@@ -58,9 +59,8 @@ const RecipeCardSkeleton = () => {
       <div className="aspect-3/2 animate-pulse rounded-t-4xl bg-muted" />
       <CardHeader className="items-center">
         <div className="h-6 w-2/3 animate-pulse rounded-md bg-muted" />
-        <CardAction className="flex gap-2 row-span-1 self-center">
-          <div className="size-12 animate-pulse rounded-3xl bg-muted" />
-          <div className="size-12 animate-pulse rounded-3xl bg-muted" />
+        <CardAction className="row-span-1 self-center">
+          <div className="size-9 animate-pulse rounded-full bg-muted" />
         </CardAction>
       </CardHeader>
     </Card>

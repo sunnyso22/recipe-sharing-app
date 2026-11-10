@@ -76,7 +76,7 @@ const RecipeDetail = async ({
             {recipe.description}
           </p>
           <div className="mt-auto flex items-center justify-between gap-4">
-            <div className="flex min-w-0 items-center gap-2">
+            <div className="flex min-w-0 items-center gap-2 pe-8">
               <Avatar aria-hidden>
                 <AvatarFallback className="bg-primary text-xs font-medium text-primary-foreground">
                   {authorInitials(authorName)}
@@ -186,9 +186,9 @@ const RecipeDetailSkeleton = () => {
               <div className="size-8 animate-pulse rounded-full bg-muted" />
               <div className="h-4 w-28 animate-pulse rounded-md bg-muted" />
             </div>
-            <div className="flex gap-2">
-              <div className="size-12 animate-pulse rounded-3xl bg-muted" />
-              <div className="size-12 animate-pulse rounded-3xl bg-muted" />
+            <div className="flex items-center gap-4">
+              <div className="size-9 animate-pulse rounded-full bg-muted" />
+              <div className="size-9 animate-pulse rounded-full bg-muted" />
             </div>
           </div>
         </div>

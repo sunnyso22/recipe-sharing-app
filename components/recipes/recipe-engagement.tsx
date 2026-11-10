@@ -10,10 +10,16 @@ import {
 import { Toggle } from "@/components/ui/toggle";
 import { cn } from "@/lib/utils";
 
-const pressedIconClass =
-  "px-0 hover:bg-transparent hover:text-current aria-pressed:bg-transparent aria-pressed:*:[svg]:fill-primary aria-pressed:*:[svg]:text-primary";
+const bareToggleClass =
+  "h-9 min-w-9 gap-1.5 rounded-full bg-transparent px-1.5 text-sm text-foreground hover:bg-transparent hover:opacity-70 aria-pressed:bg-transparent [&_svg]:transition-transform active:*:[svg]:scale-90";
 
-const iconToggleClass = `size-12 ${pressedIconClass}`;
+const likeLabel = (count: number, isLiked: boolean) => {
+  const likes = count === 1 ? "1 like" : `${count} likes`;
+
+  return isLiked
+    ? `Unlike this recipe. ${likes}`
+    : `Like this recipe. ${likes}`;
+};
 
 const RecipeEngagement = ({
   recipeId,
@@ -21,22 +27,21 @@ const RecipeEngagement = ({
   liked,
   bookmarked,
   compact = false,
+  showBookmark = true,
 }: {
   recipeId: number;
   likeCount: number;
   liked: boolean;
   bookmarked: boolean;
   compact?: boolean;
+  showBookmark?: boolean;
 }) => {
   const [message, setMessage] = useState("");
   const [, startLike] = useTransition();
   const [, startBookmark] = useTransition();
   const [optimisticLike, setOptimisticLike] = useOptimistic(
     { liked, likeCount },
-    (
-      current: { liked: boolean; likeCount: number },
-      nextLiked: boolean,
-    ) => {
+    (current: { liked: boolean; likeCount: number }, nextLiked: boolean) => {
       if (nextLiked === current.liked) {
         return current;
       }
@@ -57,15 +62,14 @@ const RecipeEngagement = ({
         compact ? "items-end" : "items-start",
       )}
     >
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-4">
         <Toggle
           pressed={optimisticLike.liked}
-          aria-label={
-            optimisticLike.liked
-              ? `Unlike this recipe. ${optimisticLike.likeCount} likes`
-              : `Like this recipe. ${optimisticLike.likeCount} likes`
-          }
-          className={iconToggleClass}
+          aria-label={likeLabel(optimisticLike.likeCount, optimisticLike.liked)}
+          className={cn(
+            bareToggleClass,
+            "relative size-9 shrink-0 gap-0 px-0 aria-pressed:*:[svg]:fill-destructive aria-pressed:*:[svg]:text-destructive",
+          )}
           onPressedChange={(pressed) => {
             setMessage("");
             startLike(async () => {
@@ -78,28 +82,33 @@ const RecipeEngagement = ({
           }}
         >
           <Heart className="size-6" />
+          <span className="absolute top-1/2 right-full -translate-y-1/2 text-xl leading-none whitespace-nowrap tabular-nums">
+            {optimisticLike.likeCount}
+          </span>
         </Toggle>
-        <Toggle
-          pressed={optimisticBookmarked}
-          aria-label={
-            optimisticBookmarked
-              ? "Remove bookmark from this recipe"
-              : "Bookmark this recipe"
-          }
-          className={iconToggleClass}
-          onPressedChange={(pressed) => {
-            setMessage("");
-            startBookmark(async () => {
-              setOptimisticBookmarked(pressed);
-              const result = await setRecipeBookmarkAction(recipeId, pressed);
-              if (result.message) {
-                setMessage(result.message);
-              }
-            });
-          }}
-        >
-          <Bookmark className="size-6" />
-        </Toggle>
+        {showBookmark ? (
+          <Toggle
+            pressed={optimisticBookmarked}
+            aria-label={
+              optimisticBookmarked
+                ? "Remove bookmark from this recipe"
+                : "Bookmark this recipe"
+            }
+            className={cn(bareToggleClass, "aria-pressed:*:[svg]:fill-current")}
+            onPressedChange={(pressed) => {
+              setMessage("");
+              startBookmark(async () => {
+                setOptimisticBookmarked(pressed);
+                const result = await setRecipeBookmarkAction(recipeId, pressed);
+                if (result.message) {
+                  setMessage(result.message);
+                }
+              });
+            }}
+          >
+            <Bookmark className="size-6" />
+          </Toggle>
+        ) : null}
       </div>
       {message ? (
         <p role="alert" className="text-sm text-destructive">
@@ -112,9 +121,9 @@ const RecipeEngagement = ({
 
 const RecipeEngagementFallback = () => {
   return (
-    <div className="flex gap-2" aria-hidden>
-      <div className="size-12 animate-pulse rounded-3xl bg-muted" />
-      <div className="size-12 animate-pulse rounded-3xl bg-muted" />
+    <div className="flex items-center gap-4" aria-hidden>
+      <div className="size-9 animate-pulse rounded-full bg-muted" />
+      <div className="size-9 animate-pulse rounded-full bg-muted" />
     </div>
   );
 };
