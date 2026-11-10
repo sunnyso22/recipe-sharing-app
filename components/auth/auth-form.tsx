@@ -27,6 +27,7 @@ import {
   initialAuthFormState,
   passwordHint,
 } from "@/lib/auth/form";
+import { forgotPasswordPath } from "@/lib/auth/paths";
 
 const AuthForm = ({
   mode,
@@ -123,7 +124,17 @@ const AuthForm = ({
             <Field
               data-invalid={Boolean(state.fieldErrors.password) || undefined}
             >
-              <FieldLabel htmlFor="password">Password</FieldLabel>
+              <div className="flex items-center justify-between gap-3">
+                <FieldLabel htmlFor="password">Password</FieldLabel>
+                {signingIn ? (
+                  <Link
+                    href={forgotPasswordPath}
+                    className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
+                ) : null}
+              </div>
               <Input
                 id="password"
                 name="password"

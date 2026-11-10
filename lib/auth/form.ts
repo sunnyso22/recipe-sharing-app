@@ -37,6 +37,17 @@ const signInFormSchema = z.object({
   password: z.string().min(1, "Enter your password."),
 });
 
+const forgotPasswordSchema = z.object({
+  email: emailSchema,
+});
+
+const resetPasswordSchema = z
+  .object({
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, "Confirm your password."),
+  })
+  .refine(passwordsMatch, passwordMismatch);
+
 const signUpFormSchema = z
   .object({
     name: displayNameSchema,
@@ -154,6 +165,10 @@ const authErrorMessage = (message: string) => {
     return "Too many attempts. Wait a little and try again.";
   }
 
+  if (message.toLowerCase().includes("different from the old password")) {
+    return "Choose a password that is different from the current one.";
+  }
+
   return message;
 };
 
@@ -161,6 +176,7 @@ export {
   authErrorMessage,
   authFormError,
   displayNameSchema,
+  forgotPasswordSchema,
   initialAuthFormState,
   invalidAuthFields,
   passwordHint,
@@ -168,6 +184,7 @@ export {
   passwordSchema,
   passwordsMatch,
   readAuthFormValues,
+  resetPasswordSchema,
   signInFormSchema,
   signUpFormSchema,
 };
