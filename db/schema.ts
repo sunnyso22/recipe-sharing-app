@@ -3,6 +3,7 @@ import {
   index,
   integer,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uuid,
@@ -64,8 +65,45 @@ export const seasoningsTable = pgTable(
   (table) => [index("seasonings_recipe_id_idx").on(table.recipeId)],
 );
 
+export const recipeLikesTable = pgTable(
+  "recipe_likes",
+  {
+    userId: uuid("user_id").notNull(),
+    recipeId: integer("recipe_id")
+      .notNull()
+      .references(() => recipesTable.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.recipeId] }),
+    index("recipe_likes_recipe_id_idx").on(table.recipeId),
+  ],
+);
+
+export const recipeBookmarksTable = pgTable(
+  "recipe_bookmarks",
+  {
+    userId: uuid("user_id").notNull(),
+    recipeId: integer("recipe_id")
+      .notNull()
+      .references(() => recipesTable.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.recipeId] }),
+    index("recipe_bookmarks_recipe_id_idx").on(table.recipeId),
+  ],
+);
+
 export const relations = defineRelations(
-  { recipesTable, ingredientsTable, instructionsTable, seasoningsTable },
+  {
+    recipesTable,
+    ingredientsTable,
+    instructionsTable,
+    seasoningsTable,
+    recipeLikesTable,
+    recipeBookmarksTable,
+  },
   (r) => ({
     recipesTable: {
       ingredients: r.many.ingredientsTable({
@@ -79,6 +117,14 @@ export const relations = defineRelations(
       seasonings: r.many.seasoningsTable({
         from: r.recipesTable.id,
         to: r.seasoningsTable.recipeId,
+      }),
+      likes: r.many.recipeLikesTable({
+        from: r.recipesTable.id,
+        to: r.recipeLikesTable.recipeId,
+      }),
+      bookmarks: r.many.recipeBookmarksTable({
+        from: r.recipesTable.id,
+        to: r.recipeBookmarksTable.recipeId,
       }),
     },
     ingredientsTable: {
@@ -98,6 +144,20 @@ export const relations = defineRelations(
     seasoningsTable: {
       recipes: r.one.recipesTable({
         from: r.seasoningsTable.recipeId,
+        to: r.recipesTable.id,
+        optional: false,
+      }),
+    },
+    recipeLikesTable: {
+      recipe: r.one.recipesTable({
+        from: r.recipeLikesTable.recipeId,
+        to: r.recipesTable.id,
+        optional: false,
+      }),
+    },
+    recipeBookmarksTable: {
+      recipe: r.one.recipesTable({
+        from: r.recipeBookmarksTable.recipeId,
         to: r.recipesTable.id,
         optional: false,
       }),

@@ -12,6 +12,7 @@ import {
   signInFormSchema,
   signUpFormSchema,
 } from "@/lib/auth/form";
+import { safeNextPath } from "@/lib/auth/paths";
 import { createClient } from "@/lib/supabase/server";
 
 const signInAction = async (
@@ -35,7 +36,8 @@ const signInAction = async (
     return authFormError(authErrorMessage(error.message), {}, values);
   }
 
-  redirect("/");
+  const next = formData.get("next");
+  redirect(typeof next === "string" ? safeNextPath(next) : "/");
 };
 
 const signUpAction = async (
@@ -70,7 +72,8 @@ const signUpAction = async (
   }
 
   if (data.session) {
-    redirect("/");
+    const next = formData.get("next");
+    redirect(typeof next === "string" ? safeNextPath(next) : "/");
   }
 
   if (data.user && data.user.identities?.length === 0) {

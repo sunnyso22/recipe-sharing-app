@@ -32,9 +32,11 @@ import { forgotPasswordPath } from "@/lib/auth/paths";
 const AuthForm = ({
   mode,
   notice,
+  redirectTo,
 }: {
   mode: "sign-in" | "sign-up";
   notice?: string;
+  redirectTo?: string;
 }) => {
   const action = mode === "sign-in" ? signInAction : signUpAction;
   const [state, formAction, pending] = useActionState<AuthFormState, FormData>(
@@ -88,6 +90,9 @@ const AuthForm = ({
           </CardHeader>
           <CardContent>
         <form action={formAction} className="flex flex-col gap-5" noValidate>
+          {redirectTo ? (
+            <input type="hidden" name="next" value={redirectTo} />
+          ) : null}
           <FieldGroup className="gap-4">
             {signingIn ? null : (
               <Field data-invalid={Boolean(state.fieldErrors.name) || undefined}>

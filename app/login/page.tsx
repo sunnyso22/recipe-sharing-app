@@ -17,8 +17,9 @@ const LoginForm = async ({
 }) => {
   const params = await searchParams;
   const notice = params.error === "confirm" ? confirmMessage : undefined;
+  const redirectTo = typeof params.next === "string" ? params.next : undefined;
 
-  return <AuthForm mode="sign-in" notice={notice} />;
+  return <AuthForm mode="sign-in" notice={notice} redirectTo={redirectTo} />;
 };
 
 const LoginPage = ({ searchParams }: PageProps<"/login">) => {

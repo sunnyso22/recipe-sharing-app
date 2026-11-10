@@ -81,5 +81,5 @@ const requireAuthUser = async () => {
   return user;
 };
 
-export { getAuthUser, requireAuthUser };
+export { getAuthUser, readDisplayName, requireAuthUser };
 export type { AuthUser };

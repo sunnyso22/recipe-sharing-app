@@ -1,13 +1,48 @@
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 import { RecipeCover } from "@/components/recipes/recipe-cover";
+import {
+  RecipeEngagement,
+  RecipeEngagementFallback,
+} from "@/components/recipes/recipe-engagement";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getRecipeAuthorName } from "@/db/queries/accounts";
+import { getRecipeEngagement } from "@/db/queries/engagement";
 import { getRecipeByParam, type RecipeDetails } from "@/db/queries/recipes";
+import { getAuthUser } from "@/lib/auth/session";
+
+const authorInitials = (name: string) => {
+  const letters = name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0] ?? "")
+    .join("");
+
+  return letters.toUpperCase() || "?";
+};
+
+const RecipeEngagementLoader = async ({ recipeId }: { recipeId: number }) => {
+  const user = await getAuthUser();
+  const engagement = await getRecipeEngagement(recipeId, user?.id);
+
+  return (
+    <RecipeEngagement
+      recipeId={recipeId}
+      likeCount={engagement.likeCount}
+      liked={engagement.liked}
+      bookmarked={engagement.bookmarked}
+    />
+  );
+};
 
 const RecipeDetail = async ({
   params,
@@ -21,9 +56,11 @@ const RecipeDetail = async ({
     notFound();
   }
 
+  const authorName = await getRecipeAuthorName(recipe.userId);
+
   return (
     <article className="flex flex-col gap-10">
-      <div className="grid items-start gap-8 lg:grid-cols-[1.15fr_0.85fr]">
+      <div className="grid items-stretch gap-8 lg:grid-cols-[1.15fr_0.85fr]">
         <Card className="p-0">
           <RecipeCover
             priority
@@ -31,13 +68,26 @@ const RecipeDetail = async ({
             className="block"
           />
         </Card>
-        <header className="flex flex-col gap-4 lg:py-4">
+        <header className="flex h-full flex-col gap-4 lg:py-4">
           <h1 className="font-heading text-4xl tracking-tight text-balance sm:text-5xl">
             {recipe.title}
           </h1>
           <p className="text-lg leading-relaxed text-muted-foreground">
             {recipe.description}
           </p>
+          <div className="mt-auto flex items-center justify-between gap-4">
+            <div className="flex min-w-0 items-center gap-2">
+              <Avatar aria-hidden>
+                <AvatarFallback className="bg-primary text-xs font-medium text-primary-foreground">
+                  {authorInitials(authorName)}
+                </AvatarFallback>
+              </Avatar>
+              <p className="min-w-0 truncate text-sm">{authorName}</p>
+            </div>
+            <Suspense fallback={<RecipeEngagementFallback />}>
+              <RecipeEngagementLoader recipeId={recipe.id} />
+            </Suspense>
+          </div>
         </header>
       </div>
 
@@ -125,12 +175,22 @@ const RecipeQuantityList = ({
 const RecipeDetailSkeleton = () => {
   return (
     <div className="flex flex-col gap-10">
-      <div className="grid items-start gap-8 lg:grid-cols-[1.15fr_0.85fr]">
+      <div className="grid items-stretch gap-8 lg:grid-cols-[1.15fr_0.85fr]">
         <div className="aspect-3/2 animate-pulse rounded-4xl bg-muted" />
-        <div className="flex flex-col gap-4 lg:py-4">
+        <div className="flex h-full flex-col gap-4 lg:py-4">
           <div className="h-12 w-4/5 animate-pulse rounded-md bg-muted" />
           <div className="h-5 w-full animate-pulse rounded-md bg-muted" />
           <div className="h-5 w-2/3 animate-pulse rounded-md bg-muted" />
+          <div className="mt-auto flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="size-8 animate-pulse rounded-full bg-muted" />
+              <div className="h-4 w-28 animate-pulse rounded-md bg-muted" />
+            </div>
+            <div className="flex gap-2">
+              <div className="size-12 animate-pulse rounded-3xl bg-muted" />
+              <div className="size-12 animate-pulse rounded-3xl bg-muted" />
+            </div>
+          </div>
         </div>
       </div>
       <div className="grid gap-6 md:grid-cols-2">
