@@ -13,19 +13,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { initialsFromName } from "@/lib/names";
 import { cn } from "@/lib/utils";
-
-const initialsFor = (name: string) => {
-  const letters = name
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0] ?? "")
-    .join("");
-
-  return letters.toUpperCase() || "?";
-};
 
 const UserMenu = ({ name }: { name: string }) => {
   return (
@@ -39,7 +28,7 @@ const UserMenu = ({ name }: { name: string }) => {
       >
         <Avatar>
           <AvatarFallback className="bg-primary text-xs font-medium text-primary-foreground">
-            {initialsFor(name)}
+            {initialsFromName(name)}
           </AvatarFallback>
         </Avatar>
         <span className="max-w-28 truncate sm:max-w-40">{name}</span>

@@ -12,6 +12,7 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
+import { expiredResetMessage } from "@/lib/auth/paths";
 import { hasPasswordRecoveryCookie } from "@/lib/auth/recovery";
 import { getAuthUser } from "@/lib/auth/session";
 
@@ -27,7 +28,7 @@ const ResetLinkExpired = () => {
           Reset link expired
         </h1>
         <CardDescription>
-          That reset link is invalid or has expired. Request a new one.
+          {expiredResetMessage}
         </CardDescription>
       </CardHeader>
       <CardContent>

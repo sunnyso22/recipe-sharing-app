@@ -1,14 +1,5 @@
-import { Suspense } from "react";
-
-import { PageMain } from "@/components/page-main";
-import {
-  RecipeGrid,
-  RecipeGridSkeleton,
-} from "@/components/recipes/recipe-grid";
-import {
-  RecipeSearchForm,
-  RecipeSearchFormFallback,
-} from "@/components/recipes/recipe-search";
+import { RecipeCatalog } from "@/components/recipes/recipe-catalog";
+import { RecipeGrid } from "@/components/recipes/recipe-grid";
 
 export const metadata = {
   title: "Recipes",
@@ -16,24 +7,12 @@ export const metadata = {
 
 const RecipesPage = ({ searchParams }: PageProps<"/recipes">) => {
   return (
-    <PageMain>
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-col gap-2">
-          <h1 className="font-heading text-4xl tracking-tight">Recipes</h1>
-          <p className="text-muted-foreground">
-            Browse dishes shared from kitchens near and far.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Suspense fallback={<RecipeSearchFormFallback />}>
-            <RecipeSearchForm />
-          </Suspense>
-        </div>
-      </div>
-      <Suspense fallback={<RecipeGridSkeleton />}>
-        <RecipeGrid searchParams={searchParams} />
-      </Suspense>
-    </PageMain>
+    <RecipeCatalog
+      title="Recipes"
+      description="Browse dishes shared from kitchens near and far."
+    >
+      <RecipeGrid searchParams={searchParams} />
+    </RecipeCatalog>
   );
 };
 

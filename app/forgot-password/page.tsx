@@ -3,13 +3,11 @@ import { Suspense } from "react";
 import { AuthFormFallback } from "@/components/auth/auth-form";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 import { PageMain } from "@/components/page-main";
+import { expiredResetMessage } from "@/lib/auth/paths";
 
 export const metadata = {
   title: "Reset password",
 };
-
-const expiredMessage =
-  "That reset link is invalid or has expired. Request a new one.";
 
 const ForgotPasswordRequest = async ({
   searchParams,
@@ -17,7 +15,7 @@ const ForgotPasswordRequest = async ({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) => {
   const params = await searchParams;
-  const notice = params.error === "expired" ? expiredMessage : undefined;
+  const notice = params.error === "expired" ? expiredResetMessage : undefined;
 
   return <ForgotPasswordForm notice={notice} />;
 };

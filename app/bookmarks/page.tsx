@@ -1,14 +1,5 @@
-import { Suspense } from "react";
-
-import { PageMain } from "@/components/page-main";
-import {
-  RecipeGrid,
-  RecipeGridSkeleton,
-} from "@/components/recipes/recipe-grid";
-import {
-  RecipeSearchForm,
-  RecipeSearchFormFallback,
-} from "@/components/recipes/recipe-search";
+import { RecipeCatalog } from "@/components/recipes/recipe-catalog";
+import { RecipeGrid } from "@/components/recipes/recipe-grid";
 import { requireAuthUser } from "@/lib/auth/session";
 
 export const metadata = {
@@ -34,22 +25,12 @@ const BookmarkList = async ({
 
 const BookmarksPage = ({ searchParams }: PageProps<"/bookmarks">) => {
   return (
-    <PageMain>
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-col gap-2">
-          <h1 className="font-heading text-4xl tracking-tight">Bookmarks</h1>
-          <p className="text-muted-foreground">
-            Recipes you have saved to come back to.
-          </p>
-        </div>
-        <Suspense fallback={<RecipeSearchFormFallback />}>
-          <RecipeSearchForm />
-        </Suspense>
-      </div>
-      <Suspense fallback={<RecipeGridSkeleton />}>
-        <BookmarkList searchParams={searchParams} />
-      </Suspense>
-    </PageMain>
+    <RecipeCatalog
+      title="Bookmarks"
+      description="Recipes you have saved to come back to."
+    >
+      <BookmarkList searchParams={searchParams} />
+    </RecipeCatalog>
   );
 };
 

@@ -118,62 +118,40 @@ const recipeExists = async (recipeId: number) => {
   return Boolean(recipe);
 };
 
-const setRecipeLike = async (
+type MembershipTable = typeof recipeLikesTable | typeof recipeBookmarksTable;
+
+const setMembership = async (
+  table: MembershipTable,
   recipeId: number,
   userId: string,
-  liked: boolean,
+  active: boolean,
 ) => {
   if (!(await recipeExists(recipeId))) {
     return false;
   }
 
-  if (liked) {
-    await db
-      .insert(recipeLikesTable)
-      .values({ userId, recipeId })
-      .onConflictDoNothing();
+  if (active) {
+    await db.insert(table).values({ userId, recipeId }).onConflictDoNothing();
     return true;
   }
 
   await db
-    .delete(recipeLikesTable)
-    .where(
-      and(
-        eq(recipeLikesTable.userId, userId),
-        eq(recipeLikesTable.recipeId, recipeId),
-      ),
-    );
+    .delete(table)
+    .where(and(eq(table.userId, userId), eq(table.recipeId, recipeId)));
 
   return true;
 };
 
-const setRecipeBookmark = async (
+const setRecipeLike = (recipeId: number, userId: string, liked: boolean) => {
+  return setMembership(recipeLikesTable, recipeId, userId, liked);
+};
+
+const setRecipeBookmark = (
   recipeId: number,
   userId: string,
   bookmarked: boolean,
 ) => {
-  if (!(await recipeExists(recipeId))) {
-    return false;
-  }
-
-  if (bookmarked) {
-    await db
-      .insert(recipeBookmarksTable)
-      .values({ userId, recipeId })
-      .onConflictDoNothing();
-    return true;
-  }
-
-  await db
-    .delete(recipeBookmarksTable)
-    .where(
-      and(
-        eq(recipeBookmarksTable.userId, userId),
-        eq(recipeBookmarksTable.recipeId, recipeId),
-      ),
-    );
-
-  return true;
+  return setMembership(recipeBookmarksTable, recipeId, userId, bookmarked);
 };
 
 export {

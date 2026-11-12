@@ -1,16 +1,8 @@
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import { Suspense } from "react";
 
-import { PageMain } from "@/components/page-main";
-import {
-  RecipeGrid,
-  RecipeGridSkeleton,
-} from "@/components/recipes/recipe-grid";
-import {
-  RecipeSearchForm,
-  RecipeSearchFormFallback,
-} from "@/components/recipes/recipe-search";
+import { RecipeCatalog } from "@/components/recipes/recipe-catalog";
+import { RecipeGrid } from "@/components/recipes/recipe-grid";
 import { buttonVariants } from "@/components/ui/button";
 import { requireAuthUser } from "@/lib/auth/session";
 
@@ -36,28 +28,18 @@ const CookbookList = async ({
 
 const CookbookPage = ({ searchParams }: PageProps<"/cookbook">) => {
   return (
-    <PageMain>
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-col gap-2">
-          <h1 className="font-heading text-4xl tracking-tight">Cookbook</h1>
-          <p className="text-muted-foreground">
-            Manage the recipes you have created.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Suspense fallback={<RecipeSearchFormFallback />}>
-            <RecipeSearchForm />
-          </Suspense>
-          <Link href="/recipes/new" className={buttonVariants()}>
-            <Plus />
-            Add recipe
-          </Link>
-        </div>
-      </div>
-      <Suspense fallback={<RecipeGridSkeleton />}>
-        <CookbookList searchParams={searchParams} />
-      </Suspense>
-    </PageMain>
+    <RecipeCatalog
+      title="Cookbook"
+      description="Manage the recipes you have created."
+      action={
+        <Link href="/recipes/new" className={buttonVariants()}>
+          <Plus />
+          Add recipe
+        </Link>
+      }
+    >
+      <CookbookList searchParams={searchParams} />
+    </RecipeCatalog>
   );
 };
 

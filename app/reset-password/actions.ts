@@ -10,15 +10,13 @@ import {
   readAuthFormValues,
   resetPasswordSchema,
 } from "@/lib/auth/form";
+import { expiredResetMessage } from "@/lib/auth/paths";
 import {
   clearPasswordRecoveryCookie,
   hasPasswordRecoveryCookie,
 } from "@/lib/auth/recovery";
 import { getAuthUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
-
-const expiredMessage =
-  "This reset link is invalid or has expired. Request a new one.";
 
 const updateRecoveredPasswordAction = async (
   _state: AuthFormState,
@@ -40,7 +38,7 @@ const updateRecoveredPasswordAction = async (
   ]);
 
   if (!recovery || !user) {
-    return authFormError(expiredMessage, {}, values);
+    return authFormError(expiredResetMessage, {}, values);
   }
 
   const supabase = await createClient();

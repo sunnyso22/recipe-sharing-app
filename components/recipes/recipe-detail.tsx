@@ -17,18 +17,7 @@ import { getRecipeAuthorName } from "@/db/queries/accounts";
 import { getRecipeEngagement } from "@/db/queries/engagement";
 import { getRecipeByParam, type RecipeDetails } from "@/db/queries/recipes";
 import { getAuthUser } from "@/lib/auth/session";
-
-const authorInitials = (name: string) => {
-  const letters = name
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0] ?? "")
-    .join("");
-
-  return letters.toUpperCase() || "?";
-};
+import { initialsFromName } from "@/lib/names";
 
 const RecipeEngagementLoader = async ({ recipeId }: { recipeId: number }) => {
   const user = await getAuthUser();
@@ -79,7 +68,7 @@ const RecipeDetail = async ({
             <div className="flex min-w-0 items-center gap-2 pe-8">
               <Avatar aria-hidden>
                 <AvatarFallback className="bg-primary text-xs font-medium text-primary-foreground">
-                  {authorInitials(authorName)}
+                  {initialsFromName(authorName)}
                 </AvatarFallback>
               </Avatar>
               <p className="min-w-0 truncate text-sm">{authorName}</p>
