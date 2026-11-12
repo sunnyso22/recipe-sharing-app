@@ -6,6 +6,7 @@ import {
   authErrorMessage,
   authFormError,
   type AuthFormState,
+  authFormValuesForClient,
   forgotPasswordSchema,
   initialAuthFormState,
   invalidAuthFields,
@@ -79,7 +80,7 @@ const requestPasswordResetAction = async (
     status: "success",
     message:
       "If an account exists for that email, we sent a link to choose a new password.",
-    values,
+    values: authFormValuesForClient(values),
   };
 };
 

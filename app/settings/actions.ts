@@ -64,7 +64,7 @@ const updatePasswordAction = async (
   const parsed = passwordFormSchema.safeParse(values);
 
   if (!parsed.success) {
-    return settingsError(parsed.error, values);
+    return settingsError(parsed.error);
   }
 
   const supabase = await createClient();
@@ -74,7 +74,7 @@ const updatePasswordAction = async (
   });
 
   if (signInError) {
-    return settingsState("error", "Current password is incorrect.", values);
+    return settingsState("error", "Current password is incorrect.");
   }
 
   const { error } = await supabase.auth.updateUser({
@@ -82,7 +82,7 @@ const updatePasswordAction = async (
   });
 
   if (error) {
-    return settingsState("error", authErrorMessage(error.message), values);
+    return settingsState("error", authErrorMessage(error.message));
   }
 
   return settingsState("success", "Password updated.");
