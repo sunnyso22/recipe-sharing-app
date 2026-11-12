@@ -7,7 +7,7 @@ import {
   recoveryErrorPath,
   safeNextPath,
 } from "@/lib/auth/paths";
-import { setPasswordRecoveryCookie } from "@/lib/auth/recovery";
+import { rememberPasswordRecovery } from "@/lib/auth/recovery";
 import { createClient } from "@/lib/supabase/server";
 
 const emailOtpTypes = new Set<EmailOtpType>([
@@ -35,7 +35,19 @@ const GET = async (request: NextRequest) => {
 
     if (!error) {
       if (recovering) {
-        await setPasswordRecoveryCookie();
+        const { data: claimsData } = await supabase.auth.getClaims();
+
+        try {
+          const remembered = await rememberPasswordRecovery(
+            claimsData?.claims.sub,
+          );
+
+          if (!remembered) {
+            redirect(recoveryErrorPath);
+          }
+        } catch {
+          redirect(recoveryErrorPath);
+        }
       }
 
       redirect(next);

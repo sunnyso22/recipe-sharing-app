@@ -119,18 +119,26 @@ const deleteAccountAction = async (
     return deleteFailed;
   }
 
+  const supabase = await createClient();
+
+  try {
+    const { error } = await supabase.auth.signOut({ scope: "global" });
+
+    if (error) {
+      await supabase.auth.signOut({ scope: "local" });
+    }
+  } catch {
+    try {
+      await supabase.auth.signOut({ scope: "local" });
+    } catch {
+      // Still delete the account. This browser may keep its cookie until the JWT expires.
+    }
+  }
+
   try {
     await deleteUserAccount(user.id);
   } catch {
     return deleteFailed;
-  }
-
-  const supabase = await createClient();
-
-  try {
-    await supabase.auth.signOut();
-  } catch {
-    // The account is already gone. Clear the session when the API allows it.
   }
 
   redirect("/");

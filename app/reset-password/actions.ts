@@ -32,13 +32,10 @@ const updateRecoveredPasswordAction = async (
     return invalidAuthFields(parsed.error, values);
   }
 
-  const [recovery, user] = await Promise.all([
-    hasPasswordRecoveryCookie(),
-    getAuthUser(),
-  ]);
+  const user = await getAuthUser();
 
-  if (!recovery || !user) {
-    return authFormError(expiredResetMessage, {}, values);
+  if (!user || !(await hasPasswordRecoveryCookie(user.id))) {
+    return authFormError(expiredResetMessage);
   }
 
   const supabase = await createClient();
