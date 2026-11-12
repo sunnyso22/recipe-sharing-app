@@ -25,8 +25,12 @@ const deleteRecipeAction = async (
 
   const user = await getAuthUser();
 
+  if (!user) {
+    return { message: "This recipe could not be deleted." };
+  }
+
   try {
-    const deleted = await deleteRecipe(recipeId, user?.id);
+    const deleted = await deleteRecipe(recipeId, user.id);
 
     if (!deleted) {
       return { message: "This recipe could not be deleted." };

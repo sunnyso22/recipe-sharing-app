@@ -8,7 +8,7 @@ import {
   RecipeForm,
   RecipeFormSkeleton,
 } from "@/components/recipes/recipe-form";
-import { getRecipeByParam, type RecipeDetails } from "@/db/queries/recipes";
+import { type RecipeDetails } from "@/db/queries/recipes";
 import { parseRecipeId } from "@/lib/recipes";
 import { getManageableRecipe } from "@/lib/recipes/access";
 import {
@@ -23,7 +23,7 @@ export const generateMetadata = async ({
   params,
 }: PageProps<"/recipes/[id]/edit">): Promise<Metadata> => {
   const { id } = await params;
-  const recipe = await getRecipeByParam(id);
+  const recipe = await getManageableRecipe(id);
 
   if (!recipe) {
     return { title: "Update recipe" };

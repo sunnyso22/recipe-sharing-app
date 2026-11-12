@@ -6,16 +6,52 @@ const resetPasswordPath = "/reset-password";
 const recoveryErrorPath = "/forgot-password?error=expired";
 
 const safeNextPath = (value: string | null) => {
+  if (!value || value.length > 2048) {
+    return "/";
+  }
+
+  const candidate = value.trim();
+
   if (
-    !value ||
-    !value.startsWith("/") ||
-    value.startsWith("//") ||
-    value.includes("\\")
+    candidate.length === 0 ||
+    !candidate.startsWith("/") ||
+    candidate.startsWith("//") ||
+    candidate.includes("\\") ||
+    /[\u0000-\u001F\u007F]/.test(candidate)
   ) {
     return "/";
   }
 
-  return value;
+  let url: URL;
+
+  try {
+    url = new URL(candidate, "http://localhost");
+  } catch {
+    return "/";
+  }
+
+  let decodedPathname: string;
+
+  try {
+    decodedPathname = decodeURIComponent(url.pathname);
+  } catch {
+    return "/";
+  }
+
+  if (
+    url.origin !== "http://localhost" ||
+    url.username.length > 0 ||
+    url.password.length > 0 ||
+    !decodedPathname.startsWith("/") ||
+    decodedPathname.startsWith("//") ||
+    decodedPathname.includes("\\") ||
+    decodedPathname.includes("://") ||
+    /[\u0000-\u001F\u007F]/.test(decodedPathname)
+  ) {
+    return "/";
+  }
+
+  return `${url.pathname}${url.search}${url.hash}`;
 };
 
 export {

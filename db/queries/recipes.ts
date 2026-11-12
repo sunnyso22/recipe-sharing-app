@@ -9,11 +9,7 @@ import {
   recipesTable,
   seasoningsTable,
 } from "@/db/schema";
-import {
-  type ActorId,
-  canManageRecipe,
-  parseRecipeId,
-} from "@/lib/recipes";
+import { parseRecipeId } from "@/lib/recipes";
 
 const recipeSummaryColumns = {
   id: recipesTable.id,
@@ -174,16 +170,6 @@ const clearRecipeChildren = async (
     .where(eq(instructionsTable.recipeId, recipeId));
 };
 
-const recipeOwner = async (recipeId: number) => {
-  const [recipe] = await db
-    .select({ userId: recipesTable.userId })
-    .from(recipesTable)
-    .where(eq(recipesTable.id, recipeId))
-    .limit(1);
-
-  return recipe ?? null;
-};
-
 const createRecipe = (userId: string, recipe: NewRecipe) => {
   return db.transaction(async (tx) => {
     const [created] = await tx
@@ -207,20 +193,10 @@ const createRecipe = (userId: string, recipe: NewRecipe) => {
 
 const updateRecipe = (
   recipeId: number,
-  actorId: ActorId,
+  actorId: string,
   recipe: NewRecipe,
 ) => {
   return db.transaction(async (tx) => {
-    const [existing] = await tx
-      .select({ userId: recipesTable.userId })
-      .from(recipesTable)
-      .where(eq(recipesTable.id, recipeId))
-      .limit(1);
-
-    if (!existing || !canManageRecipe(existing.userId, actorId)) {
-      return null;
-    }
-
     const [updated] = await tx
       .update(recipesTable)
       .set({
@@ -228,7 +204,9 @@ const updateRecipe = (
         description: recipe.description,
         updatedAt: new Date(),
       })
-      .where(eq(recipesTable.id, recipeId))
+      .where(
+        and(eq(recipesTable.id, recipeId), eq(recipesTable.userId, actorId)),
+      )
       .returning({ id: recipesTable.id });
 
     if (!updated) {
@@ -242,16 +220,10 @@ const updateRecipe = (
   });
 };
 
-const deleteRecipe = async (recipeId: number, actorId: ActorId) => {
-  const existing = await recipeOwner(recipeId);
-
-  if (!existing || !canManageRecipe(existing.userId, actorId)) {
-    return null;
-  }
-
+const deleteRecipe = async (recipeId: number, actorId: string) => {
   const [deleted] = await db
     .delete(recipesTable)
-    .where(eq(recipesTable.id, recipeId))
+    .where(and(eq(recipesTable.id, recipeId), eq(recipesTable.userId, actorId)))
     .returning({ id: recipesTable.id });
 
   return deleted ?? null;

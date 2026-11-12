@@ -13,6 +13,7 @@ const displayNameSchema = z
 const passwordSchema = z
   .string()
   .min(8, "Use at least 8 characters.")
+  .max(128, "Use 128 characters or fewer.")
   .regex(/[a-z]/, "Include a lowercase letter.")
   .regex(/[A-Z]/, "Include an uppercase letter.")
   .regex(/[0-9]/, "Include a number.");
@@ -34,7 +35,10 @@ const passwordMismatch = {
 
 const signInFormSchema = z.object({
   email: emailSchema,
-  password: z.string().min(1, "Enter your password."),
+  password: z
+    .string()
+    .min(1, "Enter your password.")
+    .max(128, "Use 128 characters or fewer."),
 });
 
 const forgotPasswordSchema = z.object({
@@ -122,6 +126,15 @@ const readAuthFieldErrors = (error: z.ZodError) => {
   return fieldErrors;
 };
 
+const authFormValuesForClient = (values: AuthFormValues): AuthFormValues => {
+  return {
+    name: values.name,
+    email: values.email,
+    password: "",
+    confirmPassword: "",
+  };
+};
+
 const authFormError = (
   message: string,
   fieldErrors: AuthFieldErrors = {},
@@ -131,7 +144,7 @@ const authFormError = (
     status: "error",
     message,
     fieldErrors,
-    values,
+    values: authFormValuesForClient(values),
   };
 };
 
@@ -169,12 +182,13 @@ const authErrorMessage = (message: string) => {
     return "Choose a password that is different from the current one.";
   }
 
-  return message;
+  return "Something went wrong. Try again.";
 };
 
 export {
   authErrorMessage,
   authFormError,
+  authFormValuesForClient,
   displayNameSchema,
   forgotPasswordSchema,
   initialAuthFormState,

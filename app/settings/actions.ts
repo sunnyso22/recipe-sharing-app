@@ -64,7 +64,7 @@ const updatePasswordAction = async (
   const parsed = passwordFormSchema.safeParse(values);
 
   if (!parsed.success) {
-    return settingsError(parsed.error, values);
+    return settingsError(parsed.error);
   }
 
   const supabase = await createClient();
@@ -74,7 +74,7 @@ const updatePasswordAction = async (
   });
 
   if (signInError) {
-    return settingsState("error", "Current password is incorrect.", values);
+    return settingsState("error", "Current password is incorrect.");
   }
 
   const { error } = await supabase.auth.updateUser({
@@ -82,7 +82,7 @@ const updatePasswordAction = async (
   });
 
   if (error) {
-    return settingsState("error", authErrorMessage(error.message), values);
+    return settingsState("error", authErrorMessage(error.message));
   }
 
   return settingsState("success", "Password updated.");
@@ -119,18 +119,26 @@ const deleteAccountAction = async (
     return deleteFailed;
   }
 
+  const supabase = await createClient();
+
+  try {
+    const { error } = await supabase.auth.signOut({ scope: "global" });
+
+    if (error) {
+      await supabase.auth.signOut({ scope: "local" });
+    }
+  } catch {
+    try {
+      await supabase.auth.signOut({ scope: "local" });
+    } catch {
+      // Still delete the account. This browser may keep its cookie until the JWT expires.
+    }
+  }
+
   try {
     await deleteUserAccount(user.id);
   } catch {
     return deleteFailed;
-  }
-
-  const supabase = await createClient();
-
-  try {
-    await supabase.auth.signOut();
-  } catch {
-    // The account is already gone. Clear the session when the API allows it.
   }
 
   redirect("/");

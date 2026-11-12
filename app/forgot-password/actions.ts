@@ -6,6 +6,7 @@ import {
   authErrorMessage,
   authFormError,
   type AuthFormState,
+  authFormValuesForClient,
   forgotPasswordSchema,
   initialAuthFormState,
   invalidAuthFields,
@@ -14,30 +15,52 @@ import {
 import { resetPasswordPath } from "@/lib/auth/paths";
 import { createClient } from "@/lib/supabase/server";
 
-const appOrigin = async () => {
+const configuredOrigin = () => {
+  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    const url = new URL(raw);
+
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      return null;
+    }
+
+    if (url.username || url.password) {
+      return null;
+    }
+
+    return url.origin;
+  } catch {
+    return null;
+  }
+};
+
+const localDevOrigin = async () => {
+  if (process.env.NODE_ENV === "production") {
+    return null;
+  }
+
   const headerStore = await headers();
-  const host = (
-    headerStore.get("x-forwarded-host") ??
-    headerStore.get("host") ??
-    ""
-  )
-    .split(",")[0]
-    ?.trim();
+  const host = headerStore.get("host")?.split(",")[0]?.trim() ?? "";
 
-  if (!host) {
+  if (
+    host !== "localhost" &&
+    !host.startsWith("localhost:") &&
+    host !== "127.0.0.1" &&
+    !host.startsWith("127.0.0.1:")
+  ) {
     return null;
   }
 
-  const proto = (headerStore.get("x-forwarded-proto") ?? "http")
-    .split(",")[0]
-    ?.trim()
-    .toLowerCase();
+  return `http://${host}`;
+};
 
-  if (proto !== "http" && proto !== "https") {
-    return null;
-  }
-
-  return `${proto}://${host}`;
+const appOrigin = async () => {
+  return configuredOrigin() ?? (await localDevOrigin());
 };
 
 const requestPasswordResetAction = async (
@@ -79,7 +102,7 @@ const requestPasswordResetAction = async (
     status: "success",
     message:
       "If an account exists for that email, we sent a link to choose a new password.",
-    values,
+    values: authFormValuesForClient(values),
   };
 };
 
