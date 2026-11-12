@@ -29,10 +29,15 @@ const updateRecipeAction = async (
   }
 
   const user = await getAuthUser();
+
+  if (!user) {
+    return { message: "This recipe could not be updated." };
+  }
+
   let updatedId: number | null;
 
   try {
-    updatedId = await updateRecipe(recipeId, user?.id, parsed.data);
+    updatedId = await updateRecipe(recipeId, user.id, parsed.data);
   } catch {
     return { message: "Could not update this recipe. Try again." };
   }
