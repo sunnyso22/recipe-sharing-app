@@ -25,7 +25,7 @@ const SettingsTabs = ({ name, email }: { name: string; email: string }) => {
         <PasswordForm />
       </TabsContent>
       <TabsContent value="account">
-        <DeleteAccount email={email} />
+        <DeleteAccount />
       </TabsContent>
     </Tabs>
   );

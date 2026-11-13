@@ -24,12 +24,14 @@ const passwordFormSchema = z
   .refine(passwordsMatch, passwordMismatch);
 
 const deleteAccountSchema = z.object({
-  email: z.email("Enter the email on this account.").trim(),
+  password: z
+    .string()
+    .min(1, "Enter your password.")
+    .max(128, "Use 128 characters or fewer."),
 });
 
 type SettingsFormValues = {
   name?: string;
-  email?: string;
   currentPassword?: string;
   password?: string;
   confirmPassword?: string;
@@ -61,7 +63,6 @@ const settingsError = (
 ): SettingsFormState => {
   return settingsState("error", firstIssueMessage(error), {
     name: values.name,
-    email: values.email,
   });
 };
 
