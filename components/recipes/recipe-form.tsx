@@ -26,8 +26,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  DESCRIPTION_LIMIT,
   emptyInstruction,
   emptyQuantity,
+  INSTRUCTION_LIMIT,
   recipeFormSchema,
   type RecipeFormState,
   type RecipeFormValues,
@@ -48,6 +50,20 @@ const emptyRecipe: RecipeFormValues = {
   ingredients: [emptyQuantity()],
   seasonings: [emptyQuantity()],
   instructions: [emptyInstruction()],
+};
+
+const listErrorMessage = (error: unknown) => {
+  if (!error || typeof error !== "object") {
+    return "";
+  }
+
+  const record = error as { message?: unknown; root?: { message?: unknown } };
+
+  if (typeof record.message === "string" && record.message.length > 0) {
+    return record.message;
+  }
+
+  return typeof record.root?.message === "string" ? record.root.message : "";
 };
 
 const cloneRecipeValues = (values: RecipeFormValues): RecipeFormValues => {
@@ -93,6 +109,10 @@ const RecipeForm = ({
     control: form.control,
     name: "instructions",
   });
+  const listMessage =
+    listErrorMessage(form.formState.errors.ingredients) ||
+    listErrorMessage(form.formState.errors.seasonings) ||
+    listErrorMessage(form.formState.errors.instructions);
 
   return (
     <form
@@ -128,6 +148,7 @@ const RecipeForm = ({
                 placeholder="A short note on what makes this recipe worth cooking."
                 multiline
                 fill
+                maxLength={DESCRIPTION_LIMIT}
               />
             </FieldGroup>
           </CardContent>
@@ -221,6 +242,7 @@ const RecipeForm = ({
                       }
                       hideLabel
                       multiline
+                      maxLength={INSTRUCTION_LIMIT}
                     />
                   </div>
                   {instructions.fields.length > 1 ? (
@@ -255,6 +277,7 @@ const RecipeForm = ({
         </CardContent>
       </Card>
 
+      {listMessage ? <FieldError>{listMessage}</FieldError> : null}
       {state.message ? <FieldError>{state.message}</FieldError> : null}
 
       <div className="flex justify-end">
@@ -306,6 +329,7 @@ const RecipeTextField = ({
               id={field.name}
               aria-invalid={fieldState.invalid}
               placeholder={placeholder}
+              maxLength={maxLength}
               className={
                 fill ? "min-h-28 flex-1 field-sizing-fixed" : "min-h-12"
               }

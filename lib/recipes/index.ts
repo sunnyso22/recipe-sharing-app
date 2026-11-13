@@ -9,7 +9,7 @@ const readSearchQuery = (value: string | string[] | undefined) => {
 type ActorId = string | null | undefined;
 
 const canManageRecipe = (ownerId: string | null, actorId: ActorId) => {
-  return ownerId === null || ownerId === actorId;
+  return typeof ownerId === "string" && ownerId.length > 0 && ownerId === actorId;
 };
 
 const parseRecipeId = (id: string) => {

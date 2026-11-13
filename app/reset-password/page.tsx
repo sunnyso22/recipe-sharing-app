@@ -55,12 +55,9 @@ const ResetLinkExpired = () => {
 };
 
 const ResetPasswordGate = async () => {
-  const [recovery, user] = await Promise.all([
-    hasPasswordRecoveryCookie(),
-    getAuthUser(),
-  ]);
+  const user = await getAuthUser();
 
-  if (!recovery || !user) {
+  if (!user || !(await hasPasswordRecoveryCookie(user.id))) {
     return <ResetLinkExpired />;
   }
 

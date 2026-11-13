@@ -67,7 +67,8 @@ const updateSession = async (request: NextRequest) => {
     pathname.startsWith("/bookmarks/") ||
     pathname === "/settings" ||
     pathname.startsWith("/settings/") ||
-    pathname === "/recipes/new";
+    pathname === "/recipes/new" ||
+    /^\/recipes\/[^/]+\/edit\/?$/.test(pathname);
 
   if (needsAuth && !data?.claims) {
     const url = request.nextUrl.clone();
