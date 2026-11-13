@@ -51,7 +51,7 @@ const PasswordForm = () => {
                 type="password"
                 autoComplete="current-password"
                 required
-                defaultValue={state.values.currentPassword ?? ""}
+                maxLength={128}
               />
             </Field>
             <Field>
@@ -63,7 +63,7 @@ const PasswordForm = () => {
                 autoComplete="new-password"
                 required
                 minLength={8}
-                defaultValue={state.values.password ?? ""}
+                maxLength={128}
               />
               <FieldDescription>{passwordHint}</FieldDescription>
             </Field>
@@ -78,7 +78,7 @@ const PasswordForm = () => {
                 autoComplete="new-password"
                 required
                 minLength={8}
-                defaultValue={state.values.confirmPassword ?? ""}
+                maxLength={128}
               />
             </Field>
           </FieldGroup>

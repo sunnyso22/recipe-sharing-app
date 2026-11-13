@@ -14,7 +14,10 @@ const profileFormSchema = z.object({
 
 const passwordFormSchema = z
   .object({
-    currentPassword: z.string().min(1, "Enter your current password."),
+    currentPassword: z
+      .string()
+      .min(1, "Enter your current password.")
+      .max(128, "Use 128 characters or fewer."),
     password: passwordSchema,
     confirmPassword: z.string().min(1, "Confirm your password."),
   })
@@ -56,7 +59,10 @@ const settingsError = (
   error: z.ZodError,
   values: SettingsFormValues = {},
 ): SettingsFormState => {
-  return settingsState("error", firstIssueMessage(error), values);
+  return settingsState("error", firstIssueMessage(error), {
+    name: values.name,
+    email: values.email,
+  });
 };
 
 export {

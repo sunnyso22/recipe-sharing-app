@@ -147,7 +147,7 @@ const AuthForm = ({
                 autoComplete={signingIn ? "current-password" : "new-password"}
                 required
                 minLength={signingIn ? undefined : 8}
-                defaultValue={state.values.password}
+                maxLength={128}
                 aria-invalid={Boolean(state.fieldErrors.password) || undefined}
               />
               {signingIn ? null : (
@@ -171,7 +171,7 @@ const AuthForm = ({
                   autoComplete="new-password"
                   required
                   minLength={8}
-                  defaultValue={state.values.confirmPassword}
+                  maxLength={128}
                   aria-invalid={
                     Boolean(state.fieldErrors.confirmPassword) || undefined
                   }
