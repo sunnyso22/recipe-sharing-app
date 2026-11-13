@@ -1,0 +1,1009 @@
+{
+  "version": "8",
+  "dialect": "postgres",
+  "id": "baec73ca-d3fc-429a-998e-ed7b4fc99405",
+  "prevIds": [
+    "6add2041-284b-4289-9f3e-7da272255b1b"
+  ],
+  "ddl": [
+    {
+      "isRlsEnabled": true,
+      "name": "ingredients",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": true,
+      "name": "instructions",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": true,
+      "name": "recipe_bookmarks",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": true,
+      "name": "recipe_likes",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": true,
+      "name": "recipes",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": true,
+      "name": "seasonings",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": {
+        "type": "always",
+        "name": "ingredients_id_seq",
+        "increment": "1",
+        "startWith": "1",
+        "minValue": "1",
+        "maxValue": "2147483647",
+        "cache": 1,
+        "cycle": false
+      },
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "ingredients"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "recipe_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "ingredients"
+    },
+    {
+      "type": "varchar(255)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "name",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "ingredients"
+    },
+    {
+      "type": "varchar(255)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "quantity",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "ingredients"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": {
+        "type": "always",
+        "name": "instructions_id_seq",
+        "increment": "1",
+        "startWith": "1",
+        "minValue": "1",
+        "maxValue": "2147483647",
+        "cache": 1,
+        "cycle": false
+      },
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "instructions"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "recipe_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "instructions"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "step_number",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "instructions"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "description",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "instructions"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "user_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "recipe_bookmarks"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "recipe_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "recipe_bookmarks"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "recipe_bookmarks"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "user_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "recipe_likes"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "recipe_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "recipe_likes"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "recipe_likes"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": {
+        "type": "always",
+        "name": "recipes_id_seq",
+        "increment": "1",
+        "startWith": "1",
+        "minValue": "1",
+        "maxValue": "2147483647",
+        "cache": 1,
+        "cycle": false
+      },
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "recipes"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "user_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "recipes"
+    },
+    {
+      "type": "varchar(255)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "title",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "recipes"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "description",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "recipes"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "recipes"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "recipes"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": {
+        "type": "always",
+        "name": "seasonings_id_seq",
+        "increment": "1",
+        "startWith": "1",
+        "minValue": "1",
+        "maxValue": "2147483647",
+        "cache": 1,
+        "cycle": false
+      },
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "seasonings"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "recipe_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "seasonings"
+    },
+    {
+      "type": "varchar(255)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "name",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "seasonings"
+    },
+    {
+      "type": "varchar(255)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "quantity",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "seasonings"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "recipe_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "ingredients_recipe_id_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "ingredients"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "recipe_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "instructions_recipe_id_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "instructions"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "recipe_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "recipe_bookmarks_recipe_id_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "recipe_bookmarks"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "recipe_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "recipe_likes_recipe_id_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "recipe_likes"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "user_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "recipes_user_id_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "recipes"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "recipe_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "seasonings_recipe_id_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "seasonings"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "recipe_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "recipes",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "ingredients_recipe_id_recipes_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "ingredients"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "recipe_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "recipes",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "instructions_recipe_id_recipes_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "instructions"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "user_id"
+      ],
+      "schemaTo": "auth",
+      "tableTo": "users",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "recipe_bookmarks_user_id_users_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "recipe_bookmarks"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "recipe_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "recipes",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "recipe_bookmarks_recipe_id_recipes_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "recipe_bookmarks"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "user_id"
+      ],
+      "schemaTo": "auth",
+      "tableTo": "users",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "recipe_likes_user_id_users_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "recipe_likes"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "recipe_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "recipes",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "recipe_likes_recipe_id_recipes_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "recipe_likes"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "user_id"
+      ],
+      "schemaTo": "auth",
+      "tableTo": "users",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "recipes_user_id_users_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "recipes"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "recipe_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "recipes",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "seasonings_recipe_id_recipes_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "seasonings"
+    },
+    {
+      "columns": [
+        "user_id",
+        "recipe_id"
+      ],
+      "nameExplicit": false,
+      "name": "recipe_bookmarks_pkey",
+      "entityType": "pks",
+      "schema": "public",
+      "table": "recipe_bookmarks"
+    },
+    {
+      "columns": [
+        "user_id",
+        "recipe_id"
+      ],
+      "nameExplicit": false,
+      "name": "recipe_likes_pkey",
+      "entityType": "pks",
+      "schema": "public",
+      "table": "recipe_likes"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "ingredients_pkey",
+      "schema": "public",
+      "table": "ingredients",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "instructions_pkey",
+      "schema": "public",
+      "table": "instructions",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "recipes_pkey",
+      "schema": "public",
+      "table": "recipes",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "seasonings_pkey",
+      "schema": "public",
+      "table": "seasonings",
+      "entityType": "pks"
+    },
+    {
+      "as": "PERMISSIVE",
+      "for": "SELECT",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "using": "true",
+      "withCheck": null,
+      "name": "ingredients_public_read",
+      "entityType": "policies",
+      "schema": "public",
+      "table": "ingredients"
+    },
+    {
+      "as": "PERMISSIVE",
+      "for": "INSERT",
+      "roles": [
+        "authenticated"
+      ],
+      "using": null,
+      "withCheck": "exists (\n    select 1\n    from \"recipes\"\n    where \"recipes\".\"id\" = \"ingredients\".\"recipe_id\"\n      and \"recipes\".\"user_id\" = (select auth.uid())\n  )",
+      "name": "ingredients_insert_own",
+      "entityType": "policies",
+      "schema": "public",
+      "table": "ingredients"
+    },
+    {
+      "as": "PERMISSIVE",
+      "for": "UPDATE",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "exists (\n    select 1\n    from \"recipes\"\n    where \"recipes\".\"id\" = \"ingredients\".\"recipe_id\"\n      and \"recipes\".\"user_id\" = (select auth.uid())\n  )",
+      "withCheck": "exists (\n    select 1\n    from \"recipes\"\n    where \"recipes\".\"id\" = \"ingredients\".\"recipe_id\"\n      and \"recipes\".\"user_id\" = (select auth.uid())\n  )",
+      "name": "ingredients_update_own",
+      "entityType": "policies",
+      "schema": "public",
+      "table": "ingredients"
+    },
+    {
+      "as": "PERMISSIVE",
+      "for": "DELETE",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "exists (\n    select 1\n    from \"recipes\"\n    where \"recipes\".\"id\" = \"ingredients\".\"recipe_id\"\n      and \"recipes\".\"user_id\" = (select auth.uid())\n  )",
+      "withCheck": null,
+      "name": "ingredients_delete_own",
+      "entityType": "policies",
+      "schema": "public",
+      "table": "ingredients"
+    },
+    {
+      "as": "PERMISSIVE",
+      "for": "SELECT",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "using": "true",
+      "withCheck": null,
+      "name": "instructions_public_read",
+      "entityType": "policies",
+      "schema": "public",
+      "table": "instructions"
+    },
+    {
+      "as": "PERMISSIVE",
+      "for": "INSERT",
+      "roles": [
+        "authenticated"
+      ],
+      "using": null,
+      "withCheck": "exists (\n    select 1\n    from \"recipes\"\n    where \"recipes\".\"id\" = \"instructions\".\"recipe_id\"\n      and \"recipes\".\"user_id\" = (select auth.uid())\n  )",
+      "name": "instructions_insert_own",
+      "entityType": "policies",
+      "schema": "public",
+      "table": "instructions"
+    },
+    {
+      "as": "PERMISSIVE",
+      "for": "UPDATE",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "exists (\n    select 1\n    from \"recipes\"\n    where \"recipes\".\"id\" = \"instructions\".\"recipe_id\"\n      and \"recipes\".\"user_id\" = (select auth.uid())\n  )",
+      "withCheck": "exists (\n    select 1\n    from \"recipes\"\n    where \"recipes\".\"id\" = \"instructions\".\"recipe_id\"\n      and \"recipes\".\"user_id\" = (select auth.uid())\n  )",
+      "name": "instructions_update_own",
+      "entityType": "policies",
+      "schema": "public",
+      "table": "instructions"
+    },
+    {
+      "as": "PERMISSIVE",
+      "for": "DELETE",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "exists (\n    select 1\n    from \"recipes\"\n    where \"recipes\".\"id\" = \"instructions\".\"recipe_id\"\n      and \"recipes\".\"user_id\" = (select auth.uid())\n  )",
+      "withCheck": null,
+      "name": "instructions_delete_own",
+      "entityType": "policies",
+      "schema": "public",
+      "table": "instructions"
+    },
+    {
+      "as": "PERMISSIVE",
+      "for": "SELECT",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "\"recipe_bookmarks\".\"user_id\" = (select auth.uid())",
+      "withCheck": null,
+      "name": "recipe_bookmarks_select_own",
+      "entityType": "policies",
+      "schema": "public",
+      "table": "recipe_bookmarks"
+    },
+    {
+      "as": "PERMISSIVE",
+      "for": "INSERT",
+      "roles": [
+        "authenticated"
+      ],
+      "using": null,
+      "withCheck": "\"recipe_bookmarks\".\"user_id\" = (select auth.uid())",
+      "name": "recipe_bookmarks_insert_own",
+      "entityType": "policies",
+      "schema": "public",
+      "table": "recipe_bookmarks"
+    },
+    {
+      "as": "PERMISSIVE",
+      "for": "DELETE",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "\"recipe_bookmarks\".\"user_id\" = (select auth.uid())",
+      "withCheck": null,
+      "name": "recipe_bookmarks_delete_own",
+      "entityType": "policies",
+      "schema": "public",
+      "table": "recipe_bookmarks"
+    },
+    {
+      "as": "PERMISSIVE",
+      "for": "SELECT",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "\"recipe_likes\".\"user_id\" = (select auth.uid())",
+      "withCheck": null,
+      "name": "recipe_likes_select_own",
+      "entityType": "policies",
+      "schema": "public",
+      "table": "recipe_likes"
+    },
+    {
+      "as": "PERMISSIVE",
+      "for": "INSERT",
+      "roles": [
+        "authenticated"
+      ],
+      "using": null,
+      "withCheck": "\"recipe_likes\".\"user_id\" = (select auth.uid())",
+      "name": "recipe_likes_insert_own",
+      "entityType": "policies",
+      "schema": "public",
+      "table": "recipe_likes"
+    },
+    {
+      "as": "PERMISSIVE",
+      "for": "DELETE",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "\"recipe_likes\".\"user_id\" = (select auth.uid())",
+      "withCheck": null,
+      "name": "recipe_likes_delete_own",
+      "entityType": "policies",
+      "schema": "public",
+      "table": "recipe_likes"
+    },
+    {
+      "as": "PERMISSIVE",
+      "for": "SELECT",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "using": "true",
+      "withCheck": null,
+      "name": "recipes_public_read",
+      "entityType": "policies",
+      "schema": "public",
+      "table": "recipes"
+    },
+    {
+      "as": "PERMISSIVE",
+      "for": "INSERT",
+      "roles": [
+        "authenticated"
+      ],
+      "using": null,
+      "withCheck": "\"recipes\".\"user_id\" = (select auth.uid())",
+      "name": "recipes_insert_own",
+      "entityType": "policies",
+      "schema": "public",
+      "table": "recipes"
+    },
+    {
+      "as": "PERMISSIVE",
+      "for": "UPDATE",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "\"recipes\".\"user_id\" = (select auth.uid())",
+      "withCheck": "\"recipes\".\"user_id\" = (select auth.uid())",
+      "name": "recipes_update_own",
+      "entityType": "policies",
+      "schema": "public",
+      "table": "recipes"
+    },
+    {
+      "as": "PERMISSIVE",
+      "for": "DELETE",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "\"recipes\".\"user_id\" = (select auth.uid())",
+      "withCheck": null,
+      "name": "recipes_delete_own",
+      "entityType": "policies",
+      "schema": "public",
+      "table": "recipes"
+    },
+    {
+      "as": "PERMISSIVE",
+      "for": "SELECT",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "using": "true",
+      "withCheck": null,
+      "name": "seasonings_public_read",
+      "entityType": "policies",
+      "schema": "public",
+      "table": "seasonings"
+    },
+    {
+      "as": "PERMISSIVE",
+      "for": "INSERT",
+      "roles": [
+        "authenticated"
+      ],
+      "using": null,
+      "withCheck": "exists (\n    select 1\n    from \"recipes\"\n    where \"recipes\".\"id\" = \"seasonings\".\"recipe_id\"\n      and \"recipes\".\"user_id\" = (select auth.uid())\n  )",
+      "name": "seasonings_insert_own",
+      "entityType": "policies",
+      "schema": "public",
+      "table": "seasonings"
+    },
+    {
+      "as": "PERMISSIVE",
+      "for": "UPDATE",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "exists (\n    select 1\n    from \"recipes\"\n    where \"recipes\".\"id\" = \"seasonings\".\"recipe_id\"\n      and \"recipes\".\"user_id\" = (select auth.uid())\n  )",
+      "withCheck": "exists (\n    select 1\n    from \"recipes\"\n    where \"recipes\".\"id\" = \"seasonings\".\"recipe_id\"\n      and \"recipes\".\"user_id\" = (select auth.uid())\n  )",
+      "name": "seasonings_update_own",
+      "entityType": "policies",
+      "schema": "public",
+      "table": "seasonings"
+    },
+    {
+      "as": "PERMISSIVE",
+      "for": "DELETE",
+      "roles": [
+        "authenticated"
+      ],
+      "using": "exists (\n    select 1\n    from \"recipes\"\n    where \"recipes\".\"id\" = \"seasonings\".\"recipe_id\"\n      and \"recipes\".\"user_id\" = (select auth.uid())\n  )",
+      "withCheck": null,
+      "name": "seasonings_delete_own",
+      "entityType": "policies",
+      "schema": "public",
+      "table": "seasonings"
+    }
+  ],
+  "renames": []
+}
