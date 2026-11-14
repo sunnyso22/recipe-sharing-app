@@ -25,16 +25,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { initialSettingsFormState } from "@/lib/settings/form";
 
-const DeleteAccount = ({ email }: { email: string }) => {
+const DeleteAccount = () => {
   const [state, formAction, pending] = useActionState(
     deleteAccountAction,
     initialSettingsFormState,
   );
   const dialogActionsRef = useRef<AlertDialogRootActions | null>(null);
+  const hasError = state.status === "error";
 
   return (
     <Card>
@@ -69,25 +75,27 @@ const DeleteAccount = ({ email }: { email: string }) => {
               </AlertDialogMedia>
               <AlertDialogTitle>Delete your account?</AlertDialogTitle>
               <AlertDialogDescription>
-                This cannot be undone. Type {email} to confirm.
+                This cannot be undone. Enter your password to confirm.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <form action={formAction} className="flex flex-col gap-4">
-              <Field>
-                <FieldLabel htmlFor="delete-account-email">Email</FieldLabel>
-                <Input
-                  id="delete-account-email"
-                  name="email"
-                  type="email"
-                  autoComplete="off"
-                  spellCheck={false}
-                  required
-                  defaultValue={state.values.email ?? ""}
-                />
-                <FieldError>
-                  {state.status === "error" ? state.message : null}
-                </FieldError>
-              </Field>
+              <FieldGroup className="gap-4">
+                <Field data-invalid={hasError || undefined}>
+                  <FieldLabel htmlFor="delete-account-password">
+                    Password
+                  </FieldLabel>
+                  <Input
+                    id="delete-account-password"
+                    name="password"
+                    type="password"
+                    autoComplete="current-password"
+                    required
+                    maxLength={128}
+                    aria-invalid={hasError || undefined}
+                  />
+                  <FieldError>{hasError ? state.message : null}</FieldError>
+                </Field>
+              </FieldGroup>
               <AlertDialogFooter>
                 <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
                 <AlertDialogAction

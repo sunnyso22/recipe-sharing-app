@@ -2,14 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import * as z from "zod";
 
 import { deleteUserAccount } from "@/db/queries/accounts";
 import { authErrorMessage } from "@/lib/auth/form";
 import { requireAuthUser } from "@/lib/auth/session";
 import { readFormString } from "@/lib/forms";
+import { confirmAndDeleteAccount } from "@/lib/settings/delete-account";
 import {
-  deleteAccountSchema,
   passwordFormSchema,
   profileFormSchema,
   settingsError,
@@ -93,52 +92,38 @@ const deleteAccountAction = async (
   formData: FormData,
 ): Promise<SettingsFormState> => {
   const user = await requireAuthUser();
+  const supabase = await createClient();
+  const result = await confirmAndDeleteAccount(
+    {
+      userId: user.id,
+      email: user.email,
+      password: readFormString(formData, "password"),
+    },
+    {
+      signInWithPassword: async (credentials) => {
+        const { data, error } =
+          await supabase.auth.signInWithPassword(credentials);
 
-  const values = { email: readFormString(formData, "email") };
-  const parsed = deleteAccountSchema.safeParse(values);
-
-  if (!parsed.success) {
-    return settingsError(parsed.error, values);
-  }
-
-  if (parsed.data.email.toLowerCase() !== user.email.toLowerCase()) {
-    return settingsState(
-      "error",
-      "Enter the email on this account to confirm.",
-      values,
-    );
-  }
-
-  const deleteFailed = settingsState(
-    "error",
-    "Could not delete this account. Try again.",
-    values,
+        return {
+          error,
+          userId: data.user?.id ?? null,
+        };
+      },
+      signOut: (options) => supabase.auth.signOut(options),
+      deleteUserAccount,
+    },
   );
 
-  if (!z.uuid().safeParse(user.id).success) {
-    return deleteFailed;
+  if (result.status === "invalid") {
+    return settingsState("error", result.message);
   }
 
-  const supabase = await createClient();
-
-  try {
-    const { error } = await supabase.auth.signOut({ scope: "global" });
-
-    if (error) {
-      await supabase.auth.signOut({ scope: "local" });
-    }
-  } catch {
-    try {
-      await supabase.auth.signOut({ scope: "local" });
-    } catch {
-      // Still delete the account. This browser may keep its cookie until the JWT expires.
-    }
+  if (result.status === "incorrect-password") {
+    return settingsState("error", "Password is incorrect.");
   }
 
-  try {
-    await deleteUserAccount(user.id);
-  } catch {
-    return deleteFailed;
+  if (result.status === "delete-failed") {
+    return settingsState("error", "Could not delete this account. Try again.");
   }
 
   redirect("/");
