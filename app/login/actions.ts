@@ -6,14 +6,13 @@ import {
   authErrorMessage,
   authFormError,
   type AuthFormState,
-  initialAuthFormState,
   invalidAuthFields,
   readAuthFormValues,
   signInFormSchema,
-  signUpFormSchema,
 } from "@/lib/auth/form";
 import { safeNextPath } from "@/lib/auth/paths";
-import { createClient } from "@/lib/supabase/server";
+import { completeSignUp } from "@/lib/auth/sign-up";
+import { createClient, createSignUpClient } from "@/lib/supabase/server";
 
 const signInAction = async (
   _state: AuthFormState,
@@ -44,51 +43,27 @@ const signUpAction = async (
   _state: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> => {
-  const values = readAuthFormValues(formData);
-  const parsed = signUpFormSchema.safeParse({
-    name: values.name,
-    email: values.email,
-    password: values.password,
-    confirmPassword: values.confirmPassword,
-  });
+  const supabase = createSignUpClient();
 
-  if (!parsed.success) {
-    return invalidAuthFields(parsed.error, values);
-  }
+  return completeSignUp(formData, {
+    signUp: async (credentials) => {
+      const { data, error } = await supabase.auth.signUp(credentials);
 
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.signUp({
-    email: parsed.data.email,
-    password: parsed.data.password,
-    options: {
-      data: {
-        name: parsed.data.name,
-      },
+      return {
+        data: {
+          user: data.user ? { identities: data.user.identities } : null,
+          session: data.session,
+        },
+        error: error
+          ? {
+              message: error.message,
+              code: error.code,
+              status: error.status,
+            }
+          : null,
+      };
     },
   });
-
-  if (error) {
-    return authFormError(authErrorMessage(error.message), {}, values);
-  }
-
-  if (data.session) {
-    const next = formData.get("next");
-    redirect(typeof next === "string" ? safeNextPath(next) : "/");
-  }
-
-  if (data.user && data.user.identities?.length === 0) {
-    return authFormError(
-      "An account with this email already exists. Sign in instead.",
-      {},
-      values,
-    );
-  }
-
-  return {
-    ...initialAuthFormState,
-    status: "success",
-    message: "Check your email for a confirmation link, then sign in.",
-  };
 };
 
 const signOutAction = async () => {
