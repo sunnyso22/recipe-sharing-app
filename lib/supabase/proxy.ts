@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
+import { implicitCallbackRewrite } from "@/lib/auth/implicit-grant";
 import { confirmErrorPath } from "@/lib/auth/paths";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 
@@ -22,7 +23,23 @@ const redirectAuthCallback = (request: NextRequest) => {
     return NextResponse.redirect(url);
   }
 
-  return null;
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    return null;
+  }
+
+  const handoff = implicitCallbackRewrite({
+    pathname,
+    code,
+    next: searchParams.get("next"),
+  });
+
+  if (!handoff) {
+    return null;
+  }
+
+  const url = request.nextUrl.clone();
+  url.pathname = handoff;
+  return NextResponse.rewrite(url);
 };
 
 const updateSession = async (request: NextRequest) => {

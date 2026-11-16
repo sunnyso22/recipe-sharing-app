@@ -69,9 +69,16 @@ const authResult = (result: {
   };
 };
 
-const attempt = async (formData: FormData, result: SignUpResult) => {
+const confirmationRedirect = "https://cookery.sunnyso22.dev/auth/callback";
+
+const attempt = async (
+  formData: FormData,
+  result: SignUpResult,
+  emailRedirectTo: string | null = confirmationRedirect,
+) => {
   const calls: Parameters<SignUpDeps["signUp"]>[0][] = [];
   const state = await completeSignUp(formData, {
+    emailRedirectTo,
     signUp: async (credentials) => {
       calls.push(credentials);
       return result;
@@ -85,6 +92,7 @@ const registeredCredentials = {
   email,
   password,
   options: {
+    emailRedirectTo: confirmationRedirect,
     data: {
       name,
     },
@@ -289,6 +297,24 @@ describe("sign up", () => {
       persistSession: false,
       autoRefreshToken: false,
       detectSessionInUrl: false,
+      flowType: "implicit",
     });
+  });
+
+  test("omits the confirmation redirect when no safe site URL is available", async () => {
+    const { calls, state } = await attempt(signUpForm(), authResult({}), null);
+
+    assert.deepEqual(state, confirmationState);
+    assert.deepEqual(calls, [
+      {
+        email,
+        password,
+        options: {
+          data: {
+            name,
+          },
+        },
+      },
+    ]);
   });
 });

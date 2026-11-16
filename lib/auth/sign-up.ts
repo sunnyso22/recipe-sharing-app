@@ -22,16 +22,20 @@ type SignUpCallResult = {
   error: SignUpAuthError | null;
 };
 
-type SignUpDeps = {
-  signUp: (credentials: {
-    email: string;
-    password: string;
-    options: {
-      data: {
-        name: string;
-      };
+type SignUpCredentials = {
+  email: string;
+  password: string;
+  options: {
+    emailRedirectTo?: string;
+    data: {
+      name: string;
     };
-  }) => Promise<SignUpCallResult>;
+  };
+};
+
+type SignUpDeps = {
+  emailRedirectTo: string | null;
+  signUp: (credentials: SignUpCredentials) => Promise<SignUpCallResult>;
 };
 
 const signUpConfirmationMessage =
@@ -85,14 +89,20 @@ const completeSignUp = async (
     return invalidAuthFields(parsed.error, values);
   }
 
+  const options: SignUpCredentials["options"] = {
+    data: {
+      name: parsed.data.name,
+    },
+  };
+
+  if (deps.emailRedirectTo) {
+    options.emailRedirectTo = deps.emailRedirectTo;
+  }
+
   const { error } = await deps.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
-    options: {
-      data: {
-        name: parsed.data.name,
-      },
-    },
+    options,
   });
 
   // A new email, an obfuscated existing user (empty identities), a

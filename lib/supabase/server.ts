@@ -6,11 +6,14 @@ import { getSupabaseEnv } from "@/lib/supabase/env";
 
 // Sign-up must not write auth cookies. A session is returned only for a new
 // email when email confirmation is off, so storing it would distinguish that
-// email from one that is already registered.
+// email from one that is already registered. The flow stays implicit: PKCE
+// would need a code verifier this client does not keep, and the confirmation
+// link would fail. The implicit link puts the session in the URL hash.
 const signUpAuthOptions = {
   persistSession: false,
   autoRefreshToken: false,
   detectSessionInUrl: false,
+  flowType: "implicit",
 } as const;
 
 const createSignUpClient = () => {

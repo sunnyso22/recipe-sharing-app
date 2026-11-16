@@ -1,7 +1,9 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { confirmationRedirectUrl } from "@/lib/auth/email-redirect";
 import {
   authErrorMessage,
   authFormError,
@@ -43,9 +45,15 @@ const signUpAction = async (
   _state: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> => {
+  const headerStore = await headers();
   const supabase = createSignUpClient();
 
   return completeSignUp(formData, {
+    emailRedirectTo: confirmationRedirectUrl({
+      siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
+      nodeEnv: process.env.NODE_ENV,
+      host: headerStore.get("host"),
+    }),
     signUp: async (credentials) => {
       const { data, error } = await supabase.auth.signUp(credentials);
 
