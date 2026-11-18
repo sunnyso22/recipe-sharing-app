@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { type NextRequest } from "next/server";
 
 import {
+  confirmedSignInPath,
   confirmErrorPath,
   recoveryErrorPath,
   safeNextPath,
@@ -34,6 +35,18 @@ const GET = async (request: NextRequest) => {
     });
 
     if (!error) {
+      if (type === "signup") {
+        const { error: signOutError } = await supabase.auth.signOut({
+          scope: "local",
+        });
+
+        if (signOutError) {
+          redirect(confirmErrorPath);
+        }
+
+        redirect(confirmedSignInPath);
+      }
+
       if (recovering) {
         const { data: claimsData } = await supabase.auth.getClaims();
 

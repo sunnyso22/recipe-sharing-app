@@ -29,7 +29,6 @@ const redirectAuthCallback = (request: NextRequest) => {
 
   const handoff = implicitCallbackRewrite({
     pathname,
-    code,
     next: searchParams.get("next"),
   });
 

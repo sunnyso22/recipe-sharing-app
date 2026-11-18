@@ -8,6 +8,7 @@ import {
   isSameOrigin,
   readImplicitSessionBody,
 } from "@/lib/auth/implicit-grant";
+import { confirmedSignInMessage, confirmedSignInPath } from "@/lib/auth/paths";
 
 const accessToken = "header.payload.signature";
 const refreshToken = "refresh-token-value";
@@ -19,11 +20,10 @@ const location = (pathname: string, search = "", hashValue = "") => {
 };
 
 describe("implicit confirmation grant", () => {
-  test("keeps a callback without a code off the confirm error page", () => {
+  test("rewrites signup confirmation, including a code, off the exchange route", () => {
     assert.equal(
       implicitCallbackRewrite({
         pathname: "/auth/callback",
-        code: null,
         next: null,
       }),
       "/auth/session",
@@ -31,26 +31,16 @@ describe("implicit confirmation grant", () => {
     assert.equal(
       implicitCallbackRewrite({
         pathname: "/auth/callback",
-        code: null,
         next: "/cookbook",
       }),
       "/auth/session",
     );
   });
 
-  test("leaves PKCE codes and password recovery on the callback route", () => {
+  test("leaves password recovery on the callback route", () => {
     assert.equal(
       implicitCallbackRewrite({
         pathname: "/auth/callback",
-        code: "pkce-code",
-        next: null,
-      }),
-      null,
-    );
-    assert.equal(
-      implicitCallbackRewrite({
-        pathname: "/auth/callback",
-        code: null,
         next: "/reset-password",
       }),
       null,
@@ -58,14 +48,13 @@ describe("implicit confirmation grant", () => {
     assert.equal(
       implicitCallbackRewrite({
         pathname: "/",
-        code: null,
         next: null,
       }),
       null,
     );
   });
 
-  test("plans to store a signup hash and then open a short URL", () => {
+  test("sends a signup hash to sign-in without keeping the session", () => {
     const plan = implicitGrantPlan(
       location(
         "/",
@@ -76,58 +65,57 @@ describe("implicit confirmation grant", () => {
       ),
     );
 
+    assert.deepEqual(plan, {
+      action: "replace",
+      path: confirmedSignInPath,
+    });
+    assert.equal(confirmedSignInMessage, "Email confirmed. Sign in to continue.");
+    assert.equal(confirmedSignInPath.includes("access_token"), false);
+    assert.equal(confirmedSignInPath.includes(accessToken), false);
+    assert.equal(confirmedSignInPath.includes(refreshToken), false);
+  });
+
+  test("sends a callback code to sign-in instead of exchanging it", () => {
+    const callback = implicitGrantPlan(
+      location("/auth/callback", "?code=pkce-code"),
+    );
+    const withNext = implicitGrantPlan(
+      location(
+        "/auth/callback",
+        "?code=pkce-code&next=/cookbook",
+        hash(`access_token=${accessToken}&refresh_token=${refreshToken}`),
+      ),
+    );
+
+    assert.deepEqual(callback, {
+      action: "replace",
+      path: confirmedSignInPath,
+    });
+    assert.deepEqual(withNext, {
+      action: "replace",
+      path: confirmedSignInPath,
+    });
+  });
+
+  test("still stores a recovery hash so password reset can continue", () => {
+    const plan = implicitGrantPlan(
+      location(
+        "/auth/callback",
+        "?next=/reset-password",
+        hash(
+          `access_token=${accessToken}&refresh_token=${refreshToken}&type=recovery`,
+        ),
+      ),
+    );
+
     assert.equal(plan.action, "establish");
 
     if (plan.action !== "establish") {
       return;
     }
 
-    assert.equal(plan.accessToken, accessToken);
-    assert.equal(plan.refreshToken, refreshToken);
-    assert.equal(plan.successPath, "/");
-    assert.equal(plan.successPath.includes("access_token"), false);
-    assert.equal(plan.successPath.includes("refresh_token"), false);
-    assert.equal(plan.failurePath, "/login?error=confirm");
-  });
-
-  test("follows a safe next path from the callback hash", () => {
-    const callback = implicitGrantPlan(
-      location(
-        "/auth/callback",
-        "?next=/cookbook",
-        hash(`access_token=${accessToken}&refresh_token=${refreshToken}`),
-      ),
-    );
-    const unsafe = implicitGrantPlan(
-      location(
-        "/auth/session",
-        "?next=https://evil.example",
-        hash(`access_token=${accessToken}&refresh_token=${refreshToken}`),
-      ),
-    );
-    const loop = implicitGrantPlan(
-      location(
-        "/auth/callback",
-        "?next=/auth/callback",
-        hash(`access_token=${accessToken}&refresh_token=${refreshToken}`),
-      ),
-    );
-
-    assert.equal(callback.action, "establish");
-    assert.equal(unsafe.action, "establish");
-    assert.equal(loop.action, "establish");
-
-    if (
-      callback.action !== "establish" ||
-      unsafe.action !== "establish" ||
-      loop.action !== "establish"
-    ) {
-      return;
-    }
-
-    assert.equal(callback.successPath, "/cookbook");
-    assert.equal(unsafe.successPath, "/");
-    assert.equal(loop.successPath, "/");
+    assert.equal(plan.successPath, "/reset-password");
+    assert.equal(plan.successPath.includes(accessToken), false);
   });
 
   test("strips an auth error hash instead of leaving it in the address bar", () => {

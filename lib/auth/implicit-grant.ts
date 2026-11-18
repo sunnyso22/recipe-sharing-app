@@ -1,6 +1,7 @@
 import {
   authCallbackPath,
   authSessionPath,
+  confirmedSignInPath,
   confirmErrorPath,
   recoveryErrorPath,
   resetPasswordPath,
@@ -18,6 +19,10 @@ type AuthLocation = {
 type ImplicitSession = {
   accessToken: string;
   refreshToken: string;
+};
+
+type ImplicitGrantSession = ImplicitSession & {
+  type: string | null;
 };
 
 type ImplicitGrantPlan =
@@ -39,7 +44,7 @@ const tokenValue = (value: string | null) => {
 
 const parseImplicitGrant = (
   hash: string,
-): { kind: "session"; session: ImplicitSession } | { kind: "error" } | null => {
+): { kind: "session"; session: ImplicitGrantSession } | { kind: "error" } | null => {
   const fragment = hash.startsWith("#") ? hash.slice(1) : hash;
 
   if (!fragment) {
@@ -80,6 +85,7 @@ const parseImplicitGrant = (
     session: {
       accessToken: access,
       refreshToken: refresh,
+      type: params.get("type"),
     },
   };
 };
@@ -116,18 +122,17 @@ const handoffPath = (pathname: string) => {
   return pathname === authCallbackPath || pathname === authSessionPath;
 };
 
-// The server never receives #access_token=. Missing ?code= on the callback
-// is the implicit grant, not a failed confirmation.
+// The server never receives #access_token=. Rewrite confirmation landings,
+// including ?code=, so the browser can drop that URL. Password recovery stays
+// on the callback route, which still exchanges its code and keeps the session.
 const implicitCallbackRewrite = ({
   pathname,
-  code,
   next,
 }: {
   pathname: string;
-  code: string | null;
   next: string | null;
 }) => {
-  if (pathname !== authCallbackPath || code !== null) {
+  if (pathname !== authCallbackPath) {
     return null;
   }
 
@@ -148,7 +153,14 @@ const implicitGrantPlan = (location: AuthLocation): ImplicitGrantPlan => {
     ? confirmationNextPath(next)
     : pathWithoutSessionParams(location.pathname, location.search);
 
-  if (grant?.kind === "session") {
+  const confirmed = { action: "replace" as const, path: confirmedSignInPath };
+
+  if (grant?.kind === "error") {
+    return { action: "replace", path: failurePath };
+  }
+
+  // Recovery still needs the session so the user can choose a new password.
+  if (grant?.kind === "session" && grant.session.type === "recovery") {
     return {
       action: "establish",
       accessToken: grant.session.accessToken,
@@ -158,7 +170,18 @@ const implicitGrantPlan = (location: AuthLocation): ImplicitGrantPlan => {
     };
   }
 
-  if (grant?.kind === "error" || handoff) {
+  // Signup confirmation already happened at Auth. Do not store the session.
+  if (grant?.kind === "session") {
+    return confirmed;
+  }
+
+  const code = new URLSearchParams(location.search).get("code");
+
+  if (code && !recovering) {
+    return confirmed;
+  }
+
+  if (handoff) {
     return { action: "replace", path: failurePath };
   }
 

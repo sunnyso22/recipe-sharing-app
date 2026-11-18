@@ -32,10 +32,12 @@ import { forgotPasswordPath } from "@/lib/auth/paths";
 const AuthForm = ({
   mode,
   notice,
+  noticeStatus = "error",
   redirectTo,
 }: {
   mode: "sign-in" | "sign-up";
   notice?: string;
+  noticeStatus?: "error" | "success";
   redirectTo?: string;
 }) => {
   const action = mode === "sign-in" ? signInAction : signUpAction;
@@ -54,7 +56,7 @@ const AuthForm = ({
       : fieldMessage
         ? ""
         : state.message;
-  const status = state.status === "idle" && notice ? "error" : state.status;
+  const status = state.status === "idle" && notice ? noticeStatus : state.status;
   const signingIn = mode === "sign-in";
   const tab = signingIn ? "sign-in" : "sign-up";
 

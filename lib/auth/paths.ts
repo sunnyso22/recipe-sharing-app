@@ -1,6 +1,8 @@
 const authCallbackPath = "/auth/callback";
 const authSessionPath = "/auth/session";
 const confirmErrorPath = "/login?error=confirm";
+const confirmedSignInMessage = "Email confirmed. Sign in to continue.";
+const confirmedSignInPath = "/login?confirmed=1";
 const expiredResetMessage =
   "That reset link is invalid or has expired. Request a new one.";
 const forgotPasswordPath = "/forgot-password";
@@ -59,6 +61,8 @@ const safeNextPath = (value: string | null) => {
 export {
   authCallbackPath,
   authSessionPath,
+  confirmedSignInMessage,
+  confirmedSignInPath,
   confirmErrorPath,
   expiredResetMessage,
   forgotPasswordPath,

@@ -19,8 +19,8 @@ const AuthSessionPage = () => {
             Confirming your account
           </h1>
           <CardDescription role="status">
-            This takes a moment. You will continue once the link has been
-            checked.
+            This takes a moment. You will continue to sign in once the link
+            has been checked.
           </CardDescription>
         </CardHeader>
       </Card>
