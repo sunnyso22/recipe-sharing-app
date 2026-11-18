@@ -77,7 +77,8 @@ const confirmAndDeleteAccount = async (
     try {
       await deps.signOut({ scope: "local" });
     } catch {
-      // Still delete the account. This browser may keep its cookie until the JWT expires.
+      // Still delete the account. A later request rejects this cookie once the
+      // account or session row is gone, and clears it when the response can.
     }
   }
 
