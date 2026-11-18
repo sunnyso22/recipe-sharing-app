@@ -2,7 +2,7 @@ import { Suspense } from "react";
 
 import { AuthForm, AuthFormFallback } from "@/components/auth/auth-form";
 import { PageMain } from "@/components/page-main";
-import { safeNextPath } from "@/lib/auth/paths";
+import { confirmedSignInMessage, safeNextPath } from "@/lib/auth/paths";
 
 export const metadata = {
   title: "Sign in",
@@ -17,11 +17,23 @@ const LoginForm = async ({
   searchParams: PageProps<"/login">["searchParams"];
 }) => {
   const params = await searchParams;
-  const notice = params.error === "confirm" ? confirmMessage : undefined;
+  const confirmed = params.confirmed === "1";
+  const notice = confirmed
+    ? confirmedSignInMessage
+    : params.error === "confirm"
+      ? confirmMessage
+      : undefined;
   const redirectTo =
     typeof params.next === "string" ? safeNextPath(params.next) : undefined;
 
-  return <AuthForm mode="sign-in" notice={notice} redirectTo={redirectTo} />;
+  return (
+    <AuthForm
+      mode="sign-in"
+      notice={notice}
+      noticeStatus={confirmed ? "success" : "error"}
+      redirectTo={redirectTo}
+    />
+  );
 };
 
 const LoginPage = ({ searchParams }: PageProps<"/login">) => {
