@@ -1,7 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
+import { liveAuthAccount } from "@/db/queries/live-account";
 import { implicitCallbackRewrite } from "@/lib/auth/implicit-grant";
+import {
+  clearSessionIfAuthEnded,
+  settleAuthSession,
+} from "@/lib/auth/live-session";
 import { confirmErrorPath } from "@/lib/auth/paths";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 
@@ -74,7 +79,25 @@ const updateSession = async (request: NextRequest) => {
 
   // Refresh the session before any other auth work. Extra work in between
   // can rotate the refresh token twice and sign the user out.
-  const { data } = await supabase.auth.getClaims();
+  const { data, error } = await supabase.auth.getClaims();
+  let claims = data?.claims;
+  const clearLocalSession = async () => {
+    await supabase.auth.signOut({ scope: "local" });
+  };
+
+  if (await clearSessionIfAuthEnded(error, clearLocalSession)) {
+    claims = undefined;
+  } else if (claims) {
+    const decision = await settleAuthSession(claims, {
+      liveAccount: liveAuthAccount,
+      clearLocalSession,
+    });
+
+    if (decision.status === "revoked") {
+      claims = undefined;
+    }
+  }
+
   const pathname = request.nextUrl.pathname;
   const needsAuth =
     pathname === "/cookbook" ||
@@ -86,7 +109,7 @@ const updateSession = async (request: NextRequest) => {
     pathname === "/recipes/new" ||
     /^\/recipes\/[^/]+\/edit\/?$/.test(pathname);
 
-  if (needsAuth && !data?.claims) {
+  if (needsAuth && !claims) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.search = "";

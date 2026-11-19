@@ -1,39 +1,16 @@
 import { io } from "next/cache";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
+import { liveAuthAccount } from "@/db/queries/live-account";
+import {
+  type AuthUser,
+  clearSessionIfAuthEnded,
+  settleAuthSession,
+} from "@/lib/auth/live-session";
 import { createClient } from "@/lib/supabase/server";
 
-type AuthUser = {
-  id: string;
-  email: string;
-  name: string;
-};
-
-const claimString = (value: unknown) => {
-  if (typeof value !== "string") {
-    return null;
-  }
-
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
-};
-
-// The Auth users list shows raw_user_meta_data.name as Display name.
-const readDisplayName = (
-  metadata: { name?: unknown } | undefined,
-  email: string,
-) => {
-  const name = claimString(metadata?.name);
-
-  if (name) {
-    return name;
-  }
-
-  const local = email.split("@")[0];
-  return local && local.length > 0 ? local : email;
-};
-
-const getAuthUser = async (): Promise<AuthUser | null> => {
+const getAuthUser = cache(async (): Promise<AuthUser | null> => {
   // getClaims() checks JWT expiry with Date.now(). Cache Components rejects
   // that during prerender, so suspend before the check and fill it at request time.
   await io();
@@ -41,23 +18,27 @@ const getAuthUser = async (): Promise<AuthUser | null> => {
   try {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.getClaims();
+    const clearLocalSession = async () => {
+      await supabase.auth.signOut({ scope: "local" });
+    };
+
+    if (await clearSessionIfAuthEnded(error, clearLocalSession)) {
+      return null;
+    }
 
     if (error || !data?.claims) {
       return null;
     }
 
-    const id = claimString(data.claims.sub);
-    const email = claimString(data.claims.email);
+    // Signature and expiry are not enough. settleAuthSession rejects the
+    // request when this user or this session row has been deleted, and asks
+    // the client to drop this browser's auth cookies.
+    const decision = await settleAuthSession(data.claims, {
+      liveAccount: liveAuthAccount,
+      clearLocalSession,
+    });
 
-    if (!id || !email) {
-      return null;
-    }
-
-    return {
-      id,
-      email,
-      name: readDisplayName(data.claims.user_metadata, email),
-    };
+    return decision.status === "active" ? decision.user : null;
   } catch (error) {
     // Next.js throws this while re-rendering the header during a Server Action.
     if (
@@ -69,7 +50,7 @@ const getAuthUser = async (): Promise<AuthUser | null> => {
 
     throw error;
   }
-};
+});
 
 const requireAuthUser = async () => {
   const user = await getAuthUser();
@@ -81,5 +62,6 @@ const requireAuthUser = async () => {
   return user;
 };
 
-export { getAuthUser, readDisplayName, requireAuthUser };
+export { readDisplayName } from "@/lib/auth/live-session";
+export { getAuthUser, requireAuthUser };
 export type { AuthUser };
