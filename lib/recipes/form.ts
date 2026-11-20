@@ -1,18 +1,19 @@
 import * as z from "zod";
 
 import { firstIssueMessage } from "@/lib/forms";
-
-const TEXT_LIMIT = 255;
-const DESCRIPTION_LIMIT = 5000;
-const INSTRUCTION_LIMIT = 2000;
-const LIST_LIMIT = 50;
+import {
+  DESCRIPTION_LIMIT,
+  INSTRUCTION_LIMIT,
+  LIST_LIMIT,
+  TEXT_LIMIT,
+} from "@/lib/recipes/limits";
 
 const limitedText = (emptyMessage: string) => {
   return z
     .string()
     .trim()
     .min(1, emptyMessage)
-    .max(TEXT_LIMIT, "Use 255 characters or fewer.");
+    .max(TEXT_LIMIT, `Use ${TEXT_LIMIT} characters or fewer.`);
 };
 
 const quantitySchema = (emptyName: string) => {
@@ -39,15 +40,15 @@ const recipeFormSchema = z.object({
     .string()
     .trim()
     .min(1, "Enter a description.")
-    .max(DESCRIPTION_LIMIT, "Use 5000 characters or fewer."),
+    .max(DESCRIPTION_LIMIT, `Use ${DESCRIPTION_LIMIT} characters or fewer.`),
   ingredients: z
     .array(ingredientsSchema)
     .min(1, "Add at least one ingredient.")
-    .max(LIST_LIMIT, "Add 50 ingredients or fewer."),
+    .max(LIST_LIMIT, `Add ${LIST_LIMIT} ingredients or fewer.`),
   seasonings: z
     .array(seasoningsSchema)
     .min(1, "Add at least one seasoning.")
-    .max(LIST_LIMIT, "Add 50 seasonings or fewer."),
+    .max(LIST_LIMIT, `Add ${LIST_LIMIT} seasonings or fewer.`),
   instructions: z
     .array(
       z.object({
@@ -55,11 +56,11 @@ const recipeFormSchema = z.object({
           .string()
           .trim()
           .min(1, "Enter this step.")
-          .max(INSTRUCTION_LIMIT, "Use 2000 characters or fewer."),
+          .max(INSTRUCTION_LIMIT, `Use ${INSTRUCTION_LIMIT} characters or fewer.`),
       }),
     )
     .min(1, "Add at least one instruction.")
-    .max(LIST_LIMIT, "Add 50 steps or fewer."),
+    .max(LIST_LIMIT, `Add ${LIST_LIMIT} steps or fewer.`),
 });
 
 type RecipeFormValues = z.infer<typeof recipeFormSchema>;
