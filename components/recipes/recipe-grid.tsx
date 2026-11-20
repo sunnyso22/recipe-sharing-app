@@ -1,78 +1,92 @@
+import { redirect } from "next/navigation";
+
 import {
   RecipeCard,
   RecipeCardSkeleton,
 } from "@/components/recipes/recipe-card";
+import {
+  RecipePageNotice,
+  RecipePagination,
+  RecipeSearchCount,
+} from "@/components/recipes/recipe-pagination";
 import { getEngagementByRecipeIds } from "@/db/queries/engagement";
 import {
-  listBookmarkedRecipes,
-  listRecipes,
-  listRecipesByUser,
-  searchBookmarkedRecipes,
-  searchRecipes,
+  loadRecipeListPage,
+  type RecipeListScope,
 } from "@/db/queries/recipes";
 import { getAuthUser } from "@/lib/auth/session";
 import { readSearchQuery } from "@/lib/recipes";
+import {
+  readRecipePage,
+  recipeListHref,
+  type RecipeListPath,
+  recipeListView,
+} from "@/lib/recipes/pagination";
 
-type RecipeGridSource = "all" | "owned" | "bookmarked";
-
-const loadRecipes = ({
-  query,
-  userId,
-  source,
-}: {
-  query: string;
-  userId?: string;
-  source: RecipeGridSource;
-}) => {
-  if (source === "bookmarked" && userId) {
-    return query
-      ? searchBookmarkedRecipes(query, userId)
-      : listBookmarkedRecipes(userId);
-  }
-
-  if (source === "owned" && userId) {
-    return query ? searchRecipes(query, userId) : listRecipesByUser(userId);
-  }
-
-  return query ? searchRecipes(query) : listRecipes();
-};
+type RecipeListSearchParams = Promise<{
+  q?: string | string[];
+  page?: string | string[];
+}>;
 
 const RecipeGrid = async ({
   searchParams,
+  pathname,
   userId,
   source = userId ? "owned" : "all",
   emptyMessage = "No recipes yet.",
 }: {
-  searchParams: PageProps<"/recipes">["searchParams"];
+  searchParams: RecipeListSearchParams;
+  pathname: RecipeListPath;
   userId?: string;
-  source?: RecipeGridSource;
+  source?: RecipeListScope["source"];
   emptyMessage?: string;
 }) => {
-  const query = readSearchQuery((await searchParams).q);
-  const [items, viewerId] = await Promise.all([
-    loadRecipes({ query, userId, source }),
-    userId ? Promise.resolve(userId) : getAuthUser().then((user) => user?.id),
-  ]);
+  const params = await searchParams;
+  const query = readSearchQuery(params.q);
+  const requested = readRecipePage(params.page);
 
-  if (items.length === 0) {
+  if (requested.status === "invalid") {
+    redirect(recipeListHref(pathname, query, 1));
+  }
+
+  const page = requested.status === "page" ? requested.page : null;
+  const [loaded, viewerId] = await Promise.all([
+    loadRecipeListPage({ source, query, userId }, page),
+    page === null || userId
+      ? Promise.resolve(userId)
+      : getAuthUser().then((user) => user?.id),
+  ]);
+  const view = recipeListView(loaded.total, requested);
+  const emptyCopy = query
+    ? `No recipes match “${query}”. Try a different name or a word from the description.`
+    : emptyMessage;
+
+  if (view.status === "empty") {
+    return <p className="text-muted-foreground">{emptyCopy}</p>;
+  }
+
+  if (view.status === "out-of-range") {
+    const notice = <RecipePageNotice pathname={pathname} query={query} />;
+
+    if (!query) {
+      return notice;
+    }
+
     return (
-      <p className="text-muted-foreground">
-        {query
-          ? `No recipes match “${query}”. Try a different name or a word from the description.`
-          : emptyMessage}
-      </p>
+      <div className="flex flex-col gap-8">
+        <RecipeSearchCount query={query} total={view.total} />
+        {notice}
+      </div>
     );
   }
 
-  const countLabel = items.length === 1 ? "1 recipe" : `${items.length} recipes`;
   const engagementByRecipe = await getEngagementByRecipeIds(
-    items.map((recipe) => recipe.id),
+    loaded.items.map((recipe) => recipe.id),
     viewerId,
   );
-
   const list = (
     <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {items.map((recipe, index) => {
+      {loaded.items.map((recipe, index) => {
         const engagement = engagementByRecipe.get(recipe.id);
 
         return (
@@ -90,17 +104,24 @@ const RecipeGrid = async ({
       })}
     </ul>
   );
+  const pager = (
+    <RecipePagination
+      pathname={pathname}
+      query={query}
+      page={view.page}
+      totalPages={view.totalPages}
+    />
+  );
 
-  if (!query) {
+  if (!query && view.totalPages <= 1) {
     return list;
   }
 
   return (
     <div className="flex flex-col gap-8">
-      <p className="text-muted-foreground">
-        {countLabel} for “{query}”
-      </p>
+      {query ? <RecipeSearchCount query={query} total={view.total} /> : null}
       {list}
+      {pager}
     </div>
   );
 };
