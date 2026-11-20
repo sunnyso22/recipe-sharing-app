@@ -4,15 +4,8 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { confirmationRedirectUrl } from "@/lib/auth/email-redirect";
-import {
-  authErrorMessage,
-  authFormError,
-  type AuthFormState,
-  invalidAuthFields,
-  readAuthFormValues,
-  signInFormSchema,
-} from "@/lib/auth/form";
-import { safeNextPath } from "@/lib/auth/paths";
+import { type AuthFormState } from "@/lib/auth/form";
+import { completeSignIn } from "@/lib/auth/sign-in";
 import { completeSignUp } from "@/lib/auth/sign-up";
 import { createClient, createSignUpClient } from "@/lib/supabase/server";
 
@@ -20,25 +13,27 @@ const signInAction = async (
   _state: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> => {
-  const values = readAuthFormValues(formData);
-  const parsed = signInFormSchema.safeParse({
-    email: values.email,
-    password: values.password,
+  const supabase = await createClient();
+  const result = await completeSignIn(formData, {
+    signInWithPassword: async (credentials) => {
+      const { error } = await supabase.auth.signInWithPassword(credentials);
+
+      return {
+        error: error
+          ? {
+              message: error.message,
+              code: error.code,
+            }
+          : null,
+      };
+    },
   });
 
-  if (!parsed.success) {
-    return invalidAuthFields(parsed.error, values);
+  if (result.status === "redirect") {
+    redirect(result.path);
   }
 
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
-
-  if (error) {
-    return authFormError(authErrorMessage(error.message), {}, values);
-  }
-
-  const next = formData.get("next");
-  redirect(typeof next === "string" ? safeNextPath(next) : "/");
+  return result.state;
 };
 
 const signUpAction = async (

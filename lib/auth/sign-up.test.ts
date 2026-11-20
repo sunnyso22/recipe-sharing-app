@@ -221,6 +221,23 @@ describe("sign up", () => {
     assert.equal(mismatch.state.values.confirmPassword, "");
   });
 
+  test("keeps the unconfirmed sign-up message", async () => {
+    const { state } = await attempt(
+      signUpForm(),
+      authResult({
+        error: {
+          message: "Email not confirmed",
+          code: "email_not_confirmed",
+          status: 400,
+        },
+      }),
+    );
+
+    assert.equal(state.status, "error");
+    assert.equal(state.message, "Confirm your email before signing in.");
+    assert.notEqual(state.message, "Email or password is incorrect.");
+  });
+
   test("keeps rate-limit and other auth errors distinct from confirmation", async () => {
     const emailRateLimit = await attempt(
       signUpForm(),
