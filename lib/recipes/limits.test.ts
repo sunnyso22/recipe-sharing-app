@@ -164,5 +164,9 @@ describe("recipe validation migration", () => {
     assert.doesNotMatch(migration, /^\s*truncate\b/im);
     assert.match(migration, /CREATE SCHEMA "recipe_guard"/);
     assert.match(migration, /recipe_collection_counts/);
+    assert.match(
+      migration,
+      /LOCK TABLE public\.recipes,\s+public\.ingredients,\s+public\.instructions,\s+public\.seasonings\s+IN SHARE ROW EXCLUSIVE MODE/,
+    );
   });
 });

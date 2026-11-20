@@ -141,13 +141,15 @@ describe.skipIf(!bin)("recipe database limits", () => {
     const client = open(database);
 
     try {
-      for (const statement of sqlText.split("--> statement-breakpoint")) {
-        const trimmed = statement.trim();
+      await client.begin(async (tx) => {
+        for (const statement of sqlText.split("--> statement-breakpoint")) {
+          const trimmed = statement.trim();
 
-        if (trimmed.length > 0) {
-          await client.unsafe(trimmed);
+          if (trimmed.length > 0) {
+            await tx.unsafe(trimmed);
+          }
         }
-      }
+      });
     } finally {
       await client.end();
     }
@@ -562,6 +564,75 @@ describe.skipIf(!bin)("recipe database limits", () => {
       }),
     );
     assert.match(asMember, /permission denied/);
+
+    const [guard] = await db`
+      select
+        c.relrowsecurity as rls,
+        c.relforcerowsecurity as forced,
+        has_schema_privilege('anon', 'recipe_guard', 'usage') as anon_schema,
+        has_schema_privilege('authenticated', 'recipe_guard', 'usage') as authenticated_schema,
+        has_schema_privilege('authenticator', 'recipe_guard', 'usage') as authenticator_schema,
+        has_schema_privilege('service_role', 'recipe_guard', 'usage') as service_schema,
+        has_table_privilege('anon', 'recipe_guard.recipe_collection_counts', 'select') as anon_select,
+        has_table_privilege('authenticated', 'recipe_guard.recipe_collection_counts', 'insert') as authenticated_insert,
+        has_table_privilege('service_role', 'recipe_guard.recipe_collection_counts', 'update') as service_update
+      from pg_class as c
+      join pg_namespace as n on n.oid = c.relnamespace
+      where n.nspname = 'recipe_guard'
+        and c.relname = 'recipe_collection_counts'
+    `;
+    assert.equal(guard.rls, true);
+    assert.equal(guard.forced, false);
+    assert.equal(guard.anon_schema, false);
+    assert.equal(guard.authenticated_schema, false);
+    assert.equal(guard.authenticator_schema, false);
+    assert.equal(guard.service_schema, false);
+    assert.equal(guard.anon_select, false);
+    assert.equal(guard.authenticated_insert, false);
+    assert.equal(guard.service_update, false);
+
+    const functions = await db`
+      select
+        p.proname as name,
+        p.prosecdef as security_definer,
+        p.proconfig as config,
+        has_function_privilege('public', p.oid, 'execute') as public_execute,
+        has_function_privilege('anon', p.oid, 'execute') as anon_execute,
+        has_function_privilege('authenticated', p.oid, 'execute') as authenticated_execute,
+        has_function_privilege('authenticator', p.oid, 'execute') as authenticator_execute,
+        has_function_privilege('service_role', p.oid, 'execute') as service_execute
+      from pg_proc as p
+      join pg_namespace as n on n.oid = p.pronamespace
+      where n.nspname = 'recipe_guard'
+      order by p.proname
+    `;
+
+    assert.deepEqual(
+      functions.map((row) => row.name),
+      [
+        "apply_recipe_child_delta",
+        "create_recipe_collection_counts",
+        "enforce_recipe_child_limit",
+        "reject_direct_count_change",
+      ],
+    );
+
+    for (const row of functions) {
+      assert.deepEqual(row.config, ["search_path=pg_catalog"]);
+      assert.equal(row.public_execute, false);
+      assert.equal(row.anon_execute, false);
+      assert.equal(row.authenticated_execute, false);
+      assert.equal(row.authenticator_execute, false);
+      assert.equal(row.service_execute, false);
+    }
+
+    const definers = new Map(
+      functions.map((row) => [row.name, row.security_definer]),
+    );
+    assert.equal(definers.get("apply_recipe_child_delta"), false);
+    assert.equal(definers.get("reject_direct_count_change"), false);
+    assert.equal(definers.get("create_recipe_collection_counts"), true);
+    assert.equal(definers.get("enforce_recipe_child_limit"), true);
   });
 
   test("blocks a cross-user child write and allows the owner", async () => {
@@ -589,6 +660,38 @@ describe.skipIf(!bin)("recipe database limits", () => {
       `;
     });
     assert.equal((await counter(recipeId)).ingredient_count, 1);
+
+    const [created] = await db.begin(async (tx) => {
+      await tx`set local role authenticated`;
+      await tx`select set_config('request.jwt.claim.sub', ${ownerId}, true)`;
+      return tx`
+        insert into public.recipes (user_id, title, description)
+        values (${ownerId}::uuid, 'API', 'From the API')
+        returning id
+      `;
+    });
+    const createdId = created.id as number;
+
+    await db.begin(async (tx) => {
+      await tx`set local role authenticated`;
+      await tx`select set_config('request.jwt.claim.sub', ${ownerId}, true)`;
+      await tx`
+        insert into public.ingredients (recipe_id, name, quantity)
+        values (${createdId}, 'api', '1')
+      `;
+    });
+    assert.equal((await counter(createdId)).ingredient_count, 1);
+
+    const anon = await messageOf(() =>
+      db.begin(async (tx) => {
+        await tx`set local role anon`;
+        await tx`
+          insert into public.recipes (user_id, title, description)
+          values (${ownerId}::uuid, 'Anon', 'No')
+        `;
+      }),
+    );
+    assert.match(anon, /permission denied/);
   });
 
   test("rejects an API role with no JWT subject", async () => {

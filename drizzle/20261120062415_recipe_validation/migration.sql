@@ -51,10 +51,24 @@
 -- truncated or deleted. Shorten the field or split the collection, then run
 -- it again.
 --
--- Rollback drops the triggers, functions, length checks, counter table, and
--- recipe_guard schema. Recipe text and child rows are untouched. Do that in
--- a transaction after reviewing the effect.
+-- drizzle-kit migrate runs this file in one transaction. The lock below is
+-- held until that transaction commits, so a write cannot land after the
+-- backfill and before these triggers exist. Reads are not blocked. A
+-- deadlock with an in-flight write aborts one transaction; this migration
+-- then rolls back and can be run again. Applying the file one statement at
+-- a time would release the lock too early.
+--
+-- Rollback, in its own transaction, drops the triggers, functions, length
+-- checks, counter table, and recipe_guard schema, then deletes this
+-- migration's drizzle.__drizzle_migrations row. Recipe text and child rows
+-- stay. Do that only after reviewing the effect. Do not drop recipe data.
 
+LOCK TABLE public.recipes,
+  public.ingredients,
+  public.instructions,
+  public.seasonings
+  IN SHARE ROW EXCLUSIVE MODE;
+--> statement-breakpoint
 DO $$
 DECLARE
   long_recipe_count bigint;
