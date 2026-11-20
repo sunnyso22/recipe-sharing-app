@@ -143,6 +143,70 @@ const recipeCountLabel = (total: number) => {
   return total === 1 ? "1 recipe" : `${total} recipes`;
 };
 
+type RecipePageToken = number | "ellipsis";
+
+// Seven pages fit as buttons. Beyond that, keep the first, last, and a short window.
+const RECIPE_PAGE_WINDOW = 7;
+
+const recipePageWindow = (
+  page: number,
+  totalPages: number,
+): RecipePageToken[] => {
+  if (!Number.isSafeInteger(totalPages) || totalPages < 1) {
+    return [];
+  }
+
+  if (totalPages === 1) {
+    return [1];
+  }
+
+  const current = Number.isSafeInteger(page)
+    ? Math.min(Math.max(page, 1), totalPages)
+    : 1;
+
+  if (totalPages <= RECIPE_PAGE_WINDOW) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  const pages = new Set<number>([1, totalPages]);
+  const addRange = (start: number, end: number) => {
+    for (let value = start; value <= end; value += 1) {
+      if (value >= 1 && value <= totalPages) {
+        pages.add(value);
+      }
+    }
+  };
+
+  addRange(current - 1, current + 1);
+
+  if (current <= 4) {
+    addRange(2, 4);
+  }
+
+  if (current >= totalPages - 3) {
+    addRange(totalPages - 3, totalPages - 1);
+  }
+
+  const sorted = [...pages].sort((left, right) => left - right);
+  const tokens: RecipePageToken[] = [];
+
+  for (const [index, value] of sorted.entries()) {
+    if (index > 0) {
+      const gap = value - sorted[index - 1];
+
+      if (gap === 2) {
+        tokens.push(sorted[index - 1] + 1);
+      } else if (gap > 2) {
+        tokens.push("ellipsis");
+      }
+    }
+
+    tokens.push(value);
+  }
+
+  return tokens;
+};
+
 export {
   MAX_RECIPE_OFFSET,
   MAX_RECIPE_PAGE,
@@ -152,8 +216,9 @@ export {
   recipeListHref,
   recipeListView,
   recipePageRedirectHref,
+  recipePageWindow,
   recipeQueryBounds,
   recipeSearchHref,
   recipeTotalPages,
 };
-export type { ParsedRecipePage, RecipeListPath, RecipeListView };
+export type { ParsedRecipePage, RecipeListPath, RecipeListView, RecipePageToken };
