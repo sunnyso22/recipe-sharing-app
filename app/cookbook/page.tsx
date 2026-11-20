@@ -19,6 +19,7 @@ const CookbookList = async ({
 
   return (
     <RecipeGrid
+      pathname="/cookbook"
       searchParams={searchParams}
       userId={user.id}
       emptyMessage="You have not added a recipe yet. Recipes you save while signed in show up here."

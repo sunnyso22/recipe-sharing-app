@@ -15,6 +15,7 @@ const BookmarkList = async ({
 
   return (
     <RecipeGrid
+      pathname="/bookmarks"
       searchParams={searchParams}
       userId={user.id}
       source="bookmarked"

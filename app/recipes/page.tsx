@@ -11,7 +11,7 @@ const RecipesPage = ({ searchParams }: PageProps<"/recipes">) => {
       title="Recipes"
       description="Browse dishes shared from kitchens near and far."
     >
-      <RecipeGrid searchParams={searchParams} />
+      <RecipeGrid pathname="/recipes" searchParams={searchParams} />
     </RecipeCatalog>
   );
 };

@@ -7,6 +7,7 @@ import { useDebouncedCallback } from "use-debounce";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { recipeSearchHref } from "@/lib/recipes/pagination";
 
 const searchInputClassName =
   "h-9 w-40 border-border bg-card sm:w-48 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden";
@@ -18,15 +19,9 @@ const RecipeSearchForm = () => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSearch = useDebouncedCallback((term: string) => {
-    const params = new URLSearchParams(searchParams);
-
-    if (term) {
-      params.set("q", term);
-    } else {
-      params.delete("q");
-    }
-
-    replace(`${pathname}?${params.toString()}`);
+    replace(
+      recipeSearchHref(pathname, new URLSearchParams(searchParams), term),
+    );
   }, 300);
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {

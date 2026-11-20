@@ -1,84 +1,24 @@
-import { and, asc, desc, eq, ilike, or } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { cache } from "react";
 
 import { db } from "@/db";
 import {
+  fetchRecipeListPage,
+  type RecipeListScope,
+} from "@/db/queries/recipe-list";
+import {
   ingredientsTable,
   instructionsTable,
-  recipeBookmarksTable,
   recipesTable,
   seasoningsTable,
 } from "@/db/schema";
 import { parseRecipeId } from "@/lib/recipes";
 
-const recipeSummaryColumns = {
-  id: recipesTable.id,
-  title: recipesTable.title,
-};
-
-const listRecipes = () => {
-  return db
-    .select(recipeSummaryColumns)
-    .from(recipesTable)
-    .orderBy(asc(recipesTable.createdAt));
-};
-
-const escapeIlike = (value: string) => {
-  return value.replace(/[%_\\]/g, "\\$&");
-};
-
-const listRecipesByUser = (userId: string) => {
-  return db
-    .select({
-      ...recipeSummaryColumns,
-      updatedAt: recipesTable.updatedAt,
-    })
-    .from(recipesTable)
-    .where(eq(recipesTable.userId, userId))
-    .orderBy(desc(recipesTable.updatedAt));
-};
-
-const recipeMatchesQuery = (query: string) => {
-  const pattern = `%${escapeIlike(query)}%`;
-
-  return or(
-    ilike(recipesTable.title, pattern),
-    ilike(recipesTable.description, pattern),
-  );
-};
-
-const searchRecipes = (query: string, userId?: string) => {
-  const matchesQuery = recipeMatchesQuery(query);
-
-  return db
-    .select(recipeSummaryColumns)
-    .from(recipesTable)
-    .where(userId ? and(eq(recipesTable.userId, userId), matchesQuery) : matchesQuery)
-    .orderBy(asc(recipesTable.title));
-};
-
-const bookmarkedRecipes = () => {
-  return db
-    .select(recipeSummaryColumns)
-    .from(recipeBookmarksTable)
-    .innerJoin(
-      recipesTable,
-      eq(recipeBookmarksTable.recipeId, recipesTable.id),
-    );
-};
-
-const listBookmarkedRecipes = (userId: string) => {
-  return bookmarkedRecipes()
-    .where(eq(recipeBookmarksTable.userId, userId))
-    .orderBy(desc(recipeBookmarksTable.createdAt));
-};
-
-const searchBookmarkedRecipes = (query: string, userId: string) => {
-  return bookmarkedRecipes()
-    .where(
-      and(eq(recipeBookmarksTable.userId, userId), recipeMatchesQuery(query)),
-    )
-    .orderBy(asc(recipesTable.title));
+const loadRecipeListPage = (
+  scope: RecipeListScope,
+  page: number | null,
+) => {
+  return fetchRecipeListPage(db, scope, page);
 };
 
 const getRecipe = cache((recipeId: number) => {
@@ -234,11 +174,7 @@ export {
   deleteRecipe,
   getRecipe,
   getRecipeByParam,
-  listBookmarkedRecipes,
-  listRecipes,
-  listRecipesByUser,
-  searchBookmarkedRecipes,
-  searchRecipes,
+  loadRecipeListPage,
   updateRecipe,
 };
-export type { RecipeDetails };
+export type { RecipeDetails, RecipeListScope };
