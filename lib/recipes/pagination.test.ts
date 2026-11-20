@@ -12,6 +12,7 @@ import {
   recipeListHref,
   recipeListView,
   recipePageRedirectHref,
+  recipePageWindow,
   recipeQueryBounds,
   recipeSearchHref,
 } from "@/lib/recipes/pagination";
@@ -134,5 +135,86 @@ describe("recipe page params", () => {
     assert.equal(recipeCountLabel(0), "0 recipes");
     assert.equal(recipeCountLabel(1), "1 recipe");
     assert.equal(recipeCountLabel(24), "24 recipes");
+  });
+
+  test("page numbers stay in a short window and keep search links", () => {
+    assert.deepEqual(recipePageWindow(1, 0), []);
+    assert.deepEqual(recipePageWindow(1, 1), [1]);
+    assert.deepEqual(recipePageWindow(1, 2), [1, 2]);
+    assert.deepEqual(recipePageWindow(7, 7), [1, 2, 3, 4, 5, 6, 7]);
+    assert.deepEqual(recipePageWindow(1, 10), [1, 2, 3, 4, "ellipsis", 10]);
+    assert.deepEqual(recipePageWindow(4, 10), [
+      1,
+      2,
+      3,
+      4,
+      5,
+      "ellipsis",
+      10,
+    ]);
+    assert.deepEqual(recipePageWindow(5, 10), [
+      1,
+      "ellipsis",
+      4,
+      5,
+      6,
+      "ellipsis",
+      10,
+    ]);
+    assert.deepEqual(recipePageWindow(7, 10), [
+      1,
+      "ellipsis",
+      6,
+      7,
+      8,
+      9,
+      10,
+    ]);
+    assert.deepEqual(recipePageWindow(10, 10), [
+      1,
+      "ellipsis",
+      7,
+      8,
+      9,
+      10,
+    ]);
+    assert.deepEqual(recipePageWindow(50, 100), [
+      1,
+      "ellipsis",
+      49,
+      50,
+      51,
+      "ellipsis",
+      100,
+    ]);
+    assert.deepEqual(recipePageWindow(100, 100), [
+      1,
+      "ellipsis",
+      97,
+      98,
+      99,
+      100,
+    ]);
+    assert.deepEqual(recipePageWindow(0, 10), recipePageWindow(1, 10));
+    assert.deepEqual(recipePageWindow(250, 100), recipePageWindow(100, 100));
+
+    const firstOfHundred = recipePageWindow(1, 100);
+    const numbers = firstOfHundred.filter((token) => token !== "ellipsis");
+
+    assert.ok(firstOfHundred.length < 10);
+    assert.deepEqual(numbers, [1, 2, 3, 4, 100]);
+    assert.equal(numbers.includes(50), false);
+
+    const hrefs = recipePageWindow(5, 10)
+      .filter((token) => token !== "ellipsis")
+      .map((number) => recipeListHref("/cookbook", "tomato soup", number));
+
+    assert.deepEqual(hrefs, [
+      "/cookbook?q=tomato+soup",
+      "/cookbook?q=tomato+soup&page=4",
+      "/cookbook?q=tomato+soup&page=5",
+      "/cookbook?q=tomato+soup&page=6",
+      "/cookbook?q=tomato+soup&page=10",
+    ]);
   });
 });

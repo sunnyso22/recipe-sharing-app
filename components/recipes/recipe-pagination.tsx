@@ -5,23 +5,25 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
 } from "@/components/ui/pagination";
 import {
   recipeCountLabel,
   recipeListHref,
   type RecipeListPath,
+  recipePageWindow,
 } from "@/lib/recipes/pagination";
 import { cn } from "@/lib/utils";
 
-const pageLinkClassName = (side: "previous" | "next") => {
+const stepClassName = (side: "previous" | "next") => {
   return cn(
-    buttonVariants({ variant: "ghost" }),
+    buttonVariants({ variant: "ghost", size: "default" }),
     side === "previous" ? "pl-2!" : "pr-2!",
   );
 };
 
-const RecipePageLink = ({
+const RecipeStepLink = ({
   href,
   label,
   text,
@@ -45,6 +47,7 @@ const RecipePageLink = ({
       <Button
         type="button"
         variant="ghost"
+        size="default"
         disabled
         aria-label={label}
         className={side === "previous" ? "pl-2!" : "pr-2!"}
@@ -57,7 +60,7 @@ const RecipePageLink = ({
   }
 
   return (
-    <Link href={href} aria-label={label} className={pageLinkClassName(side)}>
+    <Link href={href} aria-label={label} className={stepClassName(side)}>
       {side === "previous" ? icon : null}
       {caption}
       {side === "next" ? icon : null}
@@ -80,24 +83,53 @@ const RecipePagination = ({
     return null;
   }
 
+  const tokens = recipePageWindow(page, totalPages);
+
   return (
     <Pagination>
-      <PaginationContent className="flex-wrap">
+      <PaginationContent className="flex-wrap justify-center">
         <PaginationItem>
-          <RecipePageLink
+          <RecipeStepLink
             href={page > 1 ? recipeListHref(pathname, query, page - 1) : null}
             label="Go to previous page"
             text="Previous"
             side="previous"
           />
         </PaginationItem>
+        {tokens.map((token, index) => {
+          if (token === "ellipsis") {
+            return (
+              <PaginationItem key={`ellipsis-${index}`}>
+                <PaginationEllipsis />
+              </PaginationItem>
+            );
+          }
+
+          const current = token === page;
+
+          return (
+            <PaginationItem key={token}>
+              <Link
+                href={recipeListHref(pathname, query, token)}
+                aria-label={`Page ${token}`}
+                aria-current={current ? "page" : undefined}
+                data-slot="pagination-link"
+                data-active={current ? true : undefined}
+                className={cn(
+                  buttonVariants({
+                    variant: current ? "outline" : "ghost",
+                    size: "icon",
+                  }),
+                  "tabular-nums",
+                )}
+              >
+                {token}
+              </Link>
+            </PaginationItem>
+          );
+        })}
         <PaginationItem>
-          <span className="px-2 text-sm whitespace-nowrap text-muted-foreground tabular-nums">
-            Page {page} of {totalPages}
-          </span>
-        </PaginationItem>
-        <PaginationItem>
-          <RecipePageLink
+          <RecipeStepLink
             href={
               page < totalPages
                 ? recipeListHref(pathname, query, page + 1)
