@@ -52,9 +52,27 @@ const signedInHome = (response: Response, origin: string) => {
   );
 };
 
-const GET = async (request: Request) => {
-  const response = await handler.GET(request);
+const confirmationRequest = (request: Request) => {
   const url = new URL(request.url);
+
+  if (!url.pathname.endsWith("/verify-email")) {
+    return request;
+  }
+
+  // A confirmation always lands on the home page, including a callback
+  // that did not start from a Cookery page.
+  url.searchParams.set("callbackURL", "/");
+
+  return new Request(url, {
+    headers: request.headers,
+    method: "GET",
+  });
+};
+
+const GET = async (request: Request) => {
+  const incoming = confirmationRequest(request);
+  const response = await handler.GET(incoming);
+  const url = new URL(incoming.url);
 
   if (!url.pathname.endsWith("/verify-email")) {
     return response;
