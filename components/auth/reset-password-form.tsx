@@ -25,7 +25,7 @@ import {
   passwordHint,
 } from "@/lib/auth/form";
 
-const ResetPasswordForm = () => {
+const ResetPasswordForm = ({ token }: { token: string }) => {
   const [state, formAction, pending] = useActionState<AuthFormState, FormData>(
     updateRecoveredPasswordAction,
     initialAuthFormState,
@@ -46,6 +46,7 @@ const ResetPasswordForm = () => {
       </CardHeader>
       <CardContent>
         <form action={formAction} className="flex flex-col gap-5" noValidate>
+          <input type="hidden" name="token" value={token} />
           <FieldGroup className="gap-4">
             <Field
               data-invalid={Boolean(state.fieldErrors.password) || undefined}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { AuthFormFallback } from "@/components/auth/auth-form";
+import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 import { PageMain } from "@/components/page-main";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -12,6 +13,7 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { expiredResetMessage } from "@/lib/auth/paths";
+import { liveReset } from "@/lib/auth/reset-record";
 
 export const metadata = {
   title: "Choose a new password",
@@ -49,14 +51,35 @@ const ResetLinkExpired = () => {
   );
 };
 
-const ResetPasswordPage = () => {
+const ResetPasswordRequest = async ({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) => {
+  const params = await searchParams;
+  const token = typeof params.token === "string" ? params.token : "";
+  const live = await liveReset(token);
+
+  if (!live) {
+    return <ResetLinkExpired />;
+  }
+
+  return <ResetPasswordForm token={token} />;
+};
+
+const ResetPasswordPage = ({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) => {
   return (
     <PageMain className="items-center justify-center">
       <Suspense fallback={<AuthFormFallback />}>
-        <ResetLinkExpired />
+        <ResetPasswordRequest searchParams={searchParams} />
       </Suspense>
     </PageMain>
   );
 };
 
+export { ResetPasswordRequest };
 export default ResetPasswordPage;

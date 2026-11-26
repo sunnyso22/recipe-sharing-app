@@ -171,6 +171,9 @@ describe("confirm and cook", () => {
     const gate = await import("@/lib/auth/gate");
     const authModule = await import("@/lib/auth/auth");
     const form = await import("@/lib/auth/form");
+    const resetRequest = await import("@/app/forgot-password/actions");
+    const resetPassword = await import("@/app/reset-password/actions");
+    const resetPage = await import("@/app/reset-password/page");
 
     return {
       ...actions,
@@ -187,6 +190,9 @@ describe("confirm and cook", () => {
       ...gate,
       ...authModule,
       ...form,
+      ...resetRequest,
+      ...resetPassword,
+      ResetPasswordRequest: resetPage.ResetPasswordRequest,
     };
   };
 
@@ -1247,6 +1253,474 @@ describe("confirm and cook", () => {
     );
     assert.equal(adaBookmarks.total, 0);
     assert.equal((await app.getRecipeByParam(String(sharedId)))?.title, "Grace stew");
+    mailbox.stop();
+  }, 30_000);
+
+  const checkResetEmail =
+    "Check your email for a link to choose a new password.";
+  const expiredReset =
+    "That reset link is invalid or has expired. Request a new one.";
+  const resetWords =
+    "Choose a new password for Cookery. This link lasts 10 minutes. Cookery signs you in after you submit the new password.";
+
+  const resetLink = (text: string | undefined) => {
+    return text?.match(/https?:\/\/\S+/)?.[0] ?? "";
+  };
+
+  const resetToken = (text: string | undefined) => {
+    return new URL(resetLink(text)).searchParams.get("token") ?? "";
+  };
+
+  const verifyAndSignOut = async (
+    app: Awaited<ReturnType<typeof load>>,
+    mailbox: { messages: { text: string }[] },
+    email: string,
+    name = "Ada Lovelace",
+    password = "longpass",
+  ) => {
+    await app.signUpAction(
+      app.initialAuthFormState,
+      signUpFields(email, name, password),
+    );
+    storeResponseCookies(
+      await app.GET(new Request(resetLink(mailbox.messages.at(-1)?.text))),
+    );
+    await redirected(() => app.signOutAction());
+  };
+
+  const liveResetCount = async () => {
+    const sql = postgres(databaseUrl, { max: 1 });
+
+    try {
+      const [row] = await sql`
+        select count(*)::int as count
+        from verification
+        where identifier like 'reset-password:%'
+          and expires_at > now()
+      `;
+      return Number(row?.count ?? 0);
+    } finally {
+      await sql.end();
+    }
+  };
+
+  const resetView = async (
+    app: Awaited<ReturnType<typeof load>>,
+    token: string,
+  ) => {
+    const element = await app.ResetPasswordRequest({
+      searchParams: Promise.resolve({ token }),
+    });
+
+    return {
+      name: typeof element.type === "function" ? element.type.name : "",
+      token: element.props.token as string | undefined,
+    };
+  };
+
+  test("a verified user can ask for a reset and everyone else sees the same screen", async () => {
+    const app = await load();
+    const mailbox = app.captureMailbox();
+    const email = "reset-ask@example.com";
+    await verifyAndSignOut(app, mailbox, email);
+    const asked = await app.requestPasswordResetAction(
+      app.initialAuthFormState,
+      formData({ email }),
+    );
+    const afterVerified = mailbox.messages.length;
+    const missing = await app.requestPasswordResetAction(
+      app.initialAuthFormState,
+      formData({ email: "nobody-reset@example.com" }),
+    );
+    assert.equal(mailbox.messages.length, afterVerified);
+    const unverifiedEmail = "unverified-reset@example.com";
+    await app.signUpAction(
+      app.initialAuthFormState,
+      signUpFields(unverifiedEmail),
+    );
+    const beforeUnverified = mailbox.messages.length;
+    const unverified = await app.requestPasswordResetAction(
+      app.initialAuthFormState,
+      formData({ email: unverifiedEmail }),
+    );
+    const invalid = await app.requestPasswordResetAction(
+      app.initialAuthFormState,
+      formData({ email: "not-an-email" }),
+    );
+
+    assert.equal(asked.status, "success");
+    assert.equal(asked.message, checkResetEmail);
+    assert.equal(missing.status, "success");
+    assert.equal(missing.message, checkResetEmail);
+    assert.equal(unverified.status, "success");
+    assert.equal(unverified.message, checkResetEmail);
+    assert.equal(invalid.status, "error");
+    assert.equal(mailbox.messages.length, beforeUnverified);
+    assert.equal(mailbox.messages[1]?.to, email);
+    assert.equal(mailbox.messages[1]?.subject, "Reset your Cookery password");
+    assert.equal(sessionCookie(), undefined);
+    mailbox.stop();
+  }, 30_000);
+
+  test("writes the Cookery reset message and points the link at this environment", async () => {
+    const app = await load();
+    const mailbox = app.captureMailbox();
+    await verifyAndSignOut(app, mailbox, "local-reset@example.com");
+    await app.requestPasswordResetAction(
+      app.initialAuthFormState,
+      formData({ email: "local-reset@example.com" }),
+    );
+    const local = mailbox.messages.at(-1);
+    assert.ok(local);
+    assert.equal(local.from, "Cookery <noreply@cookery.sunnyso22.dev>");
+    assert.equal(local.replyTo, local.from);
+    assert.equal(local.to, "local-reset@example.com");
+    assert.equal(local.subject, "Reset your Cookery password");
+    assert.equal(local.openTracking, false);
+    assert.equal(local.clickTracking, false);
+    assert.equal(local.html.includes("<img"), false);
+    assert.match(local.html, /Cookery/);
+    assert.match(local.html, /#f6f1ea/);
+    assert.match(local.html, /#f3eadc/);
+    assert.match(local.html, /#44403c/);
+    assert.match(local.html, /#8c4a2f/);
+    assert.match(local.html, /Hello Ada Lovelace,/);
+    assert.match(local.html, /Choose a new password for Cookery\. This link lasts 10 minutes\. Cookery signs you in after you submit the new password\./);
+    assert.match(local.html, /Choose a new password/);
+    assert.match(local.html, /http:\/\/localhost:3000\/reset-password\?token=/);
+    assert.match(local.text, /Hello Ada Lovelace,/);
+    assert.match(local.text, new RegExp(resetWords.replaceAll(".", "\\.")));
+    assert.match(local.text, /^http:\/\/localhost:3000\/reset-password\?token=/m);
+
+    process.env.VERCEL_ENV = "preview";
+    process.env.VERCEL_URL = "preview-cookery.vercel.app";
+    await verifyAndSignOut(app, mailbox, "preview-reset@example.com");
+    await app.requestPasswordResetAction(
+      app.initialAuthFormState,
+      formData({ email: "preview-reset@example.com" }),
+    );
+    assert.match(
+      mailbox.messages.at(-1)?.text ?? "",
+      /^https:\/\/preview-cookery\.vercel\.app\/reset-password\?token=/m,
+    );
+
+    process.env.VERCEL_ENV = "production";
+    process.env.TEST_HOST = "evil.example";
+    await verifyAndSignOut(app, mailbox, "production-reset@example.com");
+    await app.requestPasswordResetAction(
+      app.initialAuthFormState,
+      formData({ email: "production-reset@example.com" }),
+    );
+    assert.match(
+      mailbox.messages.at(-1)?.text ?? "",
+      /^https:\/\/cookery\.sunnyso22\.dev\/reset-password\?token=/m,
+    );
+    mailbox.stop();
+  }, 30_000);
+
+  test("opening a reset link shows a new password form and does not sign the person in", async () => {
+    const app = await load();
+    const mailbox = app.captureMailbox();
+    const email = "open-reset@example.com";
+    await verifyAndSignOut(app, mailbox, email);
+    await app.requestPasswordResetAction(
+      app.initialAuthFormState,
+      formData({ email }),
+    );
+    const token = resetToken(mailbox.messages.at(-1)?.text);
+    const form = await resetView(app, token);
+    const expired = await resetView(app, "missing-token");
+
+    assert.equal(form.name, "ResetPasswordForm");
+    assert.equal(form.token, token);
+    assert.equal(expired.name, "ResetLinkExpired");
+    assert.equal(expired.token, undefined);
+    assert.equal(await app.getAuthUser(), null);
+    assert.equal(sessionCookie(), undefined);
+    const stillOld = await redirected(() =>
+      app.signInAction(
+        app.initialAuthFormState,
+        formData({ email, password: "longpass" }),
+      ),
+    );
+    assert.equal(stillOld.path, "/");
+    mailbox.stop();
+  }, 30_000);
+
+  test("submitting a valid reset link signs this browser in and ends other sessions", async () => {
+    const app = await load();
+    const mailbox = app.captureMailbox();
+    const email = "submit-reset@example.com";
+    await verifyAndSignOut(app, mailbox, email);
+    await app.requestPasswordResetAction(
+      app.initialAuthFormState,
+      formData({ email }),
+    );
+    const token = resetToken(mailbox.messages.at(-1)?.text);
+    useBrowser("other");
+    await redirected(() =>
+      app.signInAction(
+        app.initialAuthFormState,
+        formData({ email, password: "longpass" }),
+      ),
+    );
+    assert.equal((await app.getAuthUser())?.email, email);
+    useBrowser("one");
+    const rejected = await app.updateRecoveredPasswordAction(
+      app.initialAuthFormState,
+      formData({
+        password: "short",
+        confirmPassword: "short",
+        token,
+      }),
+    );
+    assert.equal(rejected.status, "error");
+    assert.equal(sessionCookie(), undefined);
+
+    const finished = await redirected(() =>
+      app.updateRecoveredPasswordAction(
+        app.initialAuthFormState,
+        formData({
+          password: "newpass1",
+          confirmPassword: "newpass1",
+          token,
+        }),
+      ),
+    );
+    assert.equal(finished.path, "/");
+    assert.equal((await app.getAuthUser())?.email, email);
+    useBrowser("other");
+    assert.equal(await app.getAuthUser(), null);
+    useBrowser("fresh");
+    const oldPassword = await app.signInAction(
+      app.initialAuthFormState,
+      formData({ email, password: "longpass" }),
+    );
+    const newPassword = await redirected(() =>
+      app.signInAction(
+        app.initialAuthFormState,
+        formData({ email, password: "newpass1" }),
+      ),
+    );
+    assert.equal(oldPassword.message, "Email or password is incorrect.");
+    assert.equal(newPassword.path, "/");
+    mailbox.stop();
+  }, 30_000);
+
+  test("a used or expired reset link leaves the person signed out", async () => {
+    const app = await load();
+    const mailbox = app.captureMailbox();
+    const email = "spent-reset@example.com";
+    await verifyAndSignOut(app, mailbox, email);
+    await app.requestPasswordResetAction(
+      app.initialAuthFormState,
+      formData({ email }),
+    );
+    const token = resetToken(mailbox.messages.at(-1)?.text);
+    const sql = postgres(databaseUrl, { max: 1 });
+
+    try {
+      const [row] = await sql`
+        select expires_at
+        from verification
+        where identifier = ${`reset-password:${token}`}
+      `;
+      const expiresAt = new Date(row?.expires_at ?? 0).getTime();
+      assert.ok(Math.abs(expiresAt - Date.now() - 10 * 60 * 1000) < 60_000);
+      await sql`
+        update verification
+        set expires_at = timestamp '2000-01-01'
+        where identifier = ${`reset-password:${token}`}
+      `;
+    } finally {
+      await sql.end();
+    }
+
+    const expiredPage = await resetView(app, token);
+    const expiredSubmit = await app.updateRecoveredPasswordAction(
+      app.initialAuthFormState,
+      formData({
+        password: "otherpass",
+        confirmPassword: "otherpass",
+        token,
+      }),
+    );
+    assert.equal(expiredPage.name, "ResetLinkExpired");
+    assert.equal(expiredSubmit.message, expiredReset);
+    assert.equal(sessionCookie(), undefined);
+    const unchanged = await redirected(() =>
+      app.signInAction(
+        app.initialAuthFormState,
+        formData({ email, password: "longpass" }),
+      ),
+    );
+    assert.equal(unchanged.path, "/");
+    await redirected(() => app.signOutAction());
+
+    await app.requestPasswordResetAction(
+      app.initialAuthFormState,
+      formData({ email }),
+    );
+    const once = resetToken(mailbox.messages.at(-1)?.text);
+    const first = await redirected(() =>
+      app.updateRecoveredPasswordAction(
+        app.initialAuthFormState,
+        formData({
+          password: "newpass1",
+          confirmPassword: "newpass1",
+          token: once,
+        }),
+      ),
+    );
+    assert.equal(first.path, "/");
+    await redirected(() => app.signOutAction());
+    useBrowser("again");
+    const second = await app.updateRecoveredPasswordAction(
+      app.initialAuthFormState,
+      formData({
+        password: "thirdpass",
+        confirmPassword: "thirdpass",
+        token: once,
+      }),
+    );
+    assert.equal(second.message, expiredReset);
+    assert.equal(sessionCookie(), undefined);
+    const kept = await redirected(() =>
+      app.signInAction(
+        app.initialAuthFormState,
+        formData({ email, password: "newpass1" }),
+      ),
+    );
+    const replaced = await app.signInAction(
+      app.initialAuthFormState,
+      formData({ email, password: "thirdpass" }),
+    );
+    assert.equal(kept.path, "/");
+    assert.equal(replaced.message, "Email or password is incorrect.");
+    mailbox.stop();
+  }, 30_000);
+
+  test("a failed reset send leaves no live link and the next request can send", async () => {
+    const app = await load();
+    const mailbox = app.captureMailbox();
+    const email = "failed-reset@example.com";
+    await verifyAndSignOut(app, mailbox, email);
+    const messagesBefore = mailbox.messages.length;
+    const linksBefore = await liveResetCount();
+    mailbox.failNextSend();
+    const failed = await app.requestPasswordResetAction(
+      app.initialAuthFormState,
+      formData({ email }),
+    );
+    const sent = await app.requestPasswordResetAction(
+      app.initialAuthFormState,
+      formData({ email }),
+    );
+    const token = resetToken(mailbox.messages.at(-1)?.text);
+    const finished = await redirected(() =>
+      app.updateRecoveredPasswordAction(
+        app.initialAuthFormState,
+        formData({
+          password: "newpass1",
+          confirmPassword: "newpass1",
+          token,
+        }),
+      ),
+    );
+
+    assert.equal(failed.message, checkResetEmail);
+    assert.equal(sent.message, checkResetEmail);
+    assert.equal(mailbox.messages.length, messagesBefore + 1);
+    assert.equal(await liveResetCount(), linksBefore);
+    assert.equal(finished.path, "/");
+    assert.equal((await app.getAuthUser())?.email, email);
+    mailbox.stop();
+  }, 30_000);
+
+  test("a reset link on a browser that already has a session becomes the user from the link", async () => {
+    const app = await load();
+    const mailbox = app.captureMailbox();
+    const ada = "ada-reset@example.com";
+    const grace = "grace-reset@example.com";
+    await verifyAndSignOut(app, mailbox, ada, "Ada Lovelace");
+    await verifyAndSignOut(app, mailbox, grace, "Grace Hopper");
+    await app.requestPasswordResetAction(
+      app.initialAuthFormState,
+      formData({ email: grace }),
+    );
+    const token = resetToken(mailbox.messages.at(-1)?.text);
+    useBrowser("ada-other");
+    await redirected(() =>
+      app.signInAction(
+        app.initialAuthFormState,
+        formData({ email: ada, password: "longpass" }),
+      ),
+    );
+    useBrowser("grace-other");
+    await redirected(() =>
+      app.signInAction(
+        app.initialAuthFormState,
+        formData({ email: grace, password: "longpass" }),
+      ),
+    );
+    useBrowser("one");
+    await redirected(() =>
+      app.signInAction(
+        app.initialAuthFormState,
+        formData({ email: ada, password: "longpass" }),
+      ),
+    );
+    const opened = await resetView(app, token);
+    assert.equal(opened.name, "ResetPasswordForm");
+    assert.equal(opened.token, token);
+    assert.equal((await app.getAuthUser())?.email, ada);
+
+    const finished = await redirected(() =>
+      app.updateRecoveredPasswordAction(
+        app.initialAuthFormState,
+        formData({
+          password: "newpass1",
+          confirmPassword: "newpass1",
+          token,
+        }),
+      ),
+    );
+    assert.equal(finished.path, "/");
+    assert.equal((await app.getAuthUser())?.name, "Grace Hopper");
+    useBrowser("ada-other");
+    assert.equal((await app.getAuthUser())?.email, ada);
+    useBrowser("grace-other");
+    assert.equal(await app.getAuthUser(), null);
+    mailbox.stop();
+  }, 30_000);
+
+  test("an unverified user can reset only after the confirmation link", async () => {
+    const app = await load();
+    const mailbox = app.captureMailbox();
+    const email = "later-reset@example.com";
+    await app.signUpAction(
+      app.initialAuthFormState,
+      signUpFields(email, "Ada Lovelace", "longpass"),
+    );
+    const before = mailbox.messages.length;
+    const blocked = await app.requestPasswordResetAction(
+      app.initialAuthFormState,
+      formData({ email }),
+    );
+    assert.equal(blocked.message, checkResetEmail);
+    assert.equal(mailbox.messages.length, before);
+    storeResponseCookies(
+      await app.GET(new Request(resetLink(mailbox.messages[0]?.text))),
+    );
+    assert.equal((await app.getAuthUser())?.email, email);
+    await redirected(() => app.signOutAction());
+    const asked = await app.requestPasswordResetAction(
+      app.initialAuthFormState,
+      formData({ email }),
+    );
+    assert.equal(asked.message, checkResetEmail);
+    assert.equal(mailbox.messages.length, before + 1);
+    assert.equal(mailbox.messages.at(-1)?.subject, "Reset your Cookery password");
     mailbox.stop();
   }, 30_000);
 });

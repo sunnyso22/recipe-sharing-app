@@ -60,4 +60,10 @@ const confirmationUrl = async (token: string, request?: Request) => {
   return url.toString();
 };
 
-export { confirmationOrigin, confirmationUrl, productionOrigin };
+const resetUrl = async (token: string, request?: Request) => {
+  const url = new URL("/reset-password", await confirmationOrigin(request));
+  url.searchParams.set("token", token);
+  return url.toString();
+};
+
+export { confirmationOrigin, confirmationUrl, productionOrigin, resetUrl };
