@@ -376,6 +376,20 @@ describe("confirm and cook", () => {
     });
   };
 
+  const idleSettings = {
+    status: "idle" as const,
+    message: "",
+    values: {},
+  };
+
+  const confirmLatest = async (
+    app: Awaited<ReturnType<typeof load>>,
+    messages: { text: string }[],
+  ) => {
+    const link = messages.at(-1)?.text.match(/https?:\/\/\S+/)?.[0] ?? "";
+    storeResponseCookies(await app.GET(new Request(link)));
+  };
+
   test("sign-up creates no session and shows one check-your-email screen", async () => {
     const app = await load();
     const mailbox = app.captureMailbox();
@@ -914,4 +928,329 @@ describe("confirm and cook", () => {
 
     mailbox.stop();
   }, 20_000);
+
+  test("changing the password ends other sessions and keeps this browser", async () => {
+    const app = await load();
+    const mailbox = app.captureMailbox();
+    const email = "password-change@example.com";
+    await app.signUpAction(
+      app.initialAuthFormState,
+      signUpFields(email, "Ada Lovelace", "longpass"),
+    );
+    await confirmLatest(app, mailbox.messages);
+    useBrowser("other");
+    await redirected(() =>
+      app.signInAction(
+        app.initialAuthFormState,
+        formData({ email, password: "longpass" }),
+      ),
+    );
+
+    useBrowser("one");
+    const changed = await app.updatePasswordAction(
+      idleSettings,
+      formData({
+        currentPassword: "longpass",
+        password: "newpass1",
+        confirmPassword: "newpass1",
+      }),
+    );
+
+    assert.equal(changed.status, "success");
+    assert.equal(changed.message, "Password updated.");
+    assert.equal((await app.getAuthUser())?.email, email);
+    useBrowser("other");
+    assert.equal(await app.getAuthUser(), null);
+    const oldPassword = await app.signInAction(
+      app.initialAuthFormState,
+      formData({ email, password: "longpass" }),
+    );
+    const nextSession = await redirected(() =>
+      app.signInAction(
+        app.initialAuthFormState,
+        formData({ email, password: "newpass1" }),
+      ),
+    );
+
+    assert.equal(oldPassword.message, "Email or password is incorrect.");
+    assert.equal(nextSession.path, "/");
+    assert.equal((await app.getAuthUser())?.email, email);
+    useBrowser("one");
+    assert.equal((await app.getAuthUser())?.email, email);
+    mailbox.stop();
+  }, 30_000);
+
+  test("a signed-in user can change their display name without a password", async () => {
+    const app = await load();
+    const mailbox = app.captureMailbox();
+    const email = "rename@example.com";
+    await app.signUpAction(
+      app.initialAuthFormState,
+      signUpFields(email, "Ada Lovelace", "longpass"),
+    );
+    await confirmLatest(app, mailbox.messages);
+    const created = await redirected(() =>
+      app.createRecipeAction({ message: "" }, recipeInput("Named soup")),
+    );
+    const recipeId = Number(created.path?.split("/").pop());
+
+    const renamed = await app.updateNameAction(
+      idleSettings,
+      formData({
+        name: "Grace Hopper",
+        email: "someone-else@example.com",
+      }),
+    );
+
+    assert.equal(renamed.status, "success");
+    assert.equal(renamed.message, "Display name updated.");
+    assert.equal((await app.getAuthUser())?.name, "Grace Hopper");
+    assert.equal((await app.getAuthUser())?.email, email);
+    const recipe = await app.getRecipeByParam(String(recipeId));
+    assert.ok(recipe);
+    assert.equal(await app.getRecipeAuthorName(recipe.userId), "Grace Hopper");
+    mailbox.stop();
+  }, 30_000);
+
+  test("an empty display name is rejected and the email stays fixed", async () => {
+    const app = await load();
+    const mailbox = app.captureMailbox();
+    const email = "blank-name@example.com";
+    await app.signUpAction(
+      app.initialAuthFormState,
+      signUpFields(email, "Ada Lovelace", "longpass"),
+    );
+    await confirmLatest(app, mailbox.messages);
+    const created = await redirected(() =>
+      app.createRecipeAction({ message: "" }, recipeInput("Still Ada")),
+    );
+    const recipeId = Number(created.path?.split("/").pop());
+
+    const rejected = await app.updateNameAction(
+      idleSettings,
+      formData({ name: "   ", email: "someone-else@example.com" }),
+    );
+    const recipe = await app.getRecipeByParam(String(recipeId));
+
+    assert.equal(rejected.status, "error");
+    assert.equal(rejected.message, "Enter a display name.");
+    assert.equal((await app.getAuthUser())?.name, "Ada Lovelace");
+    assert.equal((await app.getAuthUser())?.email, email);
+    assert.ok(recipe);
+    assert.equal(await app.getRecipeAuthorName(recipe.userId), "Ada Lovelace");
+    mailbox.stop();
+  }, 30_000);
+
+  test("a wrong current password leaves the password and other sessions unchanged", async () => {
+    const app = await load();
+    const mailbox = app.captureMailbox();
+    const email = "wrong-password@example.com";
+    await app.signUpAction(
+      app.initialAuthFormState,
+      signUpFields(email, "Ada Lovelace", "longpass"),
+    );
+    await confirmLatest(app, mailbox.messages);
+    useBrowser("other");
+    await redirected(() =>
+      app.signInAction(
+        app.initialAuthFormState,
+        formData({ email, password: "longpass" }),
+      ),
+    );
+
+    useBrowser("one");
+    const missing = await app.updatePasswordAction(
+      idleSettings,
+      formData({
+        currentPassword: "",
+        password: "newpass1",
+        confirmPassword: "newpass1",
+      }),
+    );
+    const rejected = await app.updatePasswordAction(
+      idleSettings,
+      formData({
+        currentPassword: "wrongpass",
+        password: "newpass1",
+        confirmPassword: "newpass1",
+      }),
+    );
+
+    assert.equal(missing.status, "error");
+    assert.equal(missing.message, "Enter your current password.");
+    assert.equal(rejected.status, "error");
+    assert.equal(rejected.message, "Current password is incorrect.");
+    assert.equal((await app.getAuthUser())?.email, email);
+    useBrowser("other");
+    assert.equal((await app.getAuthUser())?.email, email);
+    useBrowser("fresh");
+    const changedPassword = await app.signInAction(
+      app.initialAuthFormState,
+      formData({ email, password: "newpass1" }),
+    );
+    const samePassword = await redirected(() =>
+      app.signInAction(
+        app.initialAuthFormState,
+        formData({ email, password: "longpass" }),
+      ),
+    );
+
+    assert.equal(changedPassword.message, "Email or password is incorrect.");
+    assert.equal(samePassword.path, "/");
+    useBrowser("one");
+    assert.equal((await app.getAuthUser())?.email, email);
+    useBrowser("other");
+    assert.equal((await app.getAuthUser())?.email, email);
+    mailbox.stop();
+  }, 30_000);
+
+  test("a wrong password on delete leaves the user, the sessions, and the recipes", async () => {
+    const app = await load();
+    const mailbox = app.captureMailbox();
+    const email = "keep-me@example.com";
+    const readerEmail = "reader-keep@example.com";
+    await app.signUpAction(
+      app.initialAuthFormState,
+      signUpFields(email, "Ada Lovelace", "longpass"),
+    );
+    await app.signUpAction(
+      app.initialAuthFormState,
+      signUpFields(readerEmail, "Grace Hopper", "longpass"),
+    );
+    storeResponseCookies(
+      await app.GET(
+        new Request(mailbox.messages[0]?.text.match(/https?:\/\/\S+/)?.[0] ?? ""),
+      ),
+    );
+    const created = await redirected(() =>
+      app.createRecipeAction({ message: "" }, recipeInput("Kept soup")),
+    );
+    const recipeId = Number(created.path?.split("/").pop());
+    await app.setRecipeLikeAction(recipeId, true);
+    await app.setRecipeBookmarkAction(recipeId, true);
+    useBrowser("other");
+    await redirected(() =>
+      app.signInAction(
+        app.initialAuthFormState,
+        formData({ email, password: "longpass" }),
+      ),
+    );
+    useBrowser("reader");
+    storeResponseCookies(
+      await app.GET(
+        new Request(mailbox.messages[1]?.text.match(/https?:\/\/\S+/)?.[0] ?? ""),
+      ),
+    );
+
+    useBrowser("one");
+    const missing = await app.deleteAccountAction(
+      idleSettings,
+      formData({ password: "" }),
+    );
+    const rejected = await app.deleteAccountAction(
+      idleSettings,
+      formData({ password: "wrongpass" }),
+    );
+
+    assert.equal(missing.status, "error");
+    assert.equal(missing.message, "Enter your password.");
+    assert.equal(rejected.status, "error");
+    assert.equal(rejected.message, "Password is incorrect.");
+    assert.equal((await app.getAuthUser())?.email, email);
+    useBrowser("other");
+    assert.equal((await app.getAuthUser())?.email, email);
+    useBrowser("reader");
+    const recipe = await app.getRecipeByParam(String(recipeId));
+    assert.ok(recipe);
+    assert.equal(recipe.title, "Kept soup");
+    assert.equal(await app.getRecipeAuthorName(recipe.userId), "Ada Lovelace");
+    const engagement = await app.getRecipeEngagement(recipeId);
+    assert.equal(engagement.likeCount, 1);
+    const bookmarks = await app.loadRecipeListPage(
+      { source: "bookmarked", query: "", userId: recipe.userId },
+      1,
+    );
+    assert.equal(bookmarks.total, 1);
+    mailbox.stop();
+  }, 30_000);
+
+  test("deleting a user ends every session and removes their recipes, likes, and bookmarks", async () => {
+    const app = await load();
+    const mailbox = app.captureMailbox();
+    const email = "erase-me@example.com";
+    const readerEmail = "reader-erase@example.com";
+    await app.signUpAction(
+      app.initialAuthFormState,
+      signUpFields(email, "Ada Lovelace", "longpass"),
+    );
+    await app.signUpAction(
+      app.initialAuthFormState,
+      signUpFields(readerEmail, "Grace Hopper", "longpass"),
+    );
+    storeResponseCookies(
+      await app.GET(
+        new Request(mailbox.messages[0]?.text.match(/https?:\/\/\S+/)?.[0] ?? ""),
+      ),
+    );
+    const ada = await app.getAuthUser();
+    assert.ok(ada);
+    const owned = await redirected(() =>
+      app.createRecipeAction({ message: "" }, recipeInput("Ada soup")),
+    );
+    const ownedId = Number(owned.path?.split("/").pop());
+    await app.setRecipeLikeAction(ownedId, true);
+    await app.setRecipeBookmarkAction(ownedId, true);
+    useBrowser("other");
+    await redirected(() =>
+      app.signInAction(
+        app.initialAuthFormState,
+        formData({ email, password: "longpass" }),
+      ),
+    );
+    useBrowser("reader");
+    storeResponseCookies(
+      await app.GET(
+        new Request(mailbox.messages[1]?.text.match(/https?:\/\/\S+/)?.[0] ?? ""),
+      ),
+    );
+    const grace = await app.getAuthUser();
+    assert.ok(grace);
+    const shared = await redirected(() =>
+      app.createRecipeAction({ message: "" }, recipeInput("Grace stew")),
+    );
+    const sharedId = Number(shared.path?.split("/").pop());
+    useBrowser("one");
+    await app.setRecipeLikeAction(sharedId, true);
+    await app.setRecipeBookmarkAction(sharedId, true);
+
+    const removed = await redirected(() =>
+      app.deleteAccountAction(
+        idleSettings,
+        formData({ password: "longpass" }),
+      ),
+    );
+
+    assert.equal(removed.path, "/");
+    assert.equal(await app.getAuthUser(), null);
+    useBrowser("other");
+    assert.equal(await app.getAuthUser(), null);
+    useBrowser("reader");
+    assert.equal((await app.getAuthUser())?.email, readerEmail);
+    assert.equal(await app.getRecipeByParam(String(ownedId)), null);
+    const catalog = await app.loadRecipeListPage(
+      { source: "all", query: "Ada soup" },
+      1,
+    );
+    assert.equal(catalog.total, 0);
+    const stew = await app.getRecipeEngagement(sharedId, grace.id);
+    assert.equal(stew.likeCount, 0);
+    assert.equal(stew.bookmarked, false);
+    const adaBookmarks = await app.loadRecipeListPage(
+      { source: "bookmarked", query: "", userId: ada.id },
+      1,
+    );
+    assert.equal(adaBookmarks.total, 0);
+    assert.equal((await app.getRecipeByParam(String(sharedId)))?.title, "Grace stew");
+    mailbox.stop();
+  }, 30_000);
 });

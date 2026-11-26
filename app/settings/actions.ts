@@ -70,7 +70,7 @@ const updatePasswordAction = async (
       body: {
         currentPassword: parsed.data.currentPassword,
         newPassword: parsed.data.password,
-        revokeOtherSessions: false,
+        revokeOtherSessions: true,
       },
       headers: await requestHeaders(),
     });
