@@ -13,13 +13,9 @@ const displayNameSchema = z
 const passwordSchema = z
   .string()
   .min(8, "Use at least 8 characters.")
-  .max(128, "Use 128 characters or fewer.")
-  .regex(/[a-z]/, "Include a lowercase letter.")
-  .regex(/[A-Z]/, "Include an uppercase letter.")
-  .regex(/[0-9]/, "Include a number.");
+  .max(128, "Use 128 characters or fewer.");
 
-const passwordHint =
-  "At least 8 characters, with uppercase, lowercase, and a number.";
+const passwordHint = "At least 8 characters.";
 
 const passwordsMatch = (value: {
   password: string;

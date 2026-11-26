@@ -11,9 +11,8 @@ type SecurityHeaderOptions = {
 // be stamped onto Next's inline RSC payload or the next-themes boot script.
 // next-themes also injects a <style> tag when transitions are disabled, and
 // next/image emits style="color:transparent". script-src-attr stays 'none'
-// so inline event handlers are still blocked. Supabase Auth is called from
-// the server; the browser only talks to this origin, including POST
-// /auth/implicit.
+// so inline event handlers are still blocked. The browser only talks to
+// this origin.
 const contentSecurityPolicy = ({
   development = false,
 }: SecurityHeaderOptions = {}) => {

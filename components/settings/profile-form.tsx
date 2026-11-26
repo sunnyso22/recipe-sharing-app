@@ -29,8 +29,7 @@ const ProfileForm = ({ name, email }: { name: string; email: string }) => {
           <h2>Profile</h2>
         </CardTitle>
         <CardDescription>
-          This is the display name on your Auth user. It appears next to your
-          avatar.
+          This is the name shown next to your recipes.
         </CardDescription>
       </CardHeader>
       <CardContent>
