@@ -857,6 +857,7 @@ describe("confirm and cook", () => {
     assert.equal(removed.path, "/cookbook");
     assert.equal(await app.getRecipeByParam(String(recipeId)), null);
 
+    useBrowser("visitor");
     for (const pathname of [
       "/cookbook",
       "/bookmarks",
@@ -864,11 +865,15 @@ describe("confirm and cook", () => {
       "/recipes/new",
       `/recipes/${recipeId}/edit`,
     ]) {
-      useBrowser("visitor");
       const response = app.gateRequest(
         new NextRequest(`http://localhost:3000${pathname}`),
       );
-      assert.equal(response.headers.get("location"), "http://localhost:3000/login");
+      const sentTo = new URL(
+        response.headers.get("location") ?? "",
+        "http://localhost:3000",
+      );
+      assert.equal(sentTo.pathname, "/login");
+      assert.equal(sentTo.searchParams.get("next"), pathname);
     }
 
     useBrowser("one");
@@ -1723,4 +1728,183 @@ describe("confirm and cook", () => {
     assert.equal(mailbox.messages.at(-1)?.subject, "Reset your Cookery password");
     mailbox.stop();
   }, 30_000);
+
+  test("sign-in returns to the recipe edit page that asked for it", async () => {
+    const app = await load();
+    const mailbox = app.captureMailbox();
+    const email = "return-edit@example.com";
+    await app.signUpAction(
+      app.initialAuthFormState,
+      signUpFields(email, "Ada Lovelace", "longpass"),
+    );
+    await confirmLatest(app, mailbox.messages);
+    await redirected(() => app.signOutAction());
+
+    const editPath = "/recipes/42/edit";
+    const sent = app.gateRequest(
+      new NextRequest(`http://localhost:3000${editPath}`),
+    );
+    const sentTo = new URL(
+      sent.headers.get("location") ?? "",
+      "http://localhost:3000",
+    );
+
+    assert.equal(sentTo.pathname, "/login");
+    assert.equal(sentTo.searchParams.get("next"), editPath);
+
+    const signedIn = await redirected(() =>
+      app.signInAction(
+        app.initialAuthFormState,
+        formData({
+          email,
+          password: "longpass",
+          next: sentTo.searchParams.get("next") ?? "",
+        }),
+      ),
+    );
+
+    assert.equal(signedIn.path, editPath);
+    assert.ok(sessionCookie());
+    assert.equal((await app.getAuthUser())?.email, email);
+    mailbox.stop();
+  }, 20_000);
+
+  test("sign-in ignores an address on another site and lands on the home page", async () => {
+    const app = await load();
+    const mailbox = app.captureMailbox();
+    const email = "return-home@example.com";
+    await app.signUpAction(
+      app.initialAuthFormState,
+      signUpFields(email, "Ada Lovelace", "longpass"),
+    );
+    await confirmLatest(app, mailbox.messages);
+    await redirected(() => app.signOutAction());
+
+    const signedIn = await redirected(() =>
+      app.signInAction(
+        app.initialAuthFormState,
+        formData({
+          email,
+          password: "longpass",
+          next: "https://evil.example/steal",
+        }),
+      ),
+    );
+
+    assert.equal(signedIn.path, "/");
+    assert.ok(sessionCookie());
+    assert.equal((await app.getAuthUser())?.email, email);
+    mailbox.stop();
+  }, 20_000);
+
+  test("a browser that already has a session is sent home from sign-in and sign-up", async () => {
+    const app = await load();
+    const mailbox = app.captureMailbox();
+    const email = "already-in@example.com";
+    await app.signUpAction(
+      app.initialAuthFormState,
+      signUpFields(email, "Ada Lovelace", "longpass"),
+    );
+    await confirmLatest(app, mailbox.messages);
+    const cookie = sessionCookie();
+
+    for (const pathname of ["/login", "/signup"]) {
+      const response = app.gateRequest(
+        new NextRequest(`http://localhost:3000${pathname}?next=/recipes/42/edit`, {
+          headers: { cookie: cookieHeader() },
+        }),
+      );
+      const sentTo = new URL(
+        response.headers.get("location") ?? "",
+        "http://localhost:3000",
+      );
+      assert.equal(sentTo.pathname, "/");
+      assert.equal(sentTo.search, "");
+    }
+
+    assert.equal(sessionCookie(), cookie);
+    assert.equal((await app.getAuthUser())?.email, email);
+    mailbox.stop();
+  }, 20_000);
+
+  test("a confirmation link on a browser that already has a session becomes the user from the link", async () => {
+    const app = await load();
+    const mailbox = app.captureMailbox();
+    const ada = "ada-confirm@example.com";
+    const grace = "grace-confirm@example.com";
+    await app.signUpAction(
+      app.initialAuthFormState,
+      signUpFields(ada, "Ada Lovelace", "longpass"),
+    );
+    await confirmLatest(app, mailbox.messages);
+    useBrowser("ada-other");
+    await redirected(() =>
+      app.signInAction(
+        app.initialAuthFormState,
+        formData({ email: ada, password: "longpass" }),
+      ),
+    );
+    useBrowser("grace");
+    await app.signUpAction(
+      app.initialAuthFormState,
+      signUpFields(grace, "Grace Hopper", "longpass"),
+    );
+    const link = mailbox.messages.at(-1)?.text.match(/https?:\/\/\S+/)?.[0] ?? "";
+    useBrowser("one");
+    const response = await app.GET(
+      new Request(link, { headers: { cookie: cookieHeader() } }),
+    );
+    const landed = new URL(response.headers.get("location") ?? "", link);
+    const setCookies =
+      typeof response.headers.getSetCookie === "function"
+        ? response.headers.getSetCookie()
+        : [];
+
+    assert.equal(response.status, 302);
+    assert.equal(landed.pathname, "/");
+    assert.equal(landed.search, "");
+    assert.ok(
+      setCookies.some((cookie) => {
+        return cookie.includes("session_token") && !cookie.toLowerCase().includes("max-age=0");
+      }),
+    );
+    storeResponseCookies(response);
+    assert.equal((await app.getAuthUser())?.email, grace);
+    useBrowser("ada-other");
+    assert.equal((await app.getAuthUser())?.email, ada);
+    mailbox.stop();
+  }, 20_000);
+
+  test("a confirmation that did not start from a Cookery page lands on the home page", async () => {
+    const app = await load();
+    const mailbox = app.captureMailbox();
+    const email = "off-site-confirm@example.com";
+    await app.signUpAction(
+      app.initialAuthFormState,
+      signUpFields(email, "Ada Lovelace", "longpass"),
+    );
+    const link = new URL(
+      mailbox.messages.at(-1)?.text.match(/https?:\/\/\S+/)?.[0] ?? "",
+    );
+    link.searchParams.set("callbackURL", "https://evil.example/away");
+    const response = await app.GET(new Request(link));
+    const landed = new URL(response.headers.get("location") ?? "", link);
+    const setCookies =
+      typeof response.headers.getSetCookie === "function"
+        ? response.headers.getSetCookie()
+        : [];
+
+    assert.equal(response.status, 302);
+    assert.equal(landed.origin, link.origin);
+    assert.equal(landed.pathname, "/");
+    assert.equal(landed.search, "");
+    assert.ok(
+      setCookies.some((cookie) => {
+        return cookie.includes("session_token") && !cookie.toLowerCase().includes("max-age=0");
+      }),
+    );
+    storeResponseCookies(response);
+    assert.equal((await app.getAuthUser())?.email, email);
+    mailbox.stop();
+  }, 20_000);
 });

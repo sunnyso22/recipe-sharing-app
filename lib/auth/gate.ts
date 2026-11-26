@@ -26,8 +26,10 @@ const gateRequest = (request: NextRequest) => {
 
   if (requiresSession(pathname) && !sessionCookie) {
     const url = request.nextUrl.clone();
+    const returnPath = `${pathname}${request.nextUrl.search}`;
     url.pathname = "/login";
     url.search = "";
+    url.searchParams.set("next", returnPath);
     return NextResponse.redirect(url);
   }
 
