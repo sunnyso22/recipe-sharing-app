@@ -272,5 +272,3 @@ BEGIN
   END IF;
 END;
 $$;
---> statement-breakpoint
-DROP SCHEMA auth CASCADE;
