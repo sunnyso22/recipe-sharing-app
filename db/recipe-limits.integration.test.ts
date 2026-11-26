@@ -283,14 +283,16 @@ describe.skipIf(!bin)("recipe database limits", () => {
 
     db = open("recipe_limits");
     await db`
-      insert into auth.users (id)
-      values (${ownerId}::uuid), (${otherId}::uuid)
+      insert into "user" (id, name, email, email_verified)
+      values
+        (${ownerId}, 'Owner', 'owner@example.com', true),
+        (${otherId}, 'Other', 'other@example.com', true)
     `;
 
     process.env.DATABASE_URL = `postgres://postgres@/recipe_limits?host=${socketDir}&port=${port}`;
   }, 60_000);
 
-  test("drizzle migration records three migrations and backfills no rows", async () => {
+  test("drizzle migration records every migration and backfills no rows", async () => {
     const applied = await db`
       select name
       from drizzle.__drizzle_migrations
@@ -303,6 +305,7 @@ describe.skipIf(!bin)("recipe database limits", () => {
         "20261112122015_baseline",
         "20261112122305_ownership_and_rls",
         "20261120062415_recipe_validation",
+        "20261126193000_better_auth_sessions",
       ],
     );
     const [counts] = await db`
@@ -635,12 +638,11 @@ describe.skipIf(!bin)("recipe database limits", () => {
     assert.equal(definers.get("enforce_recipe_child_limit"), true);
   });
 
-  test("blocks a cross-user child write and allows the owner", async () => {
+  test("refuses Data API writes, including an owner writing as that role", async () => {
     const recipeId = await insertRecipe();
     const denied = await messageOf(() =>
       db.begin(async (tx) => {
         await tx`set local role authenticated`;
-        await tx`select set_config('request.jwt.claim.sub', ${otherId}, true)`;
         await tx`
           insert into public.ingredients (recipe_id, name, quantity)
           values (${recipeId}, 'stolen', '1')
@@ -648,50 +650,22 @@ describe.skipIf(!bin)("recipe database limits", () => {
       }),
     );
 
-    assert.match(denied, /not available for this write/);
+    assert.match(denied, /permission denied/);
     assert.equal((await counter(recipeId)).ingredient_count, 0);
-
-    await db.begin(async (tx) => {
-      await tx`set local role authenticated`;
-      await tx`select set_config('request.jwt.claim.sub', ${ownerId}, true)`;
-      await tx`
-        insert into public.ingredients (recipe_id, name, quantity)
-        values (${recipeId}, 'mine', '1')
-      `;
-    });
-    assert.equal((await counter(recipeId)).ingredient_count, 1);
-
-    const [created] = await db.begin(async (tx) => {
-      await tx`set local role authenticated`;
-      await tx`select set_config('request.jwt.claim.sub', ${ownerId}, true)`;
-      return tx`
-        insert into public.recipes (user_id, title, description)
-        values (${ownerId}::uuid, 'API', 'From the API')
-        returning id
-      `;
-    });
-    const createdId = created.id as number;
-
-    await db.begin(async (tx) => {
-      await tx`set local role authenticated`;
-      await tx`select set_config('request.jwt.claim.sub', ${ownerId}, true)`;
-      await tx`
-        insert into public.ingredients (recipe_id, name, quantity)
-        values (${createdId}, 'api', '1')
-      `;
-    });
-    assert.equal((await counter(createdId)).ingredient_count, 1);
 
     const anon = await messageOf(() =>
       db.begin(async (tx) => {
         await tx`set local role anon`;
         await tx`
           insert into public.recipes (user_id, title, description)
-          values (${ownerId}::uuid, 'Anon', 'No')
+          values (${ownerId}, 'Anon', 'No')
         `;
       }),
     );
     assert.match(anon, /permission denied/);
+
+    await fill("ingredients", recipeId, 1);
+    assert.equal((await counter(recipeId)).ingredient_count, 1);
   });
 
   test("rejects an API role with no JWT subject", async () => {
@@ -714,7 +688,7 @@ describe.skipIf(!bin)("recipe database limits", () => {
           `;
         }),
       );
-      assert.match(error, /not available for this write/);
+      assert.match(error, /permission denied/);
     } finally {
       await authenticator.end();
     }

@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { AuthFormFallback } from "@/components/auth/auth-form";
-import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 import { PageMain } from "@/components/page-main";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -13,8 +12,6 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { expiredResetMessage } from "@/lib/auth/paths";
-import { hasPasswordRecoveryCookie } from "@/lib/auth/recovery";
-import { getAuthUser } from "@/lib/auth/session";
 
 export const metadata = {
   title: "Choose a new password",
@@ -27,9 +24,7 @@ const ResetLinkExpired = () => {
         <h1 className="font-heading text-2xl tracking-tight">
           Reset link expired
         </h1>
-        <CardDescription>
-          {expiredResetMessage}
-        </CardDescription>
+        <CardDescription>{expiredResetMessage}</CardDescription>
       </CardHeader>
       <CardContent>
         <Link
@@ -54,21 +49,11 @@ const ResetLinkExpired = () => {
   );
 };
 
-const ResetPasswordGate = async () => {
-  const user = await getAuthUser();
-
-  if (!user || !(await hasPasswordRecoveryCookie(user.id))) {
-    return <ResetLinkExpired />;
-  }
-
-  return <ResetPasswordForm />;
-};
-
 const ResetPasswordPage = () => {
   return (
     <PageMain className="items-center justify-center">
       <Suspense fallback={<AuthFormFallback />}>
-        <ResetPasswordGate />
+        <ResetLinkExpired />
       </Suspense>
     </PageMain>
   );

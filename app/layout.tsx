@@ -3,7 +3,6 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Noto_Serif, Roboto_Slab } from "next/font/google";
 
-import { AuthHashSession } from "@/components/auth/auth-hash-session";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -60,7 +59,6 @@ const RootLayout = ({ children }: LayoutProps<"/">) => {
           enableSystem
           disableTransitionOnChange
         >
-          <AuthHashSession />
           <SiteHeader />
           {children}
           <SiteFooter />

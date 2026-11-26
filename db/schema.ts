@@ -1,19 +1,17 @@
 import { defineRelations, sql } from "drizzle-orm";
 import {
   type AnyPgColumn,
+  boolean,
   check,
   index,
   integer,
-  pgPolicy,
   pgSchema,
   pgTable,
   primaryKey,
   text,
   timestamp,
-  uuid,
   varchar,
 } from "drizzle-orm/pg-core";
-import { anonRole, authenticatedRole } from "drizzle-orm/supabase";
 
 import {
   DESCRIPTION_LIMIT,
@@ -30,33 +28,92 @@ const collectionCount = (column: AnyPgColumn) => {
   return sql`${column} between 0 and ${sql.raw(String(LIST_LIMIT))}`;
 };
 
-// auth.users already exists in Supabase. Mark the schema existing so
-// drizzle-kit does not try to create or alter it.
-const authSchema = pgSchema("auth").existing();
+const createdAt = () => timestamp("created_at").notNull().defaultNow();
 
-const authUsers = authSchema.table("users", {
-  id: uuid("id").primaryKey(),
-});
-
-const isAuthUser = (userId: AnyPgColumn) => {
-  return sql`${userId} = (select auth.uid())`;
+const updatedAt = () => {
+  return timestamp("updated_at")
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date());
 };
 
-const publicReadPolicy = (name: string) => {
-  return pgPolicy(name, {
-    for: "select",
-    to: [anonRole, authenticatedRole],
-    using: sql`true`,
-  });
-};
+// better-auth owns users, accounts, and sessions. The Data API has no
+// privileges on these tables; Cookery's server login is the only client.
+export const user = pgTable(
+  "user",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    email: text("email").notNull().unique(),
+    emailVerified: boolean("email_verified").notNull().default(false),
+    image: text("image"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (table) => [
+    check("user_name_not_blank", sql`char_length(btrim(${table.name})) > 0`),
+  ],
+);
+
+export const session = pgTable(
+  "session",
+  {
+    id: text("id").primaryKey(),
+    expiresAt: timestamp("expires_at").notNull(),
+    token: text("token").notNull().unique(),
+    ipAddress: text("ip_address"),
+    userAgent: text("user_agent"),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (table) => [index("session_user_id_idx").on(table.userId)],
+);
+
+export const account = pgTable(
+  "account",
+  {
+    id: text("id").primaryKey(),
+    accountId: text("account_id").notNull(),
+    providerId: text("provider_id").notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    accessToken: text("access_token"),
+    refreshToken: text("refresh_token"),
+    idToken: text("id_token"),
+    accessTokenExpiresAt: timestamp("access_token_expires_at"),
+    refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
+    scope: text("scope"),
+    password: text("password"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (table) => [index("account_user_id_idx").on(table.userId)],
+);
+
+export const verification = pgTable(
+  "verification",
+  {
+    id: text("id").primaryKey(),
+    identifier: text("identifier").notNull(),
+    value: text("value").notNull(),
+    expiresAt: timestamp("expires_at").notNull(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (table) => [index("verification_identifier_idx").on(table.identifier)],
+);
 
 export const recipesTable = pgTable(
   "recipes",
   {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
-    userId: uuid("user_id")
+    userId: text("user_id")
       .notNull()
-      .references(() => authUsers.id, { onDelete: "cascade" }),
+      .references(() => user.id, { onDelete: "cascade" }),
     title: varchar({ length: TEXT_LIMIT }).notNull(),
     description: text().notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -71,55 +128,8 @@ export const recipesTable = pgTable(
       "recipes_description_length",
       maxCharacters(table.description, DESCRIPTION_LIMIT),
     ),
-    publicReadPolicy("recipes_public_read"),
-    pgPolicy("recipes_insert_own", {
-      for: "insert",
-      to: authenticatedRole,
-      withCheck: isAuthUser(table.userId),
-    }),
-    pgPolicy("recipes_update_own", {
-      for: "update",
-      to: authenticatedRole,
-      using: isAuthUser(table.userId),
-      withCheck: isAuthUser(table.userId),
-    }),
-    pgPolicy("recipes_delete_own", {
-      for: "delete",
-      to: authenticatedRole,
-      using: isAuthUser(table.userId),
-    }),
   ],
 );
-
-const recipeOwnedByUser = (recipeId: AnyPgColumn) => {
-  return sql`exists (
-    select 1
-    from ${recipesTable}
-    where ${recipesTable.id} = ${recipeId}
-      and ${recipesTable.userId} = (select auth.uid())
-  )`;
-};
-
-const childWritePolicies = (tableName: string, recipeId: AnyPgColumn) => {
-  return [
-    pgPolicy(`${tableName}_insert_own`, {
-      for: "insert",
-      to: authenticatedRole,
-      withCheck: recipeOwnedByUser(recipeId),
-    }),
-    pgPolicy(`${tableName}_update_own`, {
-      for: "update",
-      to: authenticatedRole,
-      using: recipeOwnedByUser(recipeId),
-      withCheck: recipeOwnedByUser(recipeId),
-    }),
-    pgPolicy(`${tableName}_delete_own`, {
-      for: "delete",
-      to: authenticatedRole,
-      using: recipeOwnedByUser(recipeId),
-    }),
-  ];
-};
 
 export const ingredientsTable = pgTable(
   "ingredients",
@@ -131,11 +141,7 @@ export const ingredientsTable = pgTable(
     name: varchar({ length: TEXT_LIMIT }).notNull(),
     quantity: varchar({ length: TEXT_LIMIT }).notNull(),
   },
-  (table) => [
-    index("ingredients_recipe_id_idx").on(table.recipeId),
-    publicReadPolicy("ingredients_public_read"),
-    ...childWritePolicies("ingredients", table.recipeId),
-  ],
+  (table) => [index("ingredients_recipe_id_idx").on(table.recipeId)],
 );
 
 export const instructionsTable = pgTable(
@@ -154,8 +160,6 @@ export const instructionsTable = pgTable(
       "instructions_description_length",
       maxCharacters(table.description, INSTRUCTION_LIMIT),
     ),
-    publicReadPolicy("instructions_public_read"),
-    ...childWritePolicies("instructions", table.recipeId),
   ],
 );
 
@@ -171,8 +175,6 @@ export const seasoningsTable = pgTable(
   },
   (table) => [
     index("seasonings_recipe_id_idx").on(table.recipeId),
-    publicReadPolicy("seasonings_public_read"),
-    ...childWritePolicies("seasonings", table.recipeId),
   ],
 );
 
@@ -213,32 +215,12 @@ export const recipeCollectionCountsTable = recipeGuard.table.withRLS(
   ],
 );
 
-const membershipPolicies = (tableName: string, userId: AnyPgColumn) => {
-  return [
-    pgPolicy(`${tableName}_select_own`, {
-      for: "select",
-      to: authenticatedRole,
-      using: isAuthUser(userId),
-    }),
-    pgPolicy(`${tableName}_insert_own`, {
-      for: "insert",
-      to: authenticatedRole,
-      withCheck: isAuthUser(userId),
-    }),
-    pgPolicy(`${tableName}_delete_own`, {
-      for: "delete",
-      to: authenticatedRole,
-      using: isAuthUser(userId),
-    }),
-  ];
-};
-
 export const recipeLikesTable = pgTable(
   "recipe_likes",
   {
-    userId: uuid("user_id")
+    userId: text("user_id")
       .notNull()
-      .references(() => authUsers.id, { onDelete: "cascade" }),
+      .references(() => user.id, { onDelete: "cascade" }),
     recipeId: integer("recipe_id")
       .notNull()
       .references(() => recipesTable.id, { onDelete: "cascade" }),
@@ -247,16 +229,15 @@ export const recipeLikesTable = pgTable(
   (table) => [
     primaryKey({ columns: [table.userId, table.recipeId] }),
     index("recipe_likes_recipe_id_idx").on(table.recipeId),
-    ...membershipPolicies("recipe_likes", table.userId),
   ],
 );
 
 export const recipeBookmarksTable = pgTable(
   "recipe_bookmarks",
   {
-    userId: uuid("user_id")
+    userId: text("user_id")
       .notNull()
-      .references(() => authUsers.id, { onDelete: "cascade" }),
+      .references(() => user.id, { onDelete: "cascade" }),
     recipeId: integer("recipe_id")
       .notNull()
       .references(() => recipesTable.id, { onDelete: "cascade" }),
@@ -265,12 +246,14 @@ export const recipeBookmarksTable = pgTable(
   (table) => [
     primaryKey({ columns: [table.userId, table.recipeId] }),
     index("recipe_bookmarks_recipe_id_idx").on(table.recipeId),
-    ...membershipPolicies("recipe_bookmarks", table.userId),
   ],
 );
 
 export const relations = defineRelations(
   {
+    user,
+    session,
+    account,
     recipesTable,
     ingredientsTable,
     instructionsTable,
@@ -279,6 +262,30 @@ export const relations = defineRelations(
     recipeBookmarksTable,
   },
   (r) => ({
+    user: {
+      sessions: r.many.session({
+        from: r.user.id,
+        to: r.session.userId,
+      }),
+      accounts: r.many.account({
+        from: r.user.id,
+        to: r.account.userId,
+      }),
+    },
+    session: {
+      user: r.one.user({
+        from: r.session.userId,
+        to: r.user.id,
+        optional: false,
+      }),
+    },
+    account: {
+      user: r.one.user({
+        from: r.account.userId,
+        to: r.user.id,
+        optional: false,
+      }),
+    },
     recipesTable: {
       ingredients: r.many.ingredientsTable({
         from: r.recipesTable.id,

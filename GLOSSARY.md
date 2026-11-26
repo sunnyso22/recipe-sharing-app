@@ -4,18 +4,42 @@ People sign up, sign in, and share recipes they own.
 
 ## Language
 
-**Active session**:
-A signed-in person on this browser. Their account still exists, this sign-in still exists, and their email is known.
-_Avoid_: live session, logged-in user
+**User**:
+A person who has signed up.
+_Avoid_: account, active session, cook, profile
 
-**Revoked session**:
-A sign-in whose account or browser session no longer exists.
-_Avoid_: signed out, anonymous
+**Email**:
+The address that identifies a user. Each user has one.
+_Avoid_: username, display name
+
+**Verified**:
+A user's email after its confirmation link has been opened.
+_Avoid_: active, authenticated, signed in
+
+**Confirmation message**:
+A message sent to a user's email so they can verify it.
+_Avoid_: email, verification email, notification
+
+**Reset message**:
+A message sent to a verified user's email so they can set a new password.
+_Avoid_: email, recovery email, password email
+
+**Account**:
+A sign-in method linked to a user.
+_Avoid_: user, profile
+
+**Session**:
+A sign-in of a user on one browser.
+_Avoid_: active session, live session, logged-in user
 
 **Signed out**:
-No active session. This includes a person who never signed in, a revoked session, and a token that names an account but carries no email.
-_Avoid_: anonymous, guest, live session
+A browser with no session.
+_Avoid_: anonymous, guest, revoked session
+
+**Owner**:
+The user who created a recipe.
+_Avoid_: author, cook
 
 **Display name**:
-The name shown for a signed-in person. The name on their account, or their email when that name is empty.
-_Avoid_: username, nickname, full name
+The name of a user. Every user has one.
+_Avoid_: username, nickname, full name, email

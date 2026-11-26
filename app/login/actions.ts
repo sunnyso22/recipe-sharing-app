@@ -3,75 +3,100 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { confirmationRedirectUrl } from "@/lib/auth/email-redirect";
-import { type AuthFormState } from "@/lib/auth/form";
-import { completeSignIn } from "@/lib/auth/sign-in";
-import { completeSignUp } from "@/lib/auth/sign-up";
-import { createClient, createSignUpClient } from "@/lib/supabase/server";
+import { auth } from "@/lib/auth/auth";
+import {
+  authFormError,
+  type AuthFormState,
+  authFormValuesForClient,
+  initialAuthFormState,
+  invalidAuthFields,
+  readAuthFormValues,
+  signInFormSchema,
+  signUpFormSchema,
+} from "@/lib/auth/form";
+import { safeNextPath } from "@/lib/auth/paths";
+
+const checkYourEmail =
+  "Check your email for a link to confirm it and sign in.";
+
+const signInFailureMessage = "Email or password is incorrect.";
+
+const requestHeaders = async () => {
+  return new Headers(await headers());
+};
 
 const signInAction = async (
   _state: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> => {
-  const supabase = await createClient();
-  const result = await completeSignIn(formData, {
-    signInWithPassword: async (credentials) => {
-      const { error } = await supabase.auth.signInWithPassword(credentials);
-
-      return {
-        error: error
-          ? {
-              message: error.message,
-              code: error.code,
-            }
-          : null,
-      };
-    },
+  const values = readAuthFormValues(formData);
+  const parsed = signInFormSchema.safeParse({
+    email: values.email,
+    password: values.password,
   });
 
-  if (result.status === "redirect") {
-    redirect(result.path);
+  if (!parsed.success) {
+    return invalidAuthFields(parsed.error, values);
   }
 
-  return result.state;
+  try {
+    await auth.api.signInEmail({
+      body: {
+        email: parsed.data.email,
+        password: parsed.data.password,
+      },
+      headers: await requestHeaders(),
+    });
+  } catch {
+    return authFormError(signInFailureMessage, {}, values);
+  }
+
+  const next = formData.get("next");
+  redirect(typeof next === "string" ? safeNextPath(next) : "/");
 };
 
 const signUpAction = async (
   _state: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> => {
-  const headerStore = await headers();
-  const supabase = createSignUpClient();
-
-  return completeSignUp(formData, {
-    emailRedirectTo: confirmationRedirectUrl({
-      siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
-      nodeEnv: process.env.NODE_ENV,
-      host: headerStore.get("host"),
-    }),
-    signUp: async (credentials) => {
-      const { data, error } = await supabase.auth.signUp(credentials);
-
-      return {
-        data: {
-          user: data.user ? { identities: data.user.identities } : null,
-          session: data.session,
-        },
-        error: error
-          ? {
-              message: error.message,
-              code: error.code,
-              status: error.status,
-            }
-          : null,
-      };
-    },
+  const values = readAuthFormValues(formData);
+  const parsed = signUpFormSchema.safeParse({
+    name: values.name,
+    email: values.email,
+    password: values.password,
+    confirmPassword: values.confirmPassword,
   });
+
+  if (!parsed.success) {
+    return invalidAuthFields(parsed.error, values);
+  }
+
+  try {
+    await auth.api.signUpEmail({
+      body: {
+        name: parsed.data.name,
+        email: parsed.data.email,
+        password: parsed.data.password,
+        callbackURL: "/",
+      },
+      headers: await requestHeaders(),
+    });
+  } catch {
+    return authFormError("Something went wrong. Try again.", {}, values);
+  }
+
+  return {
+    ...initialAuthFormState,
+    status: "success",
+    message: checkYourEmail,
+    values: authFormValuesForClient(values),
+  };
 };
 
 const signOutAction = async () => {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
+  await auth.api.signOut({
+    headers: await requestHeaders(),
+  });
   redirect("/");
 };
 
