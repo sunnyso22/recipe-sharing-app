@@ -89,8 +89,8 @@ const auth = betterAuth({
     maxPasswordLength: 128,
     resetPasswordTokenExpiresIn: 60 * 10,
     revokeSessionsOnPasswordReset: true,
-    sendResetPassword: async ({ user: accountUser, token }, request) => {
-      if (!accountUser.emailVerified) {
+    sendResetPassword: async ({ user: existing, token }, request) => {
+      if (!existing.emailVerified) {
         await deleteReset(token);
         return;
       }
@@ -98,8 +98,8 @@ const auth = betterAuth({
       try {
         const url = await resetUrl(token, request);
         await sendReset({
-          name: accountUser.name,
-          to: accountUser.email,
+          name: existing.name,
+          to: existing.email,
           url,
         });
       } catch (error) {

@@ -1263,6 +1263,14 @@ describe("confirm and cook", () => {
   const resetWords =
     "Choose a new password for Cookery. This link lasts 10 minutes. Cookery signs you in after you submit the new password.";
 
+  const resetLink = (text: string | undefined) => {
+    return text?.match(/https?:\/\/\S+/)?.[0] ?? "";
+  };
+
+  const resetToken = (text: string | undefined) => {
+    return new URL(resetLink(text)).searchParams.get("token") ?? "";
+  };
+
   const verifyAndSignOut = async (
     app: Awaited<ReturnType<typeof load>>,
     mailbox: { messages: { text: string }[] },
@@ -1274,13 +1282,10 @@ describe("confirm and cook", () => {
       app.initialAuthFormState,
       signUpFields(email, name, password),
     );
-    const link = mailbox.messages.at(-1)?.text.match(/https?:\/\/\S+/)?.[0] ?? "";
-    storeResponseCookies(await app.GET(new Request(link)));
+    storeResponseCookies(
+      await app.GET(new Request(resetLink(mailbox.messages.at(-1)?.text))),
+    );
     await redirected(() => app.signOutAction());
-  };
-
-  const resetLink = (text: string | undefined) => {
-    return text?.match(/https?:\/\/\S+/)?.[0] ?? "";
   };
 
   const liveResetCount = async () => {
@@ -1322,10 +1327,12 @@ describe("confirm and cook", () => {
       app.initialAuthFormState,
       formData({ email }),
     );
+    const afterVerified = mailbox.messages.length;
     const missing = await app.requestPasswordResetAction(
       app.initialAuthFormState,
       formData({ email: "nobody-reset@example.com" }),
     );
+    assert.equal(mailbox.messages.length, afterVerified);
     const unverifiedEmail = "unverified-reset@example.com";
     await app.signUpAction(
       app.initialAuthFormState,
@@ -1420,8 +1427,7 @@ describe("confirm and cook", () => {
       app.initialAuthFormState,
       formData({ email }),
     );
-    const link = resetLink(mailbox.messages.at(-1)?.text);
-    const token = new URL(link).searchParams.get("token") ?? "";
+    const token = resetToken(mailbox.messages.at(-1)?.text);
     const form = await resetView(app, token);
     const expired = await resetView(app, "missing-token");
 
@@ -1450,10 +1456,7 @@ describe("confirm and cook", () => {
       app.initialAuthFormState,
       formData({ email }),
     );
-    const token =
-      new URL(resetLink(mailbox.messages.at(-1)?.text)).searchParams.get(
-        "token",
-      ) ?? "";
+    const token = resetToken(mailbox.messages.at(-1)?.text);
     useBrowser("other");
     await redirected(() =>
       app.signInAction(
@@ -1513,10 +1516,7 @@ describe("confirm and cook", () => {
       app.initialAuthFormState,
       formData({ email }),
     );
-    const token =
-      new URL(resetLink(mailbox.messages.at(-1)?.text)).searchParams.get(
-        "token",
-      ) ?? "";
+    const token = resetToken(mailbox.messages.at(-1)?.text);
     const sql = postgres(databaseUrl, { max: 1 });
 
     try {
@@ -1561,10 +1561,7 @@ describe("confirm and cook", () => {
       app.initialAuthFormState,
       formData({ email }),
     );
-    const once =
-      new URL(resetLink(mailbox.messages.at(-1)?.text)).searchParams.get(
-        "token",
-      ) ?? "";
+    const once = resetToken(mailbox.messages.at(-1)?.text);
     const first = await redirected(() =>
       app.updateRecoveredPasswordAction(
         app.initialAuthFormState,
@@ -1619,10 +1616,7 @@ describe("confirm and cook", () => {
       app.initialAuthFormState,
       formData({ email }),
     );
-    const token =
-      new URL(resetLink(mailbox.messages.at(-1)?.text)).searchParams.get(
-        "token",
-      ) ?? "";
+    const token = resetToken(mailbox.messages.at(-1)?.text);
     const finished = await redirected(() =>
       app.updateRecoveredPasswordAction(
         app.initialAuthFormState,
@@ -1643,7 +1637,7 @@ describe("confirm and cook", () => {
     mailbox.stop();
   }, 30_000);
 
-  test("a reset link on a signed-in browser becomes the user from the link", async () => {
+  test("a reset link on a browser that already has a session becomes the user from the link", async () => {
     const app = await load();
     const mailbox = app.captureMailbox();
     const ada = "ada-reset@example.com";
@@ -1654,10 +1648,7 @@ describe("confirm and cook", () => {
       app.initialAuthFormState,
       formData({ email: grace }),
     );
-    const token =
-      new URL(resetLink(mailbox.messages.at(-1)?.text)).searchParams.get(
-        "token",
-      ) ?? "";
+    const token = resetToken(mailbox.messages.at(-1)?.text);
     useBrowser("ada-other");
     await redirected(() =>
       app.signInAction(

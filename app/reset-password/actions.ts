@@ -34,9 +34,9 @@ const updateRecoveredPasswordAction = async (
   }
 
   const token = readFormString(formData, "token");
-  const account = await liveReset(token);
+  const linkUser = await liveReset(token);
 
-  if (!account) {
+  if (!linkUser) {
     return authFormError(expiredResetMessage);
   }
 
@@ -57,7 +57,7 @@ const updateRecoveredPasswordAction = async (
   });
   await auth.api.signInEmail({
     body: {
-      email: account.email,
+      email: linkUser.email,
       password: parsed.data.password,
     },
     headers: await requestHeaders(),
