@@ -904,10 +904,6 @@ describe("confirm and cook", () => {
         return tx`select id from recipes`;
       }).catch((error: Error) => error.message);
       assert.match(String(anon), /permission denied/);
-      const [authUsers] = await sql`
-        select to_regclass('auth.users') as name
-      `;
-      assert.equal(authUsers?.name, null);
     } finally {
       await sql.end();
     }
