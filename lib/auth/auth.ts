@@ -11,8 +11,10 @@ import {
   hasLiveConfirmation,
   saveConfirmation,
 } from "@/lib/auth/confirmation-record";
-import { confirmationUrl } from "@/lib/auth/origin";
+import { confirmationUrl, resetUrl } from "@/lib/auth/origin";
+import { deleteReset } from "@/lib/auth/reset-record";
 import { sendConfirmation } from "@/lib/mail/send-confirmation";
+import { sendReset } from "@/lib/mail/send-reset";
 
 const requestHeaders = async (request?: Request) => {
   if (request) {
@@ -85,6 +87,26 @@ const auth = betterAuth({
     autoSignIn: false,
     minPasswordLength: 8,
     maxPasswordLength: 128,
+    resetPasswordTokenExpiresIn: 60 * 10,
+    revokeSessionsOnPasswordReset: true,
+    sendResetPassword: async ({ user: accountUser, token }, request) => {
+      if (!accountUser.emailVerified) {
+        await deleteReset(token);
+        return;
+      }
+
+      try {
+        const url = await resetUrl(token, request);
+        await sendReset({
+          name: accountUser.name,
+          to: accountUser.email,
+          url,
+        });
+      } catch (error) {
+        await deleteReset(token);
+        throw error;
+      }
+    },
     onExistingUserSignUp: async ({ user: existing }, request) => {
       await resendConfirmationIfExpired(existing, request);
     },
