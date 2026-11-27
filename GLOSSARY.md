@@ -29,16 +29,28 @@ A sign-in method linked to a user.
 _Avoid_: user, profile
 
 **Session**:
-A sign-in of a user on one browser.
-_Avoid_: active session, live session, logged-in user
+A sign-in of a verified user on one browser that the server has accepted. A cookie the server rejects is not a session.
+_Avoid_: active session, live session, logged-in user, cookie
+
+**Signed in**:
+A browser that has a session.
+_Avoid_: authenticated, logged in, verified
 
 **Signed out**:
 A browser with no session.
 _Avoid_: anonymous, guest, revoked session
 
+**Return path**:
+The Cookery page sign-in opens after a signed-out browser is sent there. Sign-in, sign-up, forgot password, and reset password are not return paths. Those, and any address outside Cookery, open home.
+_Avoid_: next, redirect, callback
+
 **Owner**:
 The user who created a recipe.
 _Avoid_: author, cook
+
+**Cookbook**:
+The recipes an owner created.
+_Avoid_: recipe list, bookmarks, my recipes
 
 **Display name**:
 The name of a user. Every user has one.
