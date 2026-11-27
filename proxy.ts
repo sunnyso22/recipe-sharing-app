@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 
 import { gateRequest } from "@/lib/auth/gate";
 
-const proxy = (request: NextRequest) => {
+const proxy = async (request: NextRequest) => {
   return gateRequest(request);
 };
 

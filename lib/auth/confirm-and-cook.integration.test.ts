@@ -88,6 +88,11 @@ mock.module("next/navigation", () => ({
   notFound: () => {
     throw new Error("NEXT_NOT_FOUND");
   },
+  usePathname: () => "/",
+  useRouter: () => ({
+    replace: () => {},
+  }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 const postgresBin = () => {
@@ -169,6 +174,7 @@ describe("confirm and cook", () => {
     const marks = await import("@/db/queries/engagement");
     const mailbox = await import("@/lib/mail/mailbox");
     const gate = await import("@/lib/auth/gate");
+    const cookbook = await import("@/app/cookbook/page");
     const authModule = await import("@/lib/auth/auth");
     const form = await import("@/lib/auth/form");
     const resetRequest = await import("@/app/forgot-password/actions");
@@ -188,6 +194,7 @@ describe("confirm and cook", () => {
       ...marks,
       ...mailbox,
       ...gate,
+      CookbookList: cookbook.CookbookList,
       ...authModule,
       ...form,
       ...resetRequest,
@@ -865,7 +872,7 @@ describe("confirm and cook", () => {
       "/recipes/new",
       `/recipes/${recipeId}/edit`,
     ]) {
-      const response = app.gateRequest(
+      const response = await app.gateRequest(
         new NextRequest(`http://localhost:3000${pathname}`),
       );
       const sentTo = new URL(
@@ -877,7 +884,7 @@ describe("confirm and cook", () => {
     }
 
     useBrowser("one");
-    const allowed = app.gateRequest(
+    const allowed = await app.gateRequest(
       new NextRequest("http://localhost:3000/cookbook", {
         headers: { cookie: cookieHeader() },
       }),
@@ -1741,7 +1748,7 @@ describe("confirm and cook", () => {
     await redirected(() => app.signOutAction());
 
     const editPath = "/recipes/42/edit";
-    const sent = app.gateRequest(
+    const sent = await app.gateRequest(
       new NextRequest(`http://localhost:3000${editPath}`),
     );
     const sentTo = new URL(
@@ -1769,7 +1776,85 @@ describe("confirm and cook", () => {
     mailbox.stop();
   }, 20_000);
 
-  test("sign-in ignores an address on another site and lands on the home page", async () => {
+  test("a signed-out cookbook, including a search, comes back after sign-in", async () => {
+    const app = await load();
+    const mailbox = app.captureMailbox();
+    const email = "cookbook-return@example.com";
+    await verifyAndSignOut(app, mailbox, email);
+
+    const loginFor = async (pathname: string) => {
+      const response = await app.gateRequest(
+        new NextRequest(`http://localhost:3000${pathname}`),
+      );
+
+      return new URL(
+        response.headers.get("location") ?? "",
+        "http://localhost:3000",
+      );
+    };
+
+    const cookbook = await loginFor("/cookbook");
+    assert.equal(cookbook.pathname, "/login");
+    assert.equal(cookbook.searchParams.get("next"), "/cookbook");
+
+    const signedIn = await redirected(() =>
+      app.signInAction(
+        app.initialAuthFormState,
+        formData({
+          email,
+          password: "longpass",
+          next: cookbook.searchParams.get("next") ?? "",
+        }),
+      ),
+    );
+    assert.equal(signedIn.path, "/cookbook");
+    assert.equal((await app.getAuthUser())?.email, email);
+    await redirected(() => app.signOutAction());
+
+    const search = await loginFor("/cookbook?q=soup");
+    assert.equal(search.pathname, "/login");
+    assert.equal(search.searchParams.get("next"), "/cookbook?q=soup");
+
+    const searched = await redirected(() =>
+      app.signInAction(
+        app.initialAuthFormState,
+        formData({
+          email,
+          password: "longpass",
+          next: search.searchParams.get("next") ?? "",
+        }),
+      ),
+    );
+    assert.equal(searched.path, "/cookbook?q=soup");
+    await redirected(() => app.signOutAction());
+
+    for (const pathname of ["/", "/recipes", "/recipes/42"]) {
+      const response = await app.gateRequest(
+        new NextRequest(`http://localhost:3000${pathname}`),
+      );
+      assert.equal(response.headers.get("location"), null);
+    }
+
+    rememberCookie("better-auth.session_token", "rejected");
+    const rejected = await redirected(() =>
+      app.CookbookList({
+        searchParams: Promise.resolve({ q: "soup" }),
+      }),
+    );
+    const rejectedAt = new URL(rejected.path ?? "", "http://localhost:3000");
+    assert.equal(rejectedAt.pathname, "/login");
+    assert.equal(rejectedAt.searchParams.get("next"), "/cookbook?q=soup");
+    const followed = await app.gateRequest(
+      new NextRequest(rejectedAt, {
+        headers: { cookie: "better-auth.session_token=rejected" },
+      }),
+    );
+    assert.equal(followed.headers.get("location"), null);
+    assert.equal(rejectedAt.searchParams.get("next"), "/cookbook?q=soup");
+    mailbox.stop();
+  }, 30_000);
+
+  test("sign-in ignores an address outside Cookery and lands on the home page", async () => {
     const app = await load();
     const mailbox = app.captureMailbox();
     const email = "return-home@example.com";
@@ -1780,22 +1865,33 @@ describe("confirm and cook", () => {
     await confirmLatest(app, mailbox.messages);
     await redirected(() => app.signOutAction());
 
-    const signedIn = await redirected(() =>
-      app.signInAction(
-        app.initialAuthFormState,
-        formData({
-          email,
-          password: "longpass",
-          next: "https://evil.example/steal",
-        }),
-      ),
-    );
+    const landHome = async (next: string) => {
+      const signedIn = await redirected(() =>
+        app.signInAction(
+          app.initialAuthFormState,
+          formData({
+            email,
+            password: "longpass",
+            next,
+          }),
+        ),
+      );
+      assert.equal(signedIn.path, "/");
+      assert.ok(sessionCookie());
+      assert.equal((await app.getAuthUser())?.email, email);
+    };
 
-    assert.equal(signedIn.path, "/");
-    assert.ok(sessionCookie());
-    assert.equal((await app.getAuthUser())?.email, email);
+    useBrowser("return-site");
+    await landHome("https://evil.example/steal");
+    useBrowser("return-scheme");
+    await landHome("//evil.example/steal");
+    useBrowser("return-slash");
+    await landHome("/\\evil");
+    useBrowser("return-long");
+    await landHome(`/${"a".repeat(2048)}`);
+
     mailbox.stop();
-  }, 20_000);
+  }, 30_000);
 
   test("a browser that already has a session is sent home from sign-in and sign-up", async () => {
     const app = await load();
@@ -1809,7 +1905,7 @@ describe("confirm and cook", () => {
     const cookie = sessionCookie();
 
     for (const pathname of ["/login", "/signup"]) {
-      const response = app.gateRequest(
+      const response = await app.gateRequest(
         new NextRequest(`http://localhost:3000${pathname}?next=/recipes/42/edit`, {
           headers: { cookie: cookieHeader() },
         }),

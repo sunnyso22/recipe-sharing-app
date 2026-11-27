@@ -6,6 +6,23 @@ import { RecipeGrid } from "@/components/recipes/recipe-grid";
 import { buttonVariants } from "@/components/ui/button";
 import { requireAuthUser } from "@/lib/auth/session";
 
+const cookbookReturnPath = (
+  params: Record<string, string | string[] | undefined>,
+) => {
+  const search = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(params)) {
+    const first = Array.isArray(value) ? value[0] : value;
+
+    if (typeof first === "string") {
+      search.append(key, first);
+    }
+  }
+
+  const query = search.toString();
+  return query.length > 0 ? `/cookbook?${query}` : "/cookbook";
+};
+
 export const metadata = {
   title: "Cookbook",
 };
@@ -15,7 +32,8 @@ const CookbookList = async ({
 }: {
   searchParams: PageProps<"/cookbook">["searchParams"];
 }) => {
-  const user = await requireAuthUser();
+  const params = await searchParams;
+  const user = await requireAuthUser(cookbookReturnPath(params));
 
   return (
     <RecipeGrid
@@ -44,4 +62,5 @@ const CookbookPage = ({ searchParams }: PageProps<"/cookbook">) => {
   );
 };
 
+export { CookbookList };
 export default CookbookPage;
