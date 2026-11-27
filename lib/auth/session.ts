@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 
 import { auth } from "@/lib/auth/auth";
+import { signInPath } from "@/lib/auth/paths";
 
 type AuthUser = {
   id: string;
@@ -11,14 +12,12 @@ type AuthUser = {
   name: string;
 };
 
-const getAuthUser = cache(async (): Promise<AuthUser | null> => {
-  // Session expiry uses the current time. Cache Components rejects that
-  // during prerender, so suspend before the lookup and fill it per request.
-  await io();
-
+const signedInUser = async (
+  requestHeaders: Headers,
+): Promise<AuthUser | null> => {
   try {
     const session = await auth.api.getSession({
-      headers: await headers(),
+      headers: requestHeaders,
     });
 
     if (!session?.user.emailVerified) {
@@ -40,17 +39,25 @@ const getAuthUser = cache(async (): Promise<AuthUser | null> => {
 
     throw error;
   }
+};
+
+const getAuthUser = cache(async (): Promise<AuthUser | null> => {
+  // Session expiry uses the current time. Cache Components rejects that
+  // during prerender, so suspend before the lookup and fill it per request.
+  await io();
+
+  return signedInUser(new Headers(await headers()));
 });
 
-const requireAuthUser = async () => {
+const requireAuthUser = async (returnPath = "/") => {
   const user = await getAuthUser();
 
   if (!user) {
-    redirect("/login");
+    redirect(signInPath(returnPath));
   }
 
   return user;
 };
 
-export { getAuthUser, requireAuthUser };
+export { getAuthUser, requireAuthUser, signedInUser };
 export type { AuthUser };

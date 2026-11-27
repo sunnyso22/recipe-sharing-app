@@ -58,6 +58,18 @@ const safeNextPath = (value: string | null) => {
   return `${url.pathname}${url.search}${url.hash}`;
 };
 
+const signInPath = (returnPath: string) => {
+  const safeReturnPath = safeNextPath(returnPath);
+
+  if (safeReturnPath === "/") {
+    return "/login";
+  }
+
+  const url = new URL("http://localhost/login");
+  url.searchParams.set("next", safeReturnPath);
+  return `${url.pathname}${url.search}`;
+};
+
 export {
   authCallbackPath,
   authSessionPath,
@@ -69,4 +81,5 @@ export {
   recoveryErrorPath,
   resetPasswordPath,
   safeNextPath,
+  signInPath,
 };
